@@ -149,17 +149,17 @@ def results():
     c = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["is_chosen"])
     s = {r["policy"][0]: r for r in load_json(RES / "m11_policy.json")["summary"]}
     gap = lambda oe: f"{abs(oe - 1) * 100:.0f}%"
-    return [(f"{early_q * 3}개월 단축", "이상 감지 시점", "대출 1년 실적 병행 확인"),
-            (gap(c['o_e_ratio']), "예측 오차 (권고안 적용 후)",
+    return [(f"{early_q * 3}개월 단축", "연체율 차이 발견 시점", "대출 후 1년 시점 연체 결과 활용 (기존 2년)"),
+            (gap(c['o_e_ratio']), "수정안 적용 후 예측 연체율 오차",
              f"적용 전 {gap(m['o_e_ratio'])}\n2018년 1분기 보유 대출 {c['n'] / 1e4:.0f}만 건 기준"),
-            (f"{s['D']['changes']}회", "모형 교체 횟수 (3년)",
-             f"분기별 재학습 방식 {s['B']['changes']}회 대비\n평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}% 대비 "
+            (f"{s['D']['changes']}회", "3년간 모형 교체 횟수",
+             f"3개월마다 재학습하는 방식 {s['B']['changes']}회 대비\n평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}% 대비 "
              f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%")]
 
 
-STEPS = ["분기별 예측 연체율·실제 연체율 비교",
-         "오차 확대 시 수정안 11종 검증 (1년 전 자료로 수립, 이후 실적으로 평가)",
-         "기준 충족안만 담당자 보고, 적용 여부는 담당자 결정"]
+STEPS = ["3개월마다 예측 연체율과 실제 연체율 비교",
+         "차이가 기준 초과 시 모형 수정안 11종 성능 비교",
+         "기준 통과안만 담당자 보고, 적용 여부는 담당자 결정"]
 
 
 def slide2(prs, shot=None):
@@ -170,8 +170,8 @@ def slide2(prs, shot=None):
 
     lw = 6.0                                    # 왼쪽: 문제와 그림
     text(s, M, 1.85, lw, 0.25, "문제", size=10, color=G1, weight="med")
-    text(s, M, 2.12, lw, 0.6, [[("시간 경과에 따른 신용평가모형 정확도 저하", {"weight": "bold", "size": 13})],
-                                [("실제 연체율 상승, 모형 예측치 하락 (연체율: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율)", {"size": 10, "color": G1})]],
+    text(s, M, 2.12, lw, 0.6, [[("신용평가모형의 예측 연체율과 실제 연체율 차이 확대", {"weight": "bold", "size": 13})],
+                                [("실제 연체율 상승, 예측 연체율 하락 (연체율: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율)", {"size": 10, "color": G1})]],
          spacing=1.35)
     img = HERE / "chart_default.png"
     ih = lw * Image.open(img).height / Image.open(img).width
@@ -183,7 +183,7 @@ def slide2(prs, shot=None):
     for i, t in enumerate(STEPS):
         text(s, rx, 2.15 + i * 0.36, rw, 0.3, [[(f"{i + 1}  ", {"weight": "bold", "color": G2}), (t, {})]], size=11)
     hline(s, rx, 3.32, rw)
-    text(s, rx, 3.45, rw, 0.25, "성과  2015~2018년 13개 분기 재현", size=10, color=G1, weight="med")
+    text(s, rx, 3.45, rw, 0.25, "성과  2015~2018년 자료로 3년간 운영 재현", size=10, color=G1, weight="med")
     for i, (v, lab, note) in enumerate(results()):
         y0 = 3.78 + i * 0.82
         text(s, rx, y0, 2.6, 0.45, v, size=20, weight="bold")
@@ -192,7 +192,7 @@ def slide2(prs, shot=None):
     qs = 0.95                                   # QR
     s.shapes.add_picture(str(HERE / "qr.png"), Inches(M), Inches(H - 0.55 - qs), Inches(qs), Inches(qs))
     text(s, M + qs + 0.15, H - 0.55 - qs + 0.18, 4.5, 0.6,
-         [[("결과 화면", {"weight": "bold", "size": 11})],
+         [[("결과 화면 (시점별 점검 결과 확인)", {"weight": "bold", "size": 11})],
           [("kjhoeakjy.github.io/csm-auto", {"size": 9.5, "color": G1})]], spacing=1.3)
     text(s, rx, H - 0.5, rw, 0.3, "자료: Lending Club 공개 대출 226만 건. 시점별 판단에 해당 시점까지의 정보만 사용. "
          "실제 금융회사 운영 사례 아님", size=7.5, color=G2)

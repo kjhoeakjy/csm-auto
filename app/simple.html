@@ -60,13 +60,13 @@ footer a { color: var(--sub); }
 </style>
 <div class="wrap">
   <h1>신용평가모형<br>자동 점검</h1>
-  <p class="lede">분기별 신용평가모형 점검 및 수정안 보고 시스템. Lending Club 공개 대출 자료 기반 2015~2018년 재현 결과.</p>
+  <p class="lede">3개월마다 신용평가모형의 예측 연체율과 실제 연체율을 비교하고, 차이가 크면 모형 수정안을 비교해 담당자에게 보고하는 시스템. Lending Club 공개 대출 자료로 2015~2018년 운영 재현.</p>
 
   <section class="ctl">
     <label for="q"><span>점검 시점</span><b class="num" id="ql"></b></label>
     <input type="range" id="q" min="0" step="1" aria-label="점검 시점">
     <div class="ticks"><span>2015년 4분기</span><span>2018년 4분기</span></div>
-    <div class="btns"><button id="play">전체 기간 재생</button><button id="apply">권고안 적용 결과</button></div>
+    <div class="btns"><button id="play">전체 기간 재생</button><button id="apply">수정안 적용 결과</button></div>
   </section>
 
   <section class="res" aria-live="polite">
@@ -77,12 +77,12 @@ footer a { color: var(--sub); }
 
   <section class="chart">
     <h2>대출 실행 시기별 예측·실제 연체율</h2>
-    <p>연체율: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율. 회색 구간: 선택 시점 기준 실적 미확정 대출</p>
+    <p>연체율: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율. 회색 구간: 선택 시점에 결과가 나오지 않은 대출</p>
     <div id="ch"></div>
   </section>
 
   <section class="sum" id="sum"></section>
-  <footer>시점별 판단에 해당 시점까지의 정보만 사용, 결과는 이후 확정 실적과 비교. 실제 금융회사 운영 사례 아님 · <a href="detail.html">분석 상세</a></footer>
+  <footer>시점별 판단에 해당 시점까지의 정보만 사용, 결과는 이후 확정된 실제 결과와 비교. 실제 금융회사 운영 사례 아님 · <a href="detail.html">분석 상세</a></footer>
 </div>
 <script>
 const D = /*__DATA__*/null;
@@ -107,7 +107,7 @@ function chart(item) {
   const last = c[cut - 1];
   s += `<text x="${X(cut - 1) - 6}" y="${Y(last.actual) - 10}" font-size="13" font-weight="700" text-anchor="end" fill="var(--ink)">실제 ${(last.actual * 100).toFixed(1)}%</text>`;
   s += `<text x="${X(cut - 1) - 6}" y="${Y(last.pred) + 20}" font-size="13" text-anchor="end" fill="var(--sub)">모형 예측 ${(last.pred * 100).toFixed(1)}%</text>`;
-  if (known >= 0 && known < n - 1) s += `<text x="${X(known) + 12}" y="${m.t + 18}" font-size="12" fill="var(--sub)">실적 미확정</text>`;
+  if (known >= 0 && known < n - 1) s += `<text x="${X(known) + 12}" y="${m.t + 18}" font-size="12" fill="var(--sub)">결과 미확정</text>`;
   $("#ch").innerHTML = s + "</svg>";
 }
 

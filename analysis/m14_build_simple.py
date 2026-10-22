@@ -17,12 +17,12 @@ from m08_build_app import font_faces, kpis, load_decisions, load_json
 
 APP = MO / "app"
 STATUS = {"정상": "정상", "주의": "주의", "조치 검토": "조치 필요", "판정 유보": "판단 보류"}
-PLAIN = {"maintain": "현행 모형 유지", "recal_intercept": "예측 확률 보정", "recal_platt": "예측 확률 보정",
-         "recal_beta": "예측 확률 보정", "recal_isotonic": "예측 확률 보정", "recal_grade": "등급별 예측 확률 보정",
-         "recal_early": "예측 확률 보정(1년 실적 반영)", "recal_trend": "예측 확률 보정(추세 반영)",
-         "retrain_logit": "최신 자료 재학습(단순 모형)", "retrain_lgbm": "최신 자료 재학습",
-         "retrain_lgbm_ext": "최신 자료 재학습(신용정보 변수 추가)",
-         "retrain_lgbm_ext_tw": "최신 자료 재학습(최근 대출 가중)"}
+PLAIN = {"maintain": "현행 모형 유지", "recal_intercept": "예측 연체율 일괄 조정", "recal_platt": "예측 연체율 일괄 조정",
+         "recal_beta": "예측 연체율 일괄 조정", "recal_isotonic": "예측 연체율 일괄 조정", "recal_grade": "등급별 예측 연체율 조정",
+         "recal_early": "예측 연체율 일괄 조정", "recal_trend": "예측 연체율 일괄 조정",
+         "retrain_logit": "최근 대출 자료로 모형 재학습", "retrain_lgbm": "최근 대출 자료로 모형 재학습",
+         "retrain_lgbm_ext": "최근 대출 자료로 모형 재학습",
+         "retrain_lgbm_ext_tw": "최근 대출 자료로 모형 재학습"}
 
 
 def ql(q):
@@ -43,7 +43,7 @@ def reco_text(d):
         return "자료 확인 전 판단 보류"
     if c.get("chosen"):
         r = PLAIN[c["chosen"]] + " 권고"
-        return r + " (적용 후 잔여 오차 존재, 원인 확인 병행)" if c.get("residual") else r
+        return r + " (적용 후에도 오차 일부 남음, 원인 확인 병행)" if c.get("residual") else r
     if d["status"] == "정상":
         return "현행 모형 유지"
     return "모형 변경 보류 및 원인 확인"
@@ -60,23 +60,23 @@ def why_text(d):
     l0 = (d.get("lag") or [{}])[0]
     if l0:
         hi = "초과" if l0["o_e_ratio"] > 1 else "미달"
-        txt = (f"{ql(l0['cohort_q'])} 대출(2년 실적 확정) 실제 연체율 {pct(l0['actual'])}, "
+        txt = (f"{ql(l0['cohort_q'])} 대출(2년 결과 확인 완료) 실제 연체율 {pct(l0['actual'])}, "
                f"예측 {pct(l0['pred'])}, 예측 대비 {gap(l0['o_e_ratio'])} {hi}")
         e0 = (d.get("early") or [{}])[0]
         if e0:
-            txt += f". {ql(e0['cohort_q'])} 대출 1년 실적도 예측 대비 {gap(e0['o_e_ratio'])} {'초과' if e0['o_e_ratio'] > 1 else '미달'}"
+            txt += f". {ql(e0['cohort_q'])} 대출의 1년 시점 연체 결과도 예측 대비 {gap(e0['o_e_ratio'])} {'초과' if e0['o_e_ratio'] > 1 else '미달'}"
         out.append(txt)
     c = d.get("candidates")
     if c is None:
-        out.append("오차 기준 미달, 수정안 검증 생략")
+        out.append("예측과 실제의 차이가 기준 이내, 수정안 비교 생략")
     else:
         t = {r["candidate"]: r for r in c["table"]}
         if c["chosen"]:
             k, m = t[c["chosen"]], t["maintain"]
-            out.append(f"수정안 {len(t) - 1}종 검증(1년 전 자료로 수립, 이후 실적으로 평가). "
-                       f"'{PLAIN[c['chosen']]}' 안 오차 {gap(m['o_e_ratio'])}에서 {gap(k['o_e_ratio'])}로 감소")
+            out.append(f"수정안 {len(t) - 1}종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). "
+                       f"'{PLAIN[c['chosen']]}' 안의 오차 {gap(m['o_e_ratio'])}에서 {gap(k['o_e_ratio'])}로 감소")
         else:
-            out.append(f"수정안 {len(t) - 1}종 검증(1년 전 자료로 수립, 이후 실적으로 평가). 기준 충족안 없음")
+            out.append(f"수정안 {len(t) - 1}종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). 기준 통과안 없음")
     return out
 
 
@@ -110,12 +110,12 @@ def main():
     d0 = next(r for r in ph if r["asof_q"] == a.default and r["part"] == "전체" and r["candidate"] == "maintain")
     c0 = next(r for r in ph if r["asof_q"] == a.default and r["part"] == "전체" and r["is_chosen"])
     summary = [
-        {"label": "이상 감지 시점", "value": f"{int(kpis(decs, ph, a.default)[0]['value'][0]) * 3}개월 단축",
-         "note": "대출 1년 실적 병행 확인"},
-        {"label": "예측 오차 (권고안 적용 후)", "value": gap(c0["o_e_ratio"]),
+        {"label": "연체율 차이 발견 시점", "value": f"{int(kpis(decs, ph, a.default)[0]['value'][0]) * 3}개월 단축",
+         "note": "대출 후 1년 시점 연체 결과 활용 (기존 2년)"},
+        {"label": "수정안 적용 후 예측 연체율 오차", "value": gap(c0["o_e_ratio"]),
          "note": f"적용 전 {gap(d0['o_e_ratio'])}, {ql(a.default)} 보유 대출 {c0['n'] / 1e4:.0f}만 건 기준"},
-        {"label": "모형 교체 횟수 (3년)", "value": f"{s['D']['changes']}회",
-         "note": f"분기별 재학습 방식 {s['B']['changes']}회 대비, 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}% 대비 "
+        {"label": "3년간 모형 교체 횟수", "value": f"{s['D']['changes']}회",
+         "note": f"3개월마다 재학습하는 방식 {s['B']['changes']}회 대비, 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}% 대비 "
                  f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%"},
     ]
     data = {"items": items, "cohorts": cohorts, "default_q": a.default, "summary": summary}
