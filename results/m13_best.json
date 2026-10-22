@@ -1,0 +1,25 @@
+{
+  "best": {
+    "운영 모형": {
+      "params": {
+        "num_leaves": 31,
+        "min_child_samples": 100,
+        "colsample_bytree": 0.5,
+        "reg_lambda": 20.0,
+        "min_split_gain": 0.01
+      },
+      "iters": 126
+    },
+    "재학습(2017Q2)": {
+      "params": {
+        "num_leaves": 15,
+        "min_child_samples": 500,
+        "colsample_bytree": 0.5,
+        "reg_lambda": 20.0,
+        "min_split_gain": 0.01
+      },
+      "iters": 841
+    }
+  },
+  "seconds": 2193
+}

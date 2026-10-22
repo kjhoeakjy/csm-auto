@@ -32,62 +32,95 @@ def notes(part):
     return p.read_text(encoding="utf-8").split(part)[1].split("\n## ")[0].strip()
 
 
-# ---------------------------------------------------------------- 1장: 두 트랙 → BCG X 에서 합류
-STAGES = [("통계 분석", "추론, 생존분석", 0.6, 3.55),
-          ("AI 모델 개발", "모델 설계와 실험, 에이전트", 3.55, 7.15),
-          ("산업 적용", "데이터 구축과 실사용", 7.15, 9.45)]
-STUDY = [(1.45, ic_bar, "통계학 학사", "통계적 추론과 모델링", "2021.03 ~ 2025.08"),
-         (3.85, ic_flag, "데이터사이언스 학회", "학회장, 프로젝트 리딩", "2025.01 ~ 2026.06"),
-         (6.0, ic_net, "통계학 석사", "딥러닝 모델 설계", "2025.09 ~")]
-PROJ = [(2.4, ic_curve, "생존분석 연구보조", "사건 시점 분석", "2025.06 ~ 2026.08"),
-        (4.5, ic_dots, "멀티에이전트 시스템 3건", "데이터와 AI 시스템 연결", "2025.07 ~ 2026.06"),
-        (6.45, ic_layers, "3D CT 멀티모달 모델", "표현 학습과 평가", "2025.09 ~ 2026.02")]
-Y1, Y2, YM = 3.45, 5.45, 4.45                    # 학업·활동 / 프로젝트 / 합류
-XJ = 8.3                                         # 합류 = BCG X
+# ---------------------------------------------------------------- 1장: Experience Timeline
+# 선 아이콘 (중심 x, y, 반경 약 0.12 inch)
+def ic_cap(s, x, y, c=INK):      # 학사모
+    B.poly(s, [(x - 0.13, y - 0.03), (x, y - 0.09), (x + 0.13, y - 0.03), (x, y + 0.03)], closed=True, color=c)
+    B.poly(s, [(x - 0.07, y), (x - 0.07, y + 0.07), (x + 0.07, y + 0.07), (x + 0.07, y)], color=c)
+    seg(s, x + 0.11, y - 0.02, x + 0.11, y + 0.07, color=c, width=1.0)
 
 
-def node1(s, x, y, icon, title, kw, period, above):
-    circle(s, x, y, 0.46, fill=WHITE)
-    icon(s, x, y)
-    ty = y - 1.02 if above else y + 0.34
-    text(s, x - 0.23, ty, 2.3, 0.75, [[(title, {"weight": "bold", "size": 11})],
-                                       [(kw, {"size": 9.5, "color": G1})],
-                                       [(period, {"size": 8.5, "color": G2})]], spacing=1.3)
+def ic_people(s, x, y, c=INK):   # 사람 둘 (학회)
+    for dx, sz in [(-0.055, 0.07), (0.06, 0.06)]:
+        circle(s, x + dx, y - 0.05, sz, fill=WHITE, line=c, width=1.25)
+        B.poly(s, [(x + dx - 0.055, y + 0.09), (x + dx - 0.045, y + 0.03), (x + dx + 0.045, y + 0.03),
+                   (x + dx + 0.055, y + 0.09)], color=c, width=1.25)
+
+
+def ic_chat(s, x, y, c=INK):     # 말풍선 (멘토링)
+    B.poly(s, [(x - 0.11, y - 0.08), (x + 0.11, y - 0.08), (x + 0.11, y + 0.04), (x - 0.02, y + 0.04),
+               (x - 0.07, y + 0.1), (x - 0.06, y + 0.04), (x - 0.11, y + 0.04)], closed=True, color=c, width=1.25)
+    for yy in (-0.035, 0.0):
+        seg(s, x - 0.065, y + yy, x + 0.065, y + yy, color=c, width=0.9)
+
+
+def ic_brief(s, x, y, c=INK):    # 서류가방 (인턴)
+    B.poly(s, [(x - 0.13, y - 0.05), (x + 0.13, y - 0.05), (x + 0.13, y + 0.1), (x - 0.13, y + 0.1)],
+           closed=True, color=c)
+    B.poly(s, [(x - 0.045, y - 0.05), (x - 0.045, y - 0.1), (x + 0.045, y - 0.1), (x + 0.045, y - 0.05)], color=c)
+    seg(s, x - 0.13, y + 0.01, x + 0.13, y + 0.01, color=c, width=1.0)
+
+
+def ic_card(s, x, y, c=INK):     # 카드
+    B.poly(s, [(x - 0.12, y - 0.08), (x + 0.12, y - 0.08), (x + 0.12, y + 0.08), (x - 0.12, y + 0.08)],
+           closed=True, color=c)
+    seg(s, x - 0.12, y - 0.035, x + 0.12, y - 0.035, color=c, width=2.0)
+    seg(s, x - 0.08, y + 0.04, x - 0.02, y + 0.04, color=c, width=1.0)
+
+
+EXP = [(2.0, ic_cap, "통계학 학사", ["통계적 추론과 모델링"], "2021.03 ~ 2025.08"),
+       (4.0, ic_chat, "외국인 학생 멘토링", ["통계학 전공 학업 지원"], "2024.09 ~ 2024.12"),
+       (6.0, ic_people, "데이터사이언스 학회", ["학회장, 운영팀장", "스터디 진행, 프로젝트 진행"], "2025.01 ~ 2026.07"),
+       (8.1, ic_cap, "통계학 석사", ["딥러닝"], "2025.09 ~ 2027.02")]
+PROJ = [("민간의료보험과 건강지표 분석", "2023"), ("제주 특산물 가격 예측", "2023"),
+        ("스마트팜 참외 수확량 예측", "2024.08 ~ 2024.10"), ("저해상도 조류 이미지 분류", "2025.01 ~ 2025.03"),
+        ("오늘의집 리뷰 요약 시스템", "2025.03 ~ 2025.08"), ("AutoML 이미지 분류", "2025.05"),
+        ("담낭선암 생존분석 연구", "2025.06 ~ 2025.08"), ("시각장애인용 피부질환 예측", "2025.07"),
+        ("환헤지 멀티에이전트", "2025.07 ~ 2025.12"), ("건물별 전력사용량 예측", "2025.08 ~ 2025.09"),
+        ("3D 의료 파운데이션 모델", "2025.09 ~ 2026.02"), ("의료 데이터 다변량 평균 비교", "2025.10"),
+        ("전차 제원 PCA 분석", "2025.11"), ("확률론 시험 자동 채점", "2026.02 ~ 2026.03"),
+        ("자율주행 ODD 위험평가 에이전트", "2026.05 ~ 2026.06")]
+Y1, Y2, YM = 2.75, 4.25, 3.5
+XB, XJ, XE = 9.35, 9.95, 11.25                   # 꺾임, 합류(BCG), 종점(현대카드)
 
 
 def slide1(prs):
     s = prs.slides.add_slide(prs.slide_layouts[6])
-    text(s, M, 0.62, W - 2 * M, 0.45, "01 Experiences", size=20, weight="bold")
-    hline(s, M, 1.38, W - 2 * M, color=INK)
-    yb, hb = 1.55, 0.72
-    for i, (name, kw, x0, x1) in enumerate(STAGES):
-        rect(s, x0 + (0.02 if i else 0), yb, x1 - x0 - (0.04 if i else 0.02), hb, BAND)
-        text(s, x0 + 0.18, yb + 0.12, x1 - x0 - 0.3, 0.5,
-             [[(f"{i + 1}  ", {"size": 11, "color": G2, "weight": "med"}), (name, {"size": 12, "weight": "bold"})],
-              [(kw, {"size": 9, "color": G1})]], spacing=1.3)
-    xb = XJ - 0.75                               # 트랙이 꺾이는 지점
-    for y, label, items, above in [(Y1, "학업과 활동", STUDY, True), (Y2, "프로젝트", PROJ, False)]:
-        text(s, M, y - 0.27 if above else y + 0.1, 1.0, 0.2, label, size=8.5, color=G2, weight="med")
-        hline(s, M, y, xb - M, color=INK, width=1.5)
-        seg(s, xb, y, XJ - 0.3, YM + (-0.16 if above else 0.16), color=INK, width=1.5)
-        for x, ic, t, k, p in items:
-            node1(s, x, y, ic, t, k, p, above)
-    n0 = len(s.shapes)
-    circle(s, XJ, YM, 0.78, fill=INK, line=None)
-    ic_building(s, XJ, YM)
-    for shp in list(s.shapes)[n0 + 1:]:          # 검은 원 위 아이콘은 흰색
-        shp.line.color.rgb = WHITE
-    text(s, XJ - 0.3, YM + 0.5, 2.4, 0.9, [[("BCG X 인턴", {"weight": "bold", "size": 12.5})],
-                                            [("데이터마트, 예측 모델, 분석 화면", {"size": 9.5, "color": G1})],
-                                            [("2026.06 ~ 2026.09", {"size": 8.5, "color": G2})]], spacing=1.3)
-    ex = 10.05                                   # 종점
-    seg(s, XJ + 0.39, YM, ex + 0.08, YM, color=INK, width=1.5)
-    circle(s, ex + 0.25, YM, 0.34, fill=WHITE, width=1.5)
-    text(s, ex + 0.55, YM - 0.27, W - M - ex - 0.55, 0.6,
-         [[("현대카드", {"weight": "bold", "size": 14})],
-          [("리스크 모형 운영", {"size": 10, "color": G1})]], spacing=1.3)
-    s.notes_slide.notes_text_frame.text = notes("## 1장")
-
+    text(s, M, 0.62, W - 2 * M, 0.45, "Experience Timeline", size=20, weight="bold")
+    hline(s, M, 1.3, W - 2 * M, color=INK)
+    LX = 1.5                                     # 트랙 시작 (왼쪽 여백에 트랙 이름)
+    for y, label, up in [(Y1, "학업, 경험", True), (Y2, "프로젝트", False)]:
+        text(s, M, y - 0.1, LX - M - 0.1, 0.2, label, size=9, color=G1, weight="med")
+        hline(s, LX, y, XB - LX, color=INK, width=1.5)
+        seg(s, XB, y, XJ - 0.28, YM + (-0.14 if up else 0.14), color=INK, width=1.5)
+    for x, ic, t, k, p in EXP:                   # 학업·경험: 아이콘 + 위쪽 글
+        circle(s, x, Y1, 0.46, fill=WHITE)
+        ic(s, x, Y1)
+        lines = [[(t, {"weight": "bold", "size": 11})]] + [[(kk, {"size": 9, "color": G1})] for kk in k] + \
+                [[(p, {"size": 8.5, "color": G2})]]
+        text(s, x - 0.23, Y1 - 0.42 - 0.24 * len(lines), 2.2, 0.24 * len(lines), lines, spacing=1.3)
+    x0, x1 = 1.75, 9.0                           # 프로젝트: 시간순 점 + 아래 3단 엇갈림 글
+    pos = [(x0 + i * (x1 - x0) / (len(PROJ) - 1), Y2 + 0.32 + (i % 3) * 0.62) for i in range(len(PROJ))]
+    for (x, ty) in pos:                          # 연결선을 먼저, 글 상자(흰 바탕)를 위에
+        seg(s, x, Y2 + 0.08, x, ty + 0.02, color=G2, width=0.6)
+    for (x, ty), (t, p) in zip(pos, PROJ):
+        circle(s, x, Y2, 0.12, fill=INK, line=None)
+        w = max(len(t) * 0.098, len(p) * 0.06) + 0.12
+        tb = text(s, x - 0.04, ty, w, 0.4, [[(t, {"weight": "sb", "size": 8.5})], [(p, {"size": 7.5, "color": G2})]],
+                  spacing=1.2)
+        tb.fill.solid(); tb.fill.fore_color.rgb = WHITE
+    n0 = len(s.shapes)                           # BCG 인턴 (합류)
+    circle(s, XJ, YM, 0.7, fill=INK, line=None)
+    ic_brief(s, XJ, YM, c=WHITE)
+    text(s, XJ - 0.35, YM - 1.05, 2.0, 0.7, [[("BCG 인턴", {"weight": "bold", "size": 12})],
+                                             [("실제 산업 현장에서의 모델링", {"size": 9, "color": G1})],
+                                             [("2026.06 ~ 2026.08", {"size": 8.5, "color": G2})]], spacing=1.3)
+    seg(s, XJ + 0.35, YM, XE - 0.23, YM, color=INK, width=1.5)
+    circle(s, XE, YM, 0.46, fill=WHITE, width=1.5)
+    ic_card(s, XE, YM)
+    text(s, XE - 0.3, YM + 0.36, W - M - XE + 0.3, 0.5, [[("현대카드", {"weight": "bold", "size": 13})],
+                                                         [("리스크 모형 운영", {"size": 9, "color": G1})]],
+         spacing=1.3)
 
 # ---------------------------------------------------------------- 2장: 글자 최소
 FLOW = ["정기 실행", "점검", "개선안 검증", "보고"]
