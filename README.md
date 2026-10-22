@@ -1,4 +1,4 @@
-# CSM Auto — 신용평가모형 운영 자동화
+﻿# CSM Auto — 신용평가모형 운영 자동화
 
 신규 대출의 **24개월 내 상각 위험을 예측하는 모형 1개**를 매 분기 자동으로 점검하고, 문제가 생기면 **유지·재보정·재학습 중 당시 데이터로 검증된 조치**를 담당자에게 권고하는 시스템. 고객별 점수를 바꾸는 것이 아니라, 여러 대출 고객에게 공통으로 적용되는 위험 예측모형 자체의 예측 성능을 관리함.
 
@@ -46,10 +46,10 @@ uv pip install -r requirements.txt
 python analysis/m01_build_base.py; python analysis/m02_label_audit.py
 python analysis/m03_baseline_backtest.py; python analysis/m04_monitor_history.py
 python analysis/scheduler.py --mode replay      # 또는 m05_replay.py
-python analysis/posthoc.py --rule r3
+python analysis/posthoc.py --rule r4
 python analysis/m07_robustness.py; python analysis/m10_injection.py
 python analysis/m11_policies.py; python analysis/m12_label_timing.py
-python analysis/m08_build_app.py --rule r3
+python analysis/m08_build_app.py --rule r4
 python -m pytest tests -q
 ```
 LLM 보고서(선택): 환경변수 `ANTHROPIC_API_KEY` 설정 후 `python analysis/llm_report.py --rule r3 --model claude-haiku-5-5`
@@ -57,5 +57,5 @@ LLM 보고서(선택): 환경변수 `ANTHROPIC_API_KEY` 설정 후 `python analy
 ## 지켜야 할 원칙
 - 분기 T의 선택은 T까지 확정된 결과만 사용. 미래 코호트는 사후 평가 전용 (`candidates.py`·`posthoc.py` 분리, 테스트로 고정)
 - 상각일은 원천에 없음 → 마지막 납부월 기준 근사, 지연 4·5·6개월 민감도 보고
-- 규칙 변경은 버전으로 남김 (r1 → r2 → r2.1 → r3, `rules.py` 상단에 이유 기록)
+- 규칙 변경은 버전으로 남김 (r1 → r2 → r2.1 → r3 → r4, `rules.py` 상단에 이유 기록)
 - 실데이터 결과와 주입 시뮬레이션 결과는 파일·표기 분리

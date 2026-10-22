@@ -105,7 +105,9 @@ def kpis(decs, posthoc, default_q):
         s = {r["policy"][0]: r for r in pol["summary"]}
         if all(k in s for k in "ABD"):
             out.append({"label": "모형 변경 횟수", "value": f"{s['D']['changes']}회",
-                        "short": f"분기별 재학습 {s['B']['changes']}회와 비슷한 오차",
+                        "short": (f"분기별 재학습 {s['B']['changes']}회보다 낮은 오차"
+                                  if s["D"]["book_mean_abs_oe_err"] < s["B"]["book_mean_abs_oe_err"] - 0.005
+                                  else f"분기별 재학습 {s['B']['changes']}회와 비슷한 오차"),
                         "note": f"13개 분기 기준. 예측 오차 {s['D']['book_mean_abs_oe_err'] * 100:.1f}% "
                                 f"(분기별 재학습 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%, 고정 모형 "
                                 f"{s['A']['book_mean_abs_oe_err'] * 100:.1f}%)"})
