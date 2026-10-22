@@ -1,5 +1,5 @@
 ﻿test,expected,result,pass
-재실행 중복 방지,두 번째 실행은 재생성 안 함,"1회차 skipped=False, 2회차 skipped=True",True
+재실행 중복 방지,두 번째 실행은 재생성 안 함,"1회차 skipped=True, 2회차 skipped=True",True
 주입: missing_column,판정 유보,성공 / 판정 유보 / 판정 유보 / schema_error,True
 주입: type_change,판정 유보,성공 / 판정 유보 / 판정 유보 / schema_error,True
 주입: delayed_feed,"선행 점검만 유보, 결과 점검은 수행","성공 / 주의 / 조사 (변경 보류) / lag24_drift,lead_new_data_missing",True

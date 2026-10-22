@@ -49,6 +49,18 @@ def load_decisions(rule):
     return out
 
 
+def load_llm(model="claude-opus-5-5"):
+    p = RESULTS / f"m09_llm_report_{model}.jsonl"
+    if not p.exists():
+        return None
+    out = {}
+    for line in p.read_text(encoding="utf-8").splitlines():
+        r = json.loads(line)
+        out[r["quarter"]] = {"published": r["published"], "problems": r["problems"], "model": r["model"],
+                             "seconds": r["seconds"], "output": r["output"] if r["published"] else None}
+    return out
+
+
 def load_json(p):
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
@@ -90,11 +102,10 @@ def kpis(decs, posthoc, default_q):
     if pol:
         s = {r["policy"][0]: r for r in pol["summary"]}
         if all(k in s for k in "ABD"):
-            out.append({"label": "운영 정책 비교",
-                        "value": f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%",
-                        "note": f"제안 시스템 평균 오차 (고정 모형 {s['A']['book_mean_abs_oe_err'] * 100:.1f}%, "
-                                f"매 분기 재학습 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%). "
-                                f"모형 변경 {s['D']['changes']}회 vs {s['B']['changes']}회"})
+            out.append({"label": "모형 변경 (13개 분기)",
+                        "value": f"{s['B']['changes']}회 → {s['D']['changes']}회",
+                        "note": f"매 분기 재학습 대비. 예측 오차는 비슷 ({s['B']['book_mean_abs_oe_err'] * 100:.1f}% vs "
+                                f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%, 고정 모형 {s['A']['book_mean_abs_oe_err'] * 100:.1f}%)"})
     return out
 
 
@@ -156,7 +167,7 @@ def main():
         "policy": load_json(RESULTS / "m11_policy.json"),
         "injection": pd.read_csv(RESULTS / "m10_injection.csv").to_dict("records")
         if (RESULTS / "m10_injection.csv").exists() else None,
-        "timing": timing_summary(),
+        "timing": timing_summary(), "llm": load_llm(),
         "meta": {"rule_version": a.rule, "model_id": decs[0]["model_id"], "data_id": decs[0]["data_id"],
                  "code_hash": decs[0]["code_hash"]},
         "default_q": a.default, "quarters": quarters,

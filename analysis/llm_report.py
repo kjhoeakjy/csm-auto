@@ -65,7 +65,7 @@ OUTPUT_SCHEMA = {
     "additionalProperties": False,
 }
 
-CAUSAL = re.compile(r"때문(이다|임|에)|원인은|로 인해|로 인한|탓")
+CAUSAL = re.compile(r"때문(이다|임|에)|원인은(?! 무엇)(?![^.?]*\?)|로 인해|로 인한|탓")
 
 
 def _r2(x):
@@ -110,7 +110,7 @@ def tool_output(name, dec):
                                 "auc": round(r["auc"], 3), "passed": bool(r["passed"])}
                                for r in c["table"]]}
     if name == "get_method_notes":
-        return {"rules": "실제/예측 10% 이상 차이 + 과산포 보정 z 3 이상이 지속되면 조치 검토. 조기 결과(12개월)는 18개월에 확정, 24개월 결과는 30개월에 확정",
+        return {"rules": "실제/예측 10% 이상 차이(1.10 이상 또는 0.90 이하) + 과산포 보정 z 3 이상이 지속되면 조치 검토. 주의는 5%(1.05·0.95), 보정 z 2. 12개월 중간 신호는 18개월에 확인, 24개월 결과는 30개월에 확정",
                 "limits": ["공개 대출 데이터 기반 과거 분기 재현이며 실제 금융회사 운영 아님",
                            "상각 시점은 마지막 납부월 기준 근사", "모형 변경은 담당자 승인 후 적용"]}
     raise ValueError(name)
@@ -198,13 +198,30 @@ def run_one(client, model, dec, effort):
     return None, calls, tool_texts, usage, "왕복 초과"
 
 
+def revalidate(path):
+    """저장된 응답을 API 재호출 없이 현재 검증 규칙으로 다시 검사"""
+    recs = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()]
+    for r in recs:
+        dec = json.loads((RUNS / r["rule_version"] / r["quarter"] / "decision.json").read_text(encoding="utf-8"))
+        if r["output"]:
+            tt = [json.dumps(tool_output(t["name"], dec), ensure_ascii=False) for t in TOOLS]
+            r["problems"], r["n_numbers"] = validate(r["output"], dec, tt)
+            r["published"] = not r["problems"]
+            r["revalidated"] = True
+        print(r["quarter"], r["published"], r["problems"])
+    path.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in recs) + "\n", encoding="utf-8")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rule", default="r2.1")
     ap.add_argument("--model", default="claude-haiku-5-5")
     ap.add_argument("--effort", default="medium")
     ap.add_argument("--quarters", default="")
+    ap.add_argument("--revalidate", action="store_true")
     a = ap.parse_args()
+    if a.revalidate:
+        return revalidate(RESULTS / f"m09_llm_report_{a.model}.jsonl")
     client = anthropic.Anthropic()
     decs = [json.loads((d / "decision.json").read_text(encoding="utf-8"))
             for d in sorted((RUNS / a.rule).iterdir()) if (d / "decision.json").exists()]
