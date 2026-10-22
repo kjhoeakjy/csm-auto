@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -60,29 +60,29 @@ footer a { color: var(--sub); }
 </style>
 <div class="wrap">
   <h1>대출 부실 예측모형<br>자동 점검</h1>
-  <p class="lede">3개월마다 모형이 예상한 부실률과 실제 부실률을 비교하고, 차이가 크면 수정안을 시험해 담당자에게 보고하는 시스템. Lending Club 공개 대출 데이터로 2015~2018년을 다시 실행한 결과임.</p>
+  <p class="lede">분기별 부실 예측모형 점검 및 수정안 보고 시스템. Lending Club 공개 대출 자료 기반 2015~2018년 재현 결과.</p>
 
   <section class="ctl">
-    <label for="q"><span>점검 시점 선택</span><b class="num" id="ql"></b></label>
+    <label for="q"><span>점검 시점</span><b class="num" id="ql"></b></label>
     <input type="range" id="q" min="0" step="1" aria-label="점검 시점">
     <div class="ticks"><span>2015년 4분기</span><span>2018년 4분기</span></div>
-    <div class="btns"><button id="play">처음부터 차례로 보기</button><button id="apply">권고대로 바꾼 결과 보기</button></div>
+    <div class="btns"><button id="play">전체 기간 재생</button><button id="apply">권고안 적용 결과</button></div>
   </section>
 
   <section class="res" aria-live="polite">
-    <div class="k">모형 상태</div><div><span class="status" id="st"></span></div>
+    <div class="k">상태</div><div><span class="status" id="st"></span></div>
     <div class="k">권고</div><div class="reco" id="rc"></div>
-    <div class="k">이유</div><div><ol id="why"></ol><div class="after" id="after" hidden></div></div>
+    <div class="k">근거</div><div><ol id="why"></ol><div class="after" id="after" hidden></div></div>
   </section>
 
   <section class="chart">
-    <h2>모형이 예상한 부실률과 실제 부실률</h2>
-    <p>대출 실행 시기별, 실행 후 2년 안에 갚지 못한 대출의 비율. 회색 구간은 선택한 시점에 아직 결과를 알 수 없던 대출</p>
+    <h2>대출 실행 시기별 예측·실제 부실률</h2>
+    <p>부실률: 대출 실행 후 2년 내 미상환 비율. 회색 구간: 선택 시점 기준 실적 미확정 대출</p>
     <div id="ch"></div>
   </section>
 
   <section class="sum" id="sum"></section>
-  <footer>판단에는 각 시점까지 알 수 있던 정보만 사용하고, 결과는 이후 실제로 확인된 값과 비교함. 실제 금융회사 운영 아님 · <a href="detail.html">분석 상세</a></footer>
+  <footer>시점별 판단에 해당 시점까지의 정보만 사용, 결과는 이후 확정 실적과 비교. 실제 금융회사 운영 사례 아님 · <a href="detail.html">분석 상세</a></footer>
 </div>
 <script>
 const D = /*__DATA__*/null;
@@ -96,7 +96,7 @@ function chart(item) {
   const vals = c.flatMap(r => [r.actual, r.pred]), lo = 0.08, hi = Math.max(0.15, Math.ceil(Math.max(...vals) * 100) / 100);
   const X = (k) => m.l + k * (W - m.l - m.r) / (n - 1), Y = (v) => m.t + (hi - v) / (hi - lo) * (H - m.t - m.b);
   const known = c.findIndex(r => r.q === item.known_until);
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="예상 부실률과 실제 부실률">`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="예측 부실률과 실제 부실률">`;
   if (known >= 0 && known < n - 1) s += `<rect x="${X(known) + 4}" y="${m.t}" width="${W - m.r - X(known) - 4}" height="${H - m.t - m.b}" fill="var(--soft)"/>`;
   for (let v = lo; v <= hi + 1e-9; v += 0.02) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${m.l - 8}" y="${Y(v) + 4}" font-size="12" text-anchor="end" fill="var(--sub)">${Math.round(v * 100)}%</text>`;
   const path = (k, cut) => c.map((r, j) => (j ? "L" : "M") + X(j) + " " + Y(r[k])).slice(0, cut).join("");
@@ -106,8 +106,8 @@ function chart(item) {
   c.forEach((r, j) => { if (r.q.endsWith("Q1")) s += `<text x="${X(j)}" y="${H - 10}" font-size="12" text-anchor="middle" fill="var(--sub)">${r.q.slice(0, 4)}</text>`; });
   const last = c[cut - 1];
   s += `<text x="${X(cut - 1) - 6}" y="${Y(last.actual) - 10}" font-size="13" font-weight="700" text-anchor="end" fill="var(--ink)">실제 ${(last.actual * 100).toFixed(1)}%</text>`;
-  s += `<text x="${X(cut - 1) - 6}" y="${Y(last.pred) + 20}" font-size="13" text-anchor="end" fill="var(--sub)">모형 예상 ${(last.pred * 100).toFixed(1)}%</text>`;
-  if (known >= 0 && known < n - 1) s += `<text x="${X(known) + 12}" y="${m.t + 18}" font-size="12" fill="var(--sub)">결과 미확인</text>`;
+  s += `<text x="${X(cut - 1) - 6}" y="${Y(last.pred) + 20}" font-size="13" text-anchor="end" fill="var(--sub)">모형 예측 ${(last.pred * 100).toFixed(1)}%</text>`;
+  if (known >= 0 && known < n - 1) s += `<text x="${X(known) + 12}" y="${m.t + 18}" font-size="12" fill="var(--sub)">실적 미확정</text>`;
   $("#ch").innerHTML = s + "</svg>";
 }
 
