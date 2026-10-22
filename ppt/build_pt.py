@@ -10,6 +10,7 @@ from pathlib import Path
 
 from PIL import Image
 from pptx import Presentation
+from pptx.dml.color import RGBColor
 from pptx.util import Inches, Pt
 
 HERE = Path(__file__).resolve().parent
@@ -68,17 +69,27 @@ def ic_card(s, x, y, c=INK):     # 카드
     seg(s, x - 0.08, y + 0.04, x - 0.02, y + 0.04, color=c, width=1.0)
 
 
-EXP = [(2.0, ic_cap, "통계학 학사", ["통계적 추론과 모델링"], "2021.03 ~ 2025.08"),
-       (4.0, ic_chat, "외국인 학생 멘토링", ["통계학 전공 학업 지원"], "2024.09 ~ 2024.12"),
-       (6.0, ic_people, "인공지능 학회", ["학회장, 운영팀장", "스터디 진행, 프로젝트 진행"], "2025.01 ~ 2026.07"),
-       (8.1, ic_cap, "통계학 석사", ["딥러닝"], "2025.09 ~ 2027.02")]
+EXP = [((2021, 3), (2025, 8), ic_cap, "통계학 학사", "통계적 추론과 모델링"),
+       ((2024, 9), (2024, 12), ic_chat, "외국인 학생 멘토링", "통계학 전공 학업 지원"),
+       ((2025, 1), (2026, 7), ic_people, "인공지능 학회", "학회장, 운영팀장, 스터디 진행, 프로젝트 진행"),
+       ((2025, 9), (2027, 2), ic_cap, "통계학 석사", "딥러닝")]
+BAR = RGBColor(0xD2, 0xD2, 0xD2)
+
+
+def tx(ym):
+    """연월 → x. 2021.03~2024.09 는 압축, 2024.09~2027.02 는 넓게 (경험이 겹치는 기간 강조)"""
+    m = ym[0] * 12 + ym[1]
+    a, b, c = 2021 * 12 + 3, 2024 * 12 + 9, 2027 * 12 + 2
+    if m <= b:
+        return 1.75 + (m - a) / (b - a) * 1.45
+    return 3.2 + (m - b) / (c - b) * (XB - 0.1 - 3.2)
 PROJ = [("저해상도 조류 이미지 분류", "2025.01 ~ 2025.03", False), ("오늘의집 리뷰 요약 시스템", "2025.03 ~ 2025.08", False),
         ("AutoML 이미지 분류", "2025.05", False), ("담낭암 생존분석 연구 (대형병원)", "2025.06 ~ 2025.08", False),
         ("시각장애인용 피부질환 예측", "2025.07", False), ("환헤지 멀티에이전트", "2025.07 ~ 2025.12", True),
         ("건물별 전력사용량 예측", "2025.08 ~ 2025.09", False), ("3D 의료 파운데이션 모델", "2025.09 ~ 2026.02", True),
         ("의료 데이터 다변량 평균 비교", "2025.10", False), ("확률론 시험 자동 채점", "2026.02 ~ 2026.03", True),
         ("자율주행 ODD 위험평가 에이전트", "2026.05 ~ 2026.06", True)]
-Y1, Y2, YM = 2.75, 4.25, 3.5
+Y1, Y2, YM = 3.55, 4.85, 4.2
 XB, XJ, XE = 9.35, 9.95, 11.25                   # 꺾임, 합류(BCG), 종점(현대카드)
 
 
@@ -91,12 +102,16 @@ def slide1(prs):
         text(s, M, y - 0.1, LX - M - 0.1, 0.2, label, size=9, color=G1, weight="med")
         hline(s, LX, y, XB - LX, color=INK, width=1.5)
         seg(s, XB, y, XJ - 0.28, YM + (-0.14 if up else 0.14), color=INK, width=1.5)
-    for x, ic, t, k, p in EXP:                   # 학업·경험: 아이콘 + 위쪽 글
-        circle(s, x, Y1, 0.46, fill=WHITE)
-        ic(s, x, Y1)
-        lines = [[(t, {"weight": "bold", "size": 11})]] + [[(kk, {"size": 9, "color": G1})] for kk in k] + \
-                [[(p, {"size": 8.5, "color": G2})]]
-        text(s, x - 0.23, Y1 - 1.18, 2.2, 0.24 * len(lines), lines, spacing=1.3)     # 제목 높이 통일
+    for i, (st, en, ic, t, k) in enumerate(EXP):  # 학업·경험: 기간 막대(겹치는 기간 표시) + 선 위 아이콘
+        x0, x1 = tx(st), tx(en)
+        yt = 1.5 + i * 0.47
+        text(s, x0, yt, 6.5, 0.22, [[(t, {"weight": "bold", "size": 10.5}),
+                                     (f"   {st[0]}.{st[1]:02d} ~ {en[0]}.{en[1]:02d}", {"size": 8.5, "color": G2}),
+                                     (f"   {k}", {"size": 8.5, "color": G1})]])
+        rect(s, x0, yt + 0.27, max(x1 - x0, 0.08), 0.09, BAR)
+        seg(s, x0, yt + 0.36, x0, Y1 - 0.23, color=LINE, width=0.75)
+        circle(s, x0, Y1, 0.46, fill=WHITE)
+        ic(s, x0, Y1)
     x0, x1 = 1.75, 9.0                           # 프로젝트: 시간순 점 + 아래 3단 엇갈림 글
     pos = [(x0 + i * (x1 - x0) / (len(PROJ) - 1), Y2 + 0.32 + (i % 3) * 0.62) for i in range(len(PROJ))]
     for (x, ty) in pos:                          # 연결선을 먼저, 글 상자(흰 바탕)를 위에
