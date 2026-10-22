@@ -112,9 +112,11 @@ def slide1(prs):
     n0 = len(s.shapes)                           # BCG 인턴 (합류)
     circle(s, XJ, YM, 0.7, fill=INK, line=None)
     ic_brief(s, XJ, YM, c=WHITE)
-    text(s, XJ - 0.35, YM - 1.05, 2.0, 0.7, [[("BCG 인턴", {"weight": "bold", "size": 12})],
-                                             [("실제 산업 현장에서의 모델링", {"size": 9, "color": G1})],
-                                             [("2026.06 ~ 2026.09", {"size": 8.5, "color": G2})]], spacing=1.3)
+    bullets = ["데이터마트 제작", "불량 확률 예측", "SHAP 분석 (CTP-CTQ matrix)", "LLM 에이전트 및 인터페이스 개발"]
+    lines = [[("BCG 인턴", {"weight": "bold", "size": 12})]] + \
+            [[("•  " + b, {"size": 9, "color": G1})] for b in bullets] + \
+            [[("2026.06 ~ 2026.09", {"size": 8.5, "color": G2})]]
+    text(s, XJ - 0.3, YM - 0.42 - 0.235 * len(lines), 2.9, 0.235 * len(lines), lines, spacing=1.25)
     seg(s, XJ + 0.35, YM, XE - 0.23, YM, color=INK, width=1.5)
     circle(s, XE, YM, 0.46, fill=WHITE, width=1.5)
     ic_card(s, XE, YM)
