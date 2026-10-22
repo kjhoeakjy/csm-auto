@@ -27,7 +27,7 @@ x = range(len(d))
 fig, ax = plt.subplots(figsize=(6.2, 3.0), dpi=300)
 ax.plot(x, d["actual"] * 100, color="black", lw=2.6)
 ax.plot(x, d["pred"] * 100, color="#8a8a8a", lw=2.2, ls=(0, (4, 3)))
-i = len(d) - 1
+i = d.index[d.issue_q == "2016Q2"][0]
 ax.annotate(f"실제 {d.actual[i] * 100:.1f}%", (i, d.actual[i] * 100), xytext=(-8, 8), textcoords="offset points",
             ha="right", fontsize=10.5, fontweight="bold")
 ax.annotate(f"모형 예상 {d.pred[i] * 100:.1f}%", (i, d.pred[i] * 100), xytext=(-8, -16), textcoords="offset points",
