@@ -1,61 +1,93 @@
-﻿# CSM Auto — 신용평가모형 운영 자동화
+﻿# CSM Auto: 대출 부실 예측모형 자동 점검 시스템
 
-신규 대출의 **24개월 내 상각 위험을 예측하는 모형 1개**를 매 분기 자동으로 점검하고, 문제가 생기면 **유지·재보정·재학습 중 당시 데이터로 검증된 조치**를 담당자에게 권고하는 시스템. 고객별 점수를 바꾸는 것이 아니라, 여러 대출 고객에게 공통으로 적용되는 위험 예측모형 자체의 예측 성능을 관리함.
+분기별 부실 예측모형 점검 및 수정안 보고 시스템. 예측 부실률과 실제 부실률을 비교하고, 오차 확대 시 수정안을 검증해 담당자에게 보고. 모형 교체 여부는 담당자 결정.
 
-- 데이터: Lending Club 실행 대출 2007~2018 (226만 건), 공개 데이터 기반 **과거 분기 재현(as-of replay)**. 실제 금융회사 운영 아님
-- 화면: `app/index.html` (단일 파일, 인터넷 불필요). 분기 선택 → **자동 점검 실행** → 상태 1개 · 권고 1줄 · 근거 3개
-- 변경 권한: 시스템은 제안·검증·보고까지. 모형 교체는 담당자 승인
+- 결과 화면: https://kjhoeakjy.github.io/csm-auto/ (점검 시점 선택, 권고안 적용 결과 확인)
+- 상세 분석 화면: https://kjhoeakjy.github.io/csm-auto/app/detail.html
+- 자료: Lending Club 공개 대출 226만 건 (2007~2018). 2015년 4분기~2018년 4분기 13개 분기 재현
+- 범위: 공개 자료 기반 프로토타입. 실제 금융회사 운영 사례 아님
 
-## 한 분기 처리 흐름 (`analysis/pipeline.py`)
-```
-정기 실행 (scheduler.py, APScheduler)  ─ 과거 재현도 같은 함수 호출
-  └ as-of 자르기: 그 분기에 알 수 있었던 데이터만
-     ├ 선행 점검   신규 대출 스키마·결측·PSI·점수 분포·구성 (정답 불필요)
-     ├ 중간 신호   12개월 상각 (실행 후 18개월에 확인) ─ 24개월 정답이 아닌 조기 경고
-     └ 후행 검증   24개월 상각 (실행 후 30개월에 확정) ─ 실제/예측, 과산포 보정 z, AUC, 집단별 오차
-  → 판정 (rules.py: 정상 / 주의 / 조치 검토 / 판정 유보)
-  → 문제 유형 진단: 데이터 오류 · 분포 변화만 · 확률 수준 오차(순위 유지) · 순위 악화
-  → [조치 검토일 때만] 개선 후보 10종을 1년 전 시점 데이터로 적합해 이후 확정 코호트로 검증 (모의 배포)
-       유지 / 재보정 6종(수준·Platt·beta·isotonic·등급별·조기 결과 반영) / 재학습 3종(로지스틱·LightGBM·확장 변수)
-       확률 수준 오차 → 재보정 우선, 순위 악화 → 재학습 우선, 기준 미달 → 변경 보류
-  → 문제 집단 탐색 (Benjamini-Hochberg) → 권고 + 근거 3개 → decision.json
-  → 보고서 생성 + 숫자·분기 자동 대조 (불일치 시 발행 보류) → 화면
-```
+## 1. 대상과 정의
+| 항목 | 내용 |
+|---|---|
+| 관리 대상 | 신규 대출의 부실 확률 예측모형 1개 (고객별 모형 아님) |
+| 부실 | 대출 실행 후 24개월 내 상환 중단 후 상각. 상각 시점은 마지막 납부월 기준 근사 |
+| 실적 확정 | 24개월 부실은 실행 후 30개월, 12개월 부실(중간 신호)은 실행 후 18개월 |
+| 판단 원칙 | 각 분기 판단에 해당 시점까지 확정된 정보만 사용. 이후 실적은 사후 평가 전용 |
 
-## 폴더
+## 2. 작동 방식
+1. 분기별 점검: 신규 대출 구성, 12개월 중간 신호, 24개월 확정 실적의 예측 대비 차이
+2. 상태 판정: 정상 / 주의 / 조치 필요 / 판단 보류 (사전 고정 기준, `analysis/rules.py`)
+3. 원인 유형 진단: 자료 오류 / 고객 구성 변화 / 확률 수준 오차 / 순위 판별력 저하
+4. 수정안 검증 (조치 필요 시만): 현행 유지, 예측 확률 보정 7종, 재학습 4종을 1년 전 자료로 수립 후 이후 실적으로 평가
+5. 보고: 상태, 권고, 근거 3개. 보고서 숫자는 계산 결과와 자동 대조, 불일치 시 발행 보류
+
+## 3. 주요 성과 (실자료, 규칙 r4)
+| 항목 | 결과 |
+|---|---|
+| 이상 감지 시점 | 12개월 중간 신호로 6개월 단축 (2016년 4분기 감지, 24개월 실적 기준 2017년 2분기) |
+| 2018년 1분기 권고안 사후 확인 | 당시 보유 대출 461,365건 예측 오차 33%에서 13%로, AUC 0.688에서 0.720으로 |
+| 운영 방식 비교 (3년) | 고정 모형 27.5%, 분기별 재학습 19.4% (교체 13회), 본 시스템 17.3% (교체 4회) |
+| 판정 기준 모의 검증 | 오차 없음 상태의 오경보 0%, 오차 20% 이상 감지율 100% (주입 실험 각 300회) |
+| 예측모형 판별력 | AUC 0.68 (2010~2012년 학습, 2013~2016년 평가), 재학습 시 0.72. 공개 연구 동일 조건 0.65~0.71 |
+
+- 오차: |실제 부실률 ÷ 예측 부실률 − 1|
+- 판별력(AUC·log loss)은 분기별 재학습 방식이 소폭 우위 (AUC 0.701 대 0.693)
+
+## 4. 폴더
 | 경로 | 내용 |
 |---|---|
-| `analysis/m01~m04` | 원천 정리, 정답·관측 시점·누수 검증, 기준모형·백테스트, 선행·중간·후행 점검 |
-| `analysis/pipeline.py` `rules.py` `candidates.py` `monitor.py` | 분기 처리 엔진 |
-| `analysis/m05_replay.py` `scheduler.py` | 13분기 무인 재현 (2015Q4~2018Q4) |
-| `analysis/posthoc.py` | 사후 평가 (선택 로직과 분리, 저장된 후보만 읽음) |
-| `analysis/m07_robustness.py` `inject.py` `m10_injection.py` | 오류 주입 시험, 탐지율·오경보·지연 시뮬레이션 |
-| `analysis/m11_policies.py` | **운영 정책 4종 비교**: 고정 / 매 분기 재학습 / 단순 임계값 / 제안 시스템 |
-| `analysis/m12_label_timing.py` | 결과 확정 시점 가정(상각 지연 4·5·6개월) 민감도 |
-| `analysis/report.py` `llm_report.py` | 규칙 기반 보고서, LLM 보고서(도구 조회 + 수치 대조) |
-| `analysis/m08_build_app.py` → `app/index.html` | 결과 화면 |
-| `docs/` | 단계별 검증 문서, 완료 기준 점검표 |
-| `runs/<규칙 버전>/<분기>/decision.json` | 분기별 정량 근거, 후보 비교표 |
-| `results/` | 표·그림·요약 |
-| `tests/` | 누수·코호트 경계·확정 시점·모니터링·후보 엔진·보고서 대조 테스트 |
+| `index.html`, `app/index.html` | 결과 화면 (`app/simple.html` 원본) |
+| `app/detail.html` | 상세 분석 화면 (`app/template.html` 원본) |
+| `analysis/` | 자료 정리, 모형, 점검, 판정, 수정안 검증, 재현, 사후 평가, 화면 생성 코드 |
+| `runs/<규칙>/<분기>/` | 분기별 판단 근거(`decision.json`), 수정안 비교표 |
+| `results/` | 결과 표·그림·요약 |
+| `docs/` | 단계별 검증 문서 ([목차](docs/README.md)) |
+| `ppt/` | 발표 자료 생성 코드와 결과물 |
+| `tests/` | 누수 방지, 실적 확정 시점, 점검 함수, 수정안 엔진, 보고서 대조 테스트 |
 
-## 다시 실행
+## 5. 주요 코드
+| 파일 | 역할 |
+|---|---|
+| `analysis/m01_build_base.py` · `m02_label_audit.py` | 원천 정리, 부실 정의·확정 시점·변수 가용성·누수 검증 |
+| `analysis/m03_baseline_backtest.py` | 기준모형(로지스틱·LightGBM) 학습, 분기별 백테스트 |
+| `analysis/pipeline.py` | 분기 처리 함수 (점검 → 판정 → 진단 → 수정안 검증 → 근거 기록) |
+| `analysis/rules.py` · `candidates.py` · `monitor.py` | 판정 기준, 수정안 검증, 점검 지표 |
+| `analysis/scheduler.py` · `m05_replay.py` | 정기 실행(APScheduler), 13개 분기 무인 재현 |
+| `analysis/posthoc.py` | 사후 평가 (선택 로직과 분리, 저장된 수정안만 사용) |
+| `analysis/m11_policies.py` | 운영 방식 4종 비교 |
+| `analysis/m07_robustness.py` · `m10_injection.py` · `m12_label_timing.py` | 오류 주입 시험, 감지 성능 모의 검증, 확정 시점 가정 민감도 |
+| `analysis/m13_model_search.py` | 입력 변수·튜닝 탐색 (개선 없음, 기존 모형 유지) |
+| `analysis/llm_report.py` | LLM 보고서 초안 (조회 도구 5종, 수치·판정·표현 자동 검사) |
+| `analysis/m14_build_simple.py` · `m08_build_app.py` | 결과 화면, 상세 화면 생성 |
+
+## 6. 재실행
 ```powershell
-# 원천: data/raw/accepted_2007_to_2018Q4.csv.gz (상위 폴더). Python 3.12
+# 원천 파일: 상위 폴더 data/raw/accepted_2007_to_2018Q4.csv.gz, Python 3.12
 uv pip install -r requirements.txt
 python analysis/m01_build_base.py; python analysis/m02_label_audit.py
 python analysis/m03_baseline_backtest.py; python analysis/m04_monitor_history.py
-python analysis/scheduler.py --mode replay      # 또는 m05_replay.py
+python analysis/m05_replay.py                  # 또는 scheduler.py --mode replay
 python analysis/posthoc.py --rule r4
-python analysis/m07_robustness.py; python analysis/m10_injection.py
-python analysis/m11_policies.py; python analysis/m12_label_timing.py
-python analysis/m08_build_app.py --rule r4
+python analysis/m11_policies.py; python analysis/m07_robustness.py
+python analysis/m10_injection.py; python analysis/m12_label_timing.py
+python analysis/m08_build_app.py --rule r4; python analysis/m14_build_simple.py --rule r4
 python -m pytest tests -q
 ```
-LLM 보고서(선택): 환경변수 `ANTHROPIC_API_KEY` 설정 후 `python analysis/llm_report.py --rule r3 --model claude-haiku-5-5`
+- LLM 보고서(선택): 환경변수 `ANTHROPIC_API_KEY` 설정 후 `python analysis/llm_report.py --rule r4 --model claude-opus-5-5`
+- 난수 SEED 42 고정. 같은 입력·코드·규칙으로 재실행 시 기존 결과 재사용
 
-## 지켜야 할 원칙
-- 분기 T의 선택은 T까지 확정된 결과만 사용. 미래 코호트는 사후 평가 전용 (`candidates.py`·`posthoc.py` 분리, 테스트로 고정)
-- 상각일은 원천에 없음 → 마지막 납부월 기준 근사, 지연 4·5·6개월 민감도 보고
-- 규칙 변경은 버전으로 남김 (r1 → r2 → r2.1 → r3 → r4, `rules.py` 상단에 이유 기록)
-- 실데이터 결과와 주입 시뮬레이션 결과는 파일·표기 분리
+## 7. 규칙 버전
+| 버전 | 변경 | 비고 |
+|---|---|---|
+| r1 | 최초 판정·수정안 기준 | 2017년 이후 전 분기 변경 보류 |
+| r2 | 수정안 검증 방식 변경 (1년 전 자료로 수립, 이후 실적으로 평가) | 사후 평가 전 고정 |
+| r2.1 | 신규 대출 단일 변수 급변 감지, 자료 누락 시 판단 보류 | 오류 주입 시험 반영 |
+| r3 | 원인 유형 진단, 문제 집단 탐색 | |
+| r4 (최종) | 재학습 강화, 추세 반영 보정, 등급별 오차 기준 변경 | r3 사후 평가 확인 후 변경, 이전 결과 보존 |
+
+## 8. 한계
+- 원천에 상각일 부재, 마지막 납부월 기준 근사 (지연 4·5·6개월 가정 시 13개 분기 중 11개 판정 일치)
+- 단일 스냅샷 자료로 과거 시점 재현. 실행 시점 변수는 신청 당시 값으로 가정
+- 판단 이후 신규 대출의 실적은 자료 범위 밖. 사후 평가는 판단 시점 보유 대출 기준
+- 실행 대출 기준 위험. 거절 신청자 포함 전체 신청자로 일반화 불가
