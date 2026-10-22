@@ -1,0 +1,17 @@
+{
+  "quarter": "2016Q3",
+  "input_key": "2016Q3|da52263b44@2019-03-01|champion_v1|r2|79605c82aa36|inject:small_cohort",
+  "rule_version": "r2",
+  "model_id": "champion_v1",
+  "data_id": "da52263b44@2019-03-01",
+  "code_hash": "79605c82aa36",
+  "simulation": "small_cohort",
+  "started": "2026-10-22T11:01:58",
+  "asof": "2016-09-01",
+  "run_status": "실패",
+  "status": "판정 유보",
+  "recommendation": "판정 유보",
+  "error": "KeyError: \"['actual', 'pred', 'o_e_ratio'] not in index\"",
+  "trace": "Traceback (most recent call last):\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\modelops\\analysis\\pipeline.py\", line 228, in run_quarter\n    lag.append(_outcome_summary(lag_check(c, ctx.phi), q))\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\modelops\\analysis\\pipeline.py\", line 117, in _outcome_summary\n    out[\"grade\"] = g[g[\"status\"] == \"ok\"][[\"grade\", \"n\", \"actual\", \"pred\", \"o_e_ratio\"]] \\\n                   ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\.venv\\Lib\\site-packages\\pandas\\core\\frame.py\", line 4384, in __getitem__\n    indexer = self.columns._get_indexer_strict(key, \"columns\")[1]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\.venv\\Lib\\site-packages\\pandas\\core\\indexes\\base.py\", line 6302, in _get_indexer_strict\n    self._raise_if_missing(keyarr, indexer, axis_name)\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\.venv\\Lib\\site-packages\\pandas\\core\\indexes\\base.py\", line 6355, in _raise_if_missing\n    raise KeyError(f\"{not_found} not in index\")\nKeyError: \"['actual', 'pred', 'o_e_ratio'] not in index\"\n",
+  "seconds": 2.9
+}

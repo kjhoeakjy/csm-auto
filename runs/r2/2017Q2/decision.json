@@ -1,0 +1,523 @@
+{
+  "quarter": "2017Q2",
+  "input_key": "2017Q2|da52263b44@2019-03-01|champion_v1|r2|3eadac0649fc",
+  "rule_version": "r2",
+  "model_id": "champion_v1",
+  "data_id": "da52263b44@2019-03-01",
+  "code_hash": "3eadac0649fc",
+  "simulation": null,
+  "started": "2026-10-22T10:42:04",
+  "asof": "2017-06-01",
+  "run_status": "성공",
+  "status": "조치 검토",
+  "reasons": [
+    "lag24_material_persistent",
+    "early12_material_2q"
+  ],
+  "recommendation": "조사 (변경 보류)",
+  "evidence": [
+    {
+      "id": "input",
+      "title": "입력 분포·데이터 품질",
+      "text": "신규 105,451건. 점수 분포 변화 PSI 0.009(학습 대비), 0.003(직전 4분기 대비). 가장 크게 바뀐 변수 int_rate (PSI 0.08)"
+    },
+    {
+      "id": "outcome",
+      "title": "예측과 실제의 차이",
+      "text": "2014Q4 실행분(24개월 확정) 실제 12.6% vs 예측 11.1% (실제/예측 1.13). 조기 점검 2015Q4 실행분(12개월) 실제 6.4% vs 기대 4.9% (실제/기대 1.31)"
+    },
+    {
+      "id": "candidate",
+      "title": "개선 후보 검증",
+      "text": "후보 9개 모두 사전 기준 미달 (1년 전 시점 적합 → 2014Q1~2014Q4 실행분 평가). 변경 보류"
+    }
+  ],
+  "lead": {
+    "schema_ok": true,
+    "schema_notes": [],
+    "n": 105451,
+    "volume_vs_recent": 1.061678987362163,
+    "score_mean": 0.10335995643070349,
+    "score_mean_ref": 0.10790917493304665,
+    "score_psi_ref": 0.00910338020961918,
+    "score_psi_recent": 0.0027042900333501107,
+    "n_feat_psi_recent_ge_0.25": 0,
+    "top_ref": [
+      {
+        "feature": "mths_since_last_record",
+        "psi": 0.421973727748392
+      },
+      {
+        "feature": "dti",
+        "psi": 0.17127885220271893
+      },
+      {
+        "feature": "grade_num",
+        "psi": 0.15140438420982807
+      }
+    ],
+    "top_recent": [
+      {
+        "feature": "int_rate",
+        "psi": 0.08173396749067775
+      },
+      {
+        "feature": "grade_num",
+        "psi": 0.013877119096303077
+      },
+      {
+        "feature": "fico",
+        "psi": 0.006792232963512499
+      }
+    ],
+    "miss_max_delta_recent_pp": 1.520472739391826,
+    "miss_max_feature": "mths_since_last_delinq",
+    "grade_psi_ref": 0.1048616996895273,
+    "joint_share_delta_ref": 0.06450820665522375
+  },
+  "early": [
+    {
+      "n": 130504,
+      "events": 8348,
+      "actual": 0.06396738797278244,
+      "pred": 0.04894930797616518,
+      "gap_pp": 1.5018079996617262,
+      "o_e_ratio": 1.3068088317802162,
+      "calib_z": 25.68090266257905,
+      "z_adj": 18.473825355657553,
+      "rel_err": 0.30680883178021623,
+      "auc": 0.6953461392215721,
+      "auc_lo": 0.6889010336567083,
+      "auc_hi": 0.7017912447864358,
+      "brier": 0.058276508575220716,
+      "logloss": 0.2261679066351652,
+      "calib_a": -0.2718698111666364,
+      "calib_b": 0.791075309799114,
+      "cohort_q": "2015Q4"
+    },
+    {
+      "n": 110489,
+      "events": 6848,
+      "actual": 0.06197902053598096,
+      "pred": 0.05173460507559279,
+      "gap_pp": 1.0244415460388168,
+      "o_e_ratio": 1.1980186269020394,
+      "calib_z": 15.716204562742352,
+      "z_adj": 11.305615778410992,
+      "rel_err": 0.19801862690203942,
+      "auc": 0.7039377881024784,
+      "auc_lo": 0.6968621301522936,
+      "auc_hi": 0.7110134460526633,
+      "brier": 0.05649427828968718,
+      "logloss": 0.21896724118795052,
+      "calib_a": -0.293635028338002,
+      "calib_b": 0.8136772915354866,
+      "cohort_q": "2015Q3"
+    }
+  ],
+  "lag": [
+    {
+      "n": 74144,
+      "events": 9328,
+      "actual": 0.1258092360811394,
+      "pred": 0.11145449166701911,
+      "gap_pp": 1.4354744414120295,
+      "o_e_ratio": 1.1287946694603073,
+      "calib_z": 12.680738033710954,
+      "z_adj": 5.871318719468355,
+      "rel_err": 0.12879466946030727,
+      "auc": 0.6842067780576806,
+      "auc_lo": 0.6779438883820692,
+      "auc_hi": 0.690469667733292,
+      "brier": 0.10514566101228641,
+      "logloss": 0.3558189016492378,
+      "calib_a": 0.23722981392532694,
+      "calib_b": 1.0485299495946778,
+      "cohort_q": "2014Q4",
+      "grade": [
+        {
+          "grade": "A",
+          "n": 13167,
+          "actual": 0.03789777473988,
+          "pred": 0.04389616955498959,
+          "o_e_ratio": 0.8633503816866007
+        },
+        {
+          "grade": "B",
+          "n": 19053,
+          "actual": 0.07494882695638481,
+          "pred": 0.0769872981397899,
+          "o_e_ratio": 0.9735219804739256
+        },
+        {
+          "grade": "C",
+          "n": 21222,
+          "actual": 0.13043068513806427,
+          "pred": 0.1191322535030847,
+          "o_e_ratio": 1.0948394016124863
+        },
+        {
+          "grade": "D",
+          "n": 12519,
+          "actual": 0.1898713954788721,
+          "pred": 0.15558993096377213,
+          "o_e_ratio": 1.2203321532617823
+        },
+        {
+          "grade": "E",
+          "n": 6039,
+          "actual": 0.2586520947176685,
+          "pred": 0.2014010368697546,
+          "o_e_ratio": 1.2842639677418244
+        },
+        {
+          "grade": "F",
+          "n": 1745,
+          "actual": 0.30659025787965616,
+          "pred": 0.2408881060276479,
+          "o_e_ratio": 1.2727496717686315
+        }
+      ]
+    },
+    {
+      "n": 58726,
+      "events": 7205,
+      "actual": 0.12268841739604264,
+      "pred": 0.11581276659705507,
+      "gap_pp": 0.6875650798987576,
+      "o_e_ratio": 1.059368677573431,
+      "calib_z": 5.315252671107581,
+      "z_adj": 2.461019415716562,
+      "rel_err": 0.059368677573431006,
+      "auc": 0.6744706149952451,
+      "auc_lo": 0.6673169350148163,
+      "auc_hi": 0.6816242949756739,
+      "brier": 0.10322591225288869,
+      "logloss": 0.3512799723305779,
+      "calib_a": 0.09339076229474996,
+      "calib_b": 1.0132806446761409,
+      "cohort_q": "2014Q3",
+      "grade": [
+        {
+          "grade": "A",
+          "n": 8754,
+          "actual": 0.03221384509938314,
+          "pred": 0.042343084256289694,
+          "o_e_ratio": 0.7607817348496067
+        },
+        {
+          "grade": "B",
+          "n": 14799,
+          "actual": 0.0795999729711467,
+          "pred": 0.07807633643777419,
+          "o_e_ratio": 1.0195147032108356
+        },
+        {
+          "grade": "C",
+          "n": 15685,
+          "actual": 0.12744660503665922,
+          "pred": 0.11748960158841014,
+          "o_e_ratio": 1.0847479548286365
+        },
+        {
+          "grade": "D",
+          "n": 11260,
+          "actual": 0.16047957371225577,
+          "pred": 0.1521831860901924,
+          "o_e_ratio": 1.0545157966212277
+        },
+        {
+          "grade": "E",
+          "n": 5621,
+          "actual": 0.21330724070450097,
+          "pred": 0.1958896913896116,
+          "o_e_ratio": 1.088915088850934
+        },
+        {
+          "grade": "F",
+          "n": 1955,
+          "actual": 0.26854219948849106,
+          "pred": 0.23041237568263087,
+          "o_e_ratio": 1.1654851380829476
+        }
+      ]
+    }
+  ],
+  "candidates": {
+    "chosen": null,
+    "chosen_label": null,
+    "residual": null,
+    "sel_q": [
+      "2014Q1",
+      "2014Q2",
+      "2014Q3",
+      "2014Q4"
+    ],
+    "pseudo_asof": "2016-06-01",
+    "windows_pseudo": {
+      "recal": [
+        "2013Q3",
+        "2013Q4"
+      ],
+      "early": [
+        "2014Q3",
+        "2014Q4"
+      ],
+      "retrain": [
+        "2012Q1",
+        "2012Q2",
+        "2012Q3",
+        "2012Q4",
+        "2013Q1",
+        "2013Q2",
+        "2013Q3",
+        "2013Q4"
+      ]
+    },
+    "windows_deploy": {
+      "recal": [
+        "2014Q3",
+        "2014Q4"
+      ],
+      "early": [
+        "2015Q3",
+        "2015Q4"
+      ],
+      "retrain": [
+        "2013Q1",
+        "2013Q2",
+        "2013Q3",
+        "2013Q4",
+        "2014Q1",
+        "2014Q2",
+        "2014Q3",
+        "2014Q4"
+      ]
+    },
+    "table": [
+      {
+        "candidate": "maintain",
+        "label": "현행 유지",
+        "kind": "keep",
+        "complexity": 0,
+        "logloss": 0.34597414332218485,
+        "rel_ll_gain": 0.0,
+        "dll_lo": 0.0,
+        "dll_hi": 0.0,
+        "brier": 0.10108021639864119,
+        "auc": 0.6729532453487027,
+        "o_e_ratio": 1.0364659602954005,
+        "gap_pp": 0.420546116322436,
+        "worst_grade_rel": 0.24716468534089797,
+        "group_worsen": 0.0,
+        "ok_gain": false,
+        "ok_gain_ci": false,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": true,
+        "passed": false
+      },
+      {
+        "candidate": "recal_intercept",
+        "label": "전역 재보정(수준)",
+        "kind": "recal",
+        "complexity": 1,
+        "logloss": 0.34720049163352973,
+        "rel_ll_gain": -0.003544624172110048,
+        "dll_lo": 0.0010734999042889648,
+        "dll_hi": 0.0013751041703486564,
+        "brier": 0.10135699946904743,
+        "auc": 0.6729532453487027,
+        "o_e_ratio": 1.150995622065434,
+        "gap_pp": 1.5680925783137833,
+        "worst_grade_rel": 0.3652409263957752,
+        "group_worsen": 0.11807624105487724,
+        "ok_gain": false,
+        "ok_gain_ci": false,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "recal_early",
+        "label": "조기 결과 반영 재보정",
+        "kind": "recal",
+        "complexity": 2,
+        "logloss": 0.34607492145627367,
+        "rel_ll_gain": -0.00029128805153213604,
+        "dll_lo": 7.642716361948102e-05,
+        "dll_hi": 0.0001244412839263922,
+        "brier": 0.10110380229462382,
+        "auc": 0.6729532453487027,
+        "o_e_ratio": 1.05384424787303,
+        "gap_pp": 0.6107224726153059,
+        "worst_grade_rel": 0.26507940397626584,
+        "group_worsen": 0.017914718635367866,
+        "ok_gain": false,
+        "ok_gain_ci": false,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": true,
+        "passed": false
+      },
+      {
+        "candidate": "recal_platt",
+        "label": "전역 재보정(Platt)",
+        "kind": "recal",
+        "complexity": 3,
+        "logloss": 0.34722496484077847,
+        "rel_ll_gain": -0.003615361271171097,
+        "dll_lo": 0.0010932530513913003,
+        "dll_hi": 0.0013979586938287197,
+        "brier": 0.10133823060029927,
+        "auc": 0.6729532453487027,
+        "o_e_ratio": 1.1512728190114463,
+        "gap_pp": 1.5705930246227944,
+        "worst_grade_rel": 0.3275732499653765,
+        "group_worsen": 0.11769027282827182,
+        "ok_gain": false,
+        "ok_gain_ci": false,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "recal_beta",
+        "label": "전역 재보정(beta)",
+        "kind": "recal",
+        "complexity": 4,
+        "logloss": 0.3471735164742551,
+        "rel_ll_gain": -0.0034666554574089804,
+        "dll_lo": 0.0010360211456148735,
+        "dll_hi": 0.0013546618642582531,
+        "brier": 0.10133203942848265,
+        "auc": 0.6729532453487027,
+        "o_e_ratio": 1.152045988795728,
+        "gap_pp": 1.5775610194778258,
+        "worst_grade_rel": 0.3628409223329341,
+        "group_worsen": 0.11567623699203611,
+        "ok_gain": false,
+        "ok_gain_ci": false,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "recal_grade",
+        "label": "등급별 재보정",
+        "kind": "recal",
+        "complexity": 5,
+        "logloss": 0.34680836107879903,
+        "rel_ll_gain": -0.0024112141693702514,
+        "dll_lo": 0.0006789505366041287,
+        "dll_hi": 0.0009979391803522078,
+        "brier": 0.10123987964892317,
+        "auc": 0.6745283231983683,
+        "o_e_ratio": 1.1471984155860604,
+        "gap_pp": 1.533718345154639,
+        "worst_grade_rel": 0.37215301892684405,
+        "group_worsen": 0.12498833358594608,
+        "ok_gain": false,
+        "ok_gain_ci": false,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "recal_isotonic",
+        "label": "전역 재보정(isotonic)",
+        "kind": "recal",
+        "complexity": 6,
+        "logloss": 0.34745381632271277,
+        "rel_ll_gain": -0.004276831171021921,
+        "dll_lo": 0.0012455901599227636,
+        "dll_hi": 0.001668340003282228,
+        "brier": 0.10138792305907862,
+        "auc": 0.6726121026593067,
+        "o_e_ratio": 1.1544290780073239,
+        "gap_pp": 1.5989792822557098,
+        "worst_grade_rel": 0.3769329599613358,
+        "group_worsen": 0.12976827462043783,
+        "ok_gain": false,
+        "ok_gain_ci": false,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "retrain_logit",
+        "label": "재학습(로지스틱)",
+        "kind": "retrain",
+        "complexity": 7,
+        "logloss": 0.3452341827349533,
+        "rel_ll_gain": 0.002138774245167924,
+        "dll_lo": -0.0010662639216713157,
+        "dll_hi": -0.0004942143315043078,
+        "brier": 0.1008441084499629,
+        "auc": 0.6797892672105805,
+        "o_e_ratio": 1.1142862839178578,
+        "gap_pp": 1.2259657640432113,
+        "worst_grade_rel": 0.22367796759860337,
+        "group_worsen": 0.14319415395949053,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "retrain_lgbm",
+        "label": "재학습(LightGBM)",
+        "kind": "retrain",
+        "complexity": 8,
+        "logloss": 0.34419160338744076,
+        "rel_ll_gain": 0.005152234550326252,
+        "dll_lo": -0.002034280983466834,
+        "dll_hi": -0.0015010186817147378,
+        "brier": 0.10066528331739484,
+        "auc": 0.6836330996036716,
+        "o_e_ratio": 1.1145786757175131,
+        "gap_pp": 1.2287798586204277,
+        "worst_grade_rel": 0.3318381259623646,
+        "group_worsen": 0.10874134992016571,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "retrain_lgbm_ext",
+        "label": "재학습(LightGBM+확장 변수)",
+        "kind": "retrain",
+        "complexity": 9,
+        "logloss": 0.341727480137496,
+        "rel_ll_gain": 0.012274510296956493,
+        "dll_lo": -0.004619952264976879,
+        "dll_hi": -0.0038174032573494586,
+        "brier": 0.10009880057245868,
+        "auc": 0.6937313694018581,
+        "o_e_ratio": 1.1260787508683692,
+        "gap_pp": 1.3383020691186258,
+        "worst_grade_rel": 0.3369951451934796,
+        "group_worsen": 0.11163179479499141,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      }
+    ]
+  },
+  "candidate_experiment": "실행",
+  "approval": null,
+  "seconds": 43.4
+}

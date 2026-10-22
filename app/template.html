@@ -1,0 +1,312 @@
+﻿<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSM Auto</title>
+<style>
+/*__FONTS__*/
+:root {
+  --bg: #ffffff; --ink: #000000; --sub: #767676; --line: #e5e5e5; --soft: #f4f4f4; --mid: #bdbdbd;
+  --font: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #000000; --ink: #ffffff; --sub: #9a9a9a; --line: #262626; --soft: #111111; --mid: #555555; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #000000; --ink: #ffffff; --sub: #9a9a9a; --line: #262626; --soft: #111111; --mid: #555555; color-scheme: dark; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.6 var(--font);
+  letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
+.num { font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sub); }
+.cap { font-size: 12px; color: var(--sub); letter-spacing: 0; }
+.bar { border-bottom: 1px solid var(--ink); }
+.bar .wrap { display: flex; justify-content: space-between; align-items: center; height: 56px; gap: 12px; }
+.logo { font-weight: 800; letter-spacing: 0.24em; font-size: 14px; white-space: nowrap; }
+.hero { padding: 72px 0 40px; }
+.hero h1 { margin: 12px 0 0; font-size: clamp(34px, 6vw, 64px); line-height: 1.05; font-weight: 800; letter-spacing: -0.045em; }
+.hero p { margin: 20px 0 0; max-width: 700px; font-size: 17px; color: var(--sub); }
+.tl { margin-top: 32px; border-top: 1px solid var(--line); padding-top: 22px; overflow-x: auto; }
+.tl-row { display: grid; grid-template-columns: repeat(13, minmax(44px, 1fr)); position: relative; min-width: 572px; }
+.tl-row::before { content: ""; position: absolute; left: 0; right: 0; top: 9px; height: 1px; background: var(--mid); }
+.tl button { all: unset; cursor: pointer; display: grid; justify-items: center; gap: 8px; position: relative; padding-bottom: 4px; }
+.mk { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--bg); display: inline-grid; place-items: center; flex: none; }
+.mk.s-act { background: var(--ink); }
+.mk.s-warn::after { content: ""; width: 44%; height: 44%; border-radius: 50%; background: var(--ink); }
+.mk.s-hold { border-style: dashed; }
+.tl .ql { font-size: 11px; color: var(--sub); font-weight: 500; white-space: nowrap; }
+.tl button[aria-pressed="true"] .ql { color: var(--ink); font-weight: 800; }
+.tl button[aria-pressed="true"] .mk { outline: 2px solid var(--ink); outline-offset: 3px; }
+.tl button:focus-visible .mk { outline: 2px dashed var(--ink); outline-offset: 3px; }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 14px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--sub); }
+.legend .mk { width: 12px; height: 12px; }
+.run { margin-top: 40px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.btn { font: 700 15px var(--font); background: var(--ink); color: var(--bg); border: 0; padding: 14px 26px; cursor: pointer; }
+.btn:disabled { opacity: .4; cursor: default; }
+.steps { list-style: none; margin: 24px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+.steps li { padding: 16px 16px 18px 0; color: var(--mid); transition: color .2s; }
+.steps li + li { padding-left: 16px; border-left: 1px solid var(--line); }
+.steps li b { display: block; font-size: 14px; }
+.steps li span { font-size: 12px; display: block; margin-top: 4px; }
+.steps li.on { color: var(--ink); }
+.steps li.on span { color: var(--sub); }
+.card { margin-top: 28px; border-top: 3px solid var(--ink); display: grid; grid-template-columns: 200px minmax(0, 1fr); }
+.card > div { padding: 22px 0; border-bottom: 1px solid var(--line); }
+.card .k { padding-right: 16px; }
+.status { font-size: 40px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.status .mk { width: 22px; height: 22px; border-width: 2px; }
+.status small { font-size: 14px; font-weight: 500; color: var(--sub); letter-spacing: 0; }
+.reco { font-size: 26px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.3; }
+.ev { list-style: none; margin: 0; padding: 0; counter-reset: ev; display: grid; gap: 18px; }
+.ev li { counter-increment: ev; display: grid; grid-template-columns: 34px minmax(0, 1fr); }
+.ev li::before { content: counter(ev, decimal-leading-zero); font-weight: 800; font-size: 13px; padding-top: 2px; }
+.ev b { display: block; font-size: 15px; }
+.ev span { opacity: .82; }
+.seg { margin-top: 12px; font-size: 13px; color: var(--sub); }
+.hidden { display: none !important; }
+.kpis { margin-top: 72px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--ink); }
+.kpi { padding: 24px 24px 28px 0; }
+.kpi + .kpi { padding-left: 24px; border-left: 1px solid var(--line); }
+.kpi b { display: block; font-size: 40px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; margin-top: 10px; }
+.kpi p { margin: 10px 0 0; font-size: 13px; color: var(--sub); }
+.more { margin-top: 56px; }
+details { border-top: 1px solid var(--line); }
+details:last-child { border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; padding: 20px 0; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; list-style: none;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+summary::-webkit-details-marker { display: none; }
+summary .cap { flex: 1; font-weight: 400; }
+summary::after { content: "+"; font-weight: 300; font-size: 24px; line-height: 1; }
+details[open] summary::after { content: "−"; }
+.inner { padding: 0 0 32px; display: grid; gap: 28px; }
+h3 { margin: 0 0 10px; font-size: 14px; font-weight: 800; }
+.tbl { width: 100%; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--sub); font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--ink); }
+tr.hl td { font-weight: 800; background: var(--soft); }
+.chart svg { width: 100%; height: auto; display: block; }
+.lg { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--sub); margin-bottom: 8px; }
+.lg i { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--ink); vertical-align: middle; margin-right: 6px; }
+.lg i.d { border-top-style: dashed; } .lg i.g { border-color: var(--mid); }
+.lg i.b { width: 10px; height: 10px; border: 0; background: var(--ink); } .lg i.bg { width: 10px; height: 10px; border: 0; background: var(--mid); }
+.pbar { display: grid; grid-template-columns: 150px minmax(0, 1fr) 64px; gap: 12px; align-items: center; margin: 8px 0; }
+.pbar i { height: 14px; display: block; background: var(--mid); }
+.pbar.me i { background: var(--ink); } .pbar.me span { font-weight: 800; }
+pre.report { white-space: pre-wrap; font: 400 13px/1.75 var(--font); background: var(--soft); padding: 18px 20px; margin: 0; }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; border: 1px solid var(--ink); padding: 1px 8px; }
+.tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 9px; opacity: 0; z-index: 9; max-width: 260px; }
+footer { margin: 72px 0 48px; padding-top: 18px; border-top: 1px solid var(--ink); }
+@media (max-width: 760px) {
+  .bar .cap { display: none; }
+  .hero { padding-top: 48px; }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .steps li:nth-child(3) { padding-left: 0; border-left: 0; }
+  .card { grid-template-columns: minmax(0, 1fr); }
+  .card .k { border-bottom: 0; padding-bottom: 0; }
+  .status { font-size: 32px; } .reco { font-size: 21px; }
+  .kpis { grid-template-columns: minmax(0, 1fr); }
+  .kpi + .kpi { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+  .pbar { grid-template-columns: 110px minmax(0, 1fr) 52px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) { .steps li { transition: none; } }
+</style>
+
+<div class="bar"><div class="wrap"><span class="logo">CSM AUTO</span><span class="cap">공개 대출 데이터 기반 과거 분기 재현 · 프로토타입</span></div></div>
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Credit Scoring Model Operations</div>
+    <h1>신용평가모형<br>운영 자동화</h1>
+    <p id="lede"></p>
+    <div class="tl" aria-label="판단 분기 선택">
+      <div class="tl-row" id="tl"></div>
+      <div class="legend"><span><i class="mk"></i>정상</span><span><i class="mk s-warn"></i>주의</span><span><i class="mk s-act"></i>조치 검토</span><span><i class="mk s-hold"></i>판정 유보</span></div>
+    </div>
+    <div class="run">
+      <button class="btn" id="runBtn">자동 점검 실행</button>
+      <span class="cap">선택한 분기 시점에 알 수 있던 데이터로 기록된 무인 실행 결과를 단계별로 재생</span>
+    </div>
+    <ol class="steps" id="steps"></ol>
+    <section class="card hidden" id="card" aria-live="polite"></section>
+  </section>
+  <section class="kpis" id="kpis"></section>
+  <section class="more">
+    <details><summary>운영 정책 비교 <span class="cap">고정 · 정기 재학습 · 단순 임계값 · 제안 시스템</span></summary><div class="inner" id="pol"></div></details>
+    <details><summary>분기별 추세</summary><div class="inner" id="trend"></div></details>
+    <details><summary>분석 상세</summary><div class="inner" id="detail"></div></details>
+    <details><summary>사후 확인 <span class="cap">판단 당시에는 알 수 없던 결과</span></summary><div class="inner" id="post"></div></details>
+    <details><summary>검증된 보고서</summary><div class="inner" id="report"></div></details>
+    <details><summary>실행 기록</summary><div class="inner" id="log"></div></details>
+  </section>
+  <footer><p class="cap">Lending Club 실행 대출 226만 건(2007~2018) · 정답 = 실행 후 24개월 내 상환 중단 후 상각 (상각 시점은 마지막 납부월 기준 근사) · 실제 금융회사 운영 아님 · 모형 변경은 담당자 승인 후 적용 · 판정 규칙 <span id="rv"></span></p></footer>
+</main>
+<div class="tip" id="tip"></div>
+
+<script>
+const D = /*__DATA__*/null;
+const $ = (s) => document.querySelector(s);
+const pct = (x, d = 1) => x == null ? "–" : (x * 100).toFixed(d) + "%";
+const f2 = (x) => x == null ? "–" : Number(x).toFixed(2);
+const f3 = (x) => x == null ? "–" : Number(x).toFixed(3);
+const int = (x) => x == null ? "–" : Number(x).toLocaleString("ko-KR");
+const cls = (s) => ({ "조치 검토": "s-act", "주의": "s-warn", "판정 유보": "s-hold" }[s] || "");
+let cur = D.default_q, timer = null;
+const Q = () => D.quarters.find(x => x.q === cur);
+
+function tip(el, html) {
+  const t = $("#tip");
+  el.addEventListener("mousemove", (e) => { t.innerHTML = html; t.style.opacity = 1;
+    t.style.left = Math.min(e.clientX + 12, innerWidth - 270) + "px"; t.style.top = (e.clientY + 14) + "px"; });
+  el.addEventListener("mouseleave", () => { t.style.opacity = 0; });
+}
+function table(cols, rows, hl) {
+  return `<div class="tbl"><table><thead><tr>${cols.map(c => `<th>${c[0]}</th>`).join("")}</tr></thead><tbody>${
+    rows.map(r => `<tr class="${hl && hl(r) ? "hl" : ""}">${cols.map(c => `<td class="num">${c[1](r)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+function renderTl() {
+  $("#tl").innerHTML = D.quarters.map(q =>
+    `<button aria-pressed="${q.q === cur}" data-q="${q.q}" aria-label="${q.q} ${q.status}"><span class="mk ${cls(q.status)}"></span><span class="ql">${q.q.replace("Q", " Q")}</span></button>`).join("");
+  document.querySelectorAll("#tl button").forEach(b => b.onclick = () => { cur = b.dataset.q; select(true); });
+}
+function stepsFor(q) {
+  const l = (q.lag || [])[0] || {}, ld = q.lead || {}, c = q.candidates;
+  return [
+    ["데이터 수집·검사", ld.skipped ? ld.skipped : (ld.schema_ok === false ? "형식 오류 발견" : `신규 대출 ${int(ld.n)}건 · 형식 정상`)],
+    ["예측 vs 실제 점검", l.cohort_q ? `${l.cohort_q} 실행분 실제/예측 ${f2(l.o_e_ratio)}` : "확정 결과 없음"],
+    ["문제 진단", `${q.status} · ${q.problem_label || "–"}`],
+    ["개선안 검증·보고", c ? (c.chosen ? `후보 ${c.table.length - 1}개 중 ${c.chosen_label} 선택` : `후보 ${c.table.length - 1}개 모두 기준 미달`) : "실험 생략 (조치 기준 미달)"],
+  ];
+}
+function renderSteps(n) {
+  $("#steps").innerHTML = stepsFor(Q()).map((x, i) => `<li class="${i < n ? "on" : ""}"><b>${String(i + 1).padStart(2, "0")} ${x[0]}</b><span>${i < n ? x[1] : "대기"}</span></li>`).join("");
+}
+function renderCard() {
+  const q = Q();
+  const segs = (q.segments || []).slice(0, 2).map(s => `${s.group} ${s.level} (전체 대비 ${s.rel_to_all > 0 ? "+" : ""}${(s.rel_to_all * 100).toFixed(0)}%${s.repeated ? ", 직전 코호트에서도 확인" : ""})`);
+  const ev = (q.card || []).map(e => `<li><div><b>${e.title}</b><span>${e.text}</span></div></li>`).join("");
+  $("#card").innerHTML = `
+    <div class="k eyebrow">상태 · ${q.q}</div>
+    <div><div class="status"><span class="mk ${cls(q.status)}"></span>${q.status}<small>${q.problem_label || ""}</small></div></div>
+    <div class="k eyebrow">권고</div><div class="reco">${q.recommendation}</div>
+    <div class="k eyebrow">판단 근거</div>
+    <div>${ev ? `<ol class="ev">${ev}</ol>` : '<span class="cap">근거 부족: 판정 유보</span>'}
+      ${segs.length ? `<div class="seg">오차가 특히 큰 집단: ${segs.join(" · ")}</div>` : ""}</div>
+    <div class="k eyebrow">승인</div><div class="cap">${q.candidates && q.candidates.chosen ? "담당자 검토·승인 후 적용 (시스템은 제안·검증·보고까지)" : "모형 변경 없음"} · 판단 기준월 ${(q.asof || "").slice(0, 7)}</div>`;
+}
+function play() {
+  clearInterval(timer);
+  $("#card").classList.add("hidden"); $("#runBtn").disabled = true;
+  let n = 0; renderSteps(0);
+  const step = () => { n += 1; renderSteps(n);
+    if (n >= 4) { clearInterval(timer); renderCard(); $("#card").classList.remove("hidden"); $("#runBtn").disabled = false; } };
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { while (n < 4) step(); } else timer = setInterval(step, 420);
+}
+function select(animate) {
+  renderTl();
+  if (animate) play(); else { renderSteps(4); renderCard(); $("#card").classList.remove("hidden"); }
+  renderTrend(); renderDetail(); renderPost(); renderReport(); renderLog();
+}
+function renderPol() {
+  const P = D.policy;
+  if (!P) { $("#pol").innerHTML = `<p class="cap">정책 비교 결과 없음</p>`; return; }
+  const s = P.summary, maxE = Math.max(...s.map(r => r.book_mean_abs_oe_err));
+  $("#pol").innerHTML = `
+    <div><h3>보유 대출 예상 상각률의 평균 오차 |실제/예측 − 1| · 13개 판단 분기 평균, 낮을수록 좋음</h3>
+    ${s.map(r => `<div class="pbar ${r.policy.startsWith("D") ? "me" : ""}"><span>${r.policy}</span><i style="width:${(r.book_mean_abs_oe_err / maxE * 100).toFixed(1)}%"></i><span class="num" style="text-align:right">${(r.book_mean_abs_oe_err * 100).toFixed(1)}%</span></div>`).join("")}</div>
+    ${table([["정책", r => r.policy], ["모형 변경", r => r.changes + "회"], ["재학습", r => r.retrains + "회"], ["평균 오차", r => (r.book_mean_abs_oe_err * 100).toFixed(1) + "%"],
+      ["평균 log loss", r => f3(r.book_mean_ll)], ["평균 AUC", r => f3(r.book_mean_auc)], ["신규 대출 오차", r => r.new_mean_abs_oe_err == null ? "–" : (r.new_mean_abs_oe_err * 100).toFixed(1) + "%"]], s, r => r.policy.startsWith("D"))}
+    <p class="cap">모든 정책은 각 분기 시점에 확정된 결과만으로 결정하고, 평가는 그 뒤 확정된 실제 결과로 함. 보유 대출 = 판단 시점에 결과가 미확정이던 대출, 신규 대출 = 그 분기에 실행된 대출(정답이 있는 2016Q3까지). D는 권고 시 승인을 가정</p>
+    ${P.d_log ? `<div><h3>D 제안 시스템의 분기별 판단</h3>${table([["분기", r => r.quarter], ["상태", r => r.status], ["문제 유형", r => r.problem], ["적용한 조치", r => r.chosen || "–"]], P.d_log)}</div>` : ""}`;
+}
+function lineChart(rows, keys, opt) {
+  const W = 960, H = 260, m = { l: 44, r: 12, t: 14, b: 28 }, n = rows.length;
+  const vals = rows.flatMap(r => keys.map(k => r[k.k])).concat(rows.map(r => r.lo), rows.map(r => r.hi)).filter(v => v != null);
+  const lo = Math.floor(Math.min(...vals) * 100) / 100, hi = Math.ceil(Math.max(...vals) * 100) / 100;
+  const X = i => m.l + i * (W - m.l - m.r) / (n - 1), Y = v => m.t + (hi - v) / (hi - lo) * (H - m.t - m.b);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${opt.label}">`;
+  for (let v = lo; v <= hi + 1e-9; v += 0.01) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${m.l - 6}" y="${Y(v) + 4}" font-size="11" text-anchor="end" fill="var(--sub)">${Math.round(v * 100)}%</text>`;
+  const a = rows.findIndex(r => r.q === "2010Q1"), b = rows.findIndex(r => r.q === "2012Q4");
+  s += `<rect x="${X(a)}" y="${m.t}" width="${X(b) - X(a)}" height="${H - m.t - m.b}" fill="var(--soft)"/><text x="${(X(a) + X(b)) / 2}" y="${m.t + 14}" font-size="11" text-anchor="middle" fill="var(--sub)">학습 코호트</text>`;
+  const i0 = rows.findIndex(r => r.q === opt.mark);
+  if (i0 >= 0) s += `<line x1="${X(i0)}" x2="${X(i0)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--ink)" stroke-dasharray="2 3"/><text x="${X(i0) + 5}" y="${H - m.b - 6}" font-size="11" fill="var(--ink)">이번 판단의 확정 코호트</text>`;
+  s += `<path d="${rows.map((r, i) => (i ? "L" : "M") + X(i) + " " + Y(r.hi)).join("")}${rows.slice().reverse().map((r, j) => "L" + X(n - 1 - j) + " " + Y(r.lo)).join("")}Z" fill="var(--ink)" opacity=".07"/>`;
+  keys.forEach(k => { s += `<path d="${rows.map((r, i) => (i ? "L" : "M") + X(i) + " " + Y(r[k.k])).join("")}" fill="none" stroke="${k.c}" stroke-width="2" ${k.dash ? 'stroke-dasharray="5 4"' : ""}/>`; });
+  rows.forEach((r, i) => { if (i % 4 === 0) s += `<text x="${X(i)}" y="${H - 8}" font-size="11" text-anchor="middle" fill="var(--sub)">${r.q}</text>`;
+    s += `<rect class="hit" data-i="${i}" x="${X(i) - (W / n) / 2}" y="${m.t}" width="${W / n}" height="${H - m.t - m.b}" fill="transparent"/>`; });
+  return s + "</svg>";
+}
+function barChart(rows) {
+  const W = 960, H = 220, m = { l: 44, r: 12, t: 12, b: 30 }, n = rows.length, bw = (W - m.l - m.r) / n;
+  const vals = rows.flatMap(r => [r.lag_oe, r.early_oe]).filter(v => v != null);
+  const lo = Math.min(0.75, ...vals), hi = Math.max(1.45, ...vals), Y = v => m.t + (hi - v) / (hi - lo) * (H - m.t - m.b);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="판단 시점별 실제/예측">`;
+  [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4].forEach(v => { if (v >= lo && v <= hi) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${v === 1 ? "var(--ink)" : "var(--line)"}"/><text x="${m.l - 6}" y="${Y(v) + 4}" font-size="11" text-anchor="end" fill="var(--sub)">${v.toFixed(1)}</text>`; });
+  rows.forEach((r, i) => {
+    const x = m.l + i * bw;
+    if (r.q === cur) s += `<rect x="${x + 1}" y="${m.t}" width="${bw - 2}" height="${H - m.t - m.b}" fill="var(--soft)"/>`;
+    [["early_oe", "var(--mid)", 0], ["lag_oe", "var(--ink)", 1]].forEach(([k, c, j]) => { if (r[k] == null) return;
+      const w = (bw - 16) / 2, xx = x + 8 + j * (w + 2), y0 = Y(1), y1 = Y(r[k]);
+      s += `<rect x="${xx}" y="${Math.min(y0, y1)}" width="${w}" height="${Math.max(Math.abs(y1 - y0), 1)}" fill="${c}"/>`; });
+    s += `<text x="${x + bw / 2}" y="${H - 8}" font-size="10.5" text-anchor="middle" fill="${r.q === cur ? "var(--ink)" : "var(--sub)"}" font-weight="${r.q === cur ? 800 : 400}">${r.q}</text>`;
+    s += `<rect class="hit" data-i="${i}" x="${x}" y="${m.t}" width="${bw}" height="${H - m.t}" fill="transparent" style="cursor:pointer"/>`;
+  });
+  return s + "</svg>";
+}
+function renderTrend() {
+  const c = D.trend.cohort, a = D.trend.asof, q = Q();
+  $("#trend").innerHTML = `
+    <div class="chart"><h3>판단 시점별 실제/예측 (1.0 = 예측과 일치)</h3>
+      <div class="lg"><span><i class="bg"></i>중간 위험 신호: 12개월 상각 (실행 후 18개월에 확인)</span><span><i class="b"></i>목표: 24개월 상각 (실행 후 30개월에 확정)</span></div>
+      <div id="c2">${barChart(a)}</div></div>
+    <div class="chart"><h3>실행 분기별 24개월 상각률: 실제 vs 운영 모형 예측</h3>
+      <div class="lg"><span><i></i>실제 (음영 95% 구간)</span><span><i class="g"></i>예측: LightGBM (운영 모형)</span><span><i class="d"></i>예측: 로지스틱 (기준모형)</span></div>
+      <div id="c1">${lineChart(c, [{ k: "actual", c: "var(--ink)" }, { k: "pred", c: "var(--mid)" }, { k: "pred_logit", c: "var(--ink)", dash: 1 }], { label: "실제 대 예측", mark: q.lag_cohort })}</div></div>`;
+  document.querySelectorAll("#c1 .hit").forEach(el => { const r = c[+el.dataset.i]; tip(el, `<b>${r.q} 실행</b><br>실제 ${pct(r.actual)} · 예측 ${pct(r.pred)}<br>로지스틱 ${pct(r.pred_logit)} · ${int(r.n)}건`); });
+  document.querySelectorAll("#c2 .hit").forEach(el => { const r = a[+el.dataset.i]; tip(el, `<b>${r.q} 판단</b> · ${r.status}<br>12개월 ${r.early_q}: ${f2(r.early_oe)}<br>24개월 ${r.lag_q}: ${f2(r.lag_oe)}`);
+    el.onclick = () => { cur = r.q; select(true); }; });
+}
+function renderDetail() {
+  const q = Q(); let h = "";
+  if (q.lag && q.lag.length) h += `<div><h3>결과 확정 코호트 (24개월)</h3>${table([["실행 분기", r => r.cohort_q], ["건수", r => int(r.n)], ["실제", r => pct(r.actual)], ["예측", r => pct(r.pred)],
+    ["실제/예측", r => f2(r.o_e_ratio)], ["보정 z", r => Number(r.z_adj).toFixed(1)], ["AUC (95%)", r => `${f3(r.auc)} (${f3(r.auc_lo)}~${f3(r.auc_hi)})`], ["Brier", r => f3(r.brier)]], q.lag)}
+    <p class="cap">문제 유형: ${q.problem_label} · 기준 AUC ${f3(q.ref_auc)} (운영 모형의 첫 시간외 코호트). 기준보다 0.02 이상 낮은 코호트가 연속이면 순위 악화로 진단</p></div>`;
+  if (q.segments_tested) h += `<div><h3>문제 집단 탐색 · ${q.segments_tested}개 집단 검정, Benjamini-Hochberg 5%, 전체 대비 10% 이상</h3>${(q.segments || []).length ? table([["집단", r => `${r.group} ${r.level}`], ["건수", r => int(r.n)], ["실제/예측", r => f2(r.o_e_ratio)], ["전체 대비", r => (r.rel_to_all > 0 ? "+" : "") + (r.rel_to_all * 100).toFixed(1) + "%"], ["z", r => Number(r.z).toFixed(1)], ["반복 확인", r => r.repeated ? "예" : "–"]], q.segments) : '<p class="cap">전체 수준과 다르게 움직인 집단 없음 (차이는 전반적 수준 이동)</p>'}</div>`;
+  if (q.early && q.early.length) h += `<div><h3>중간 위험 신호 (12개월 상각)</h3>${table([["실행 분기", r => r.cohort_q], ["건수", r => int(r.n)], ["실제", r => pct(r.actual)], ["기대", r => pct(r.pred)], ["실제/기대", r => f2(r.o_e_ratio)], ["보정 z", r => Number(r.z_adj).toFixed(1)]], q.early)}
+    <p class="cap">24개월 상각의 정답이 아닌 조기 경고용 중간 신호. 유용성은 24개월 결과가 확정된 코호트로 별도 검증</p></div>`;
+  if (q.lead && q.lead.top_recent) h += `<div><h3>신규 실행 대출 (${int(q.lead.n)}건)</h3><p class="cap">점수 분포 PSI 학습 대비 ${f3(q.lead.score_psi_ref)} · 직전 4분기 대비 ${f3(q.lead.score_psi_recent)} · 평균 예측 ${pct(q.lead.score_mean)} (학습 ${pct(q.lead.score_mean_ref)})</p>${table([["변수 (직전 4분기 대비)", r => (D.feat_ko[r.feature] || r.feature)], ["PSI", r => f3(r.psi)]], q.lead.top_recent)}</div>`;
+  if (q.candidates) { const c = q.candidates, ok = v => v ? "통과" : "–", mt = r => r.candidate === "maintain";
+    h += `<div><h3>개선 후보 ${c.table.length - 1}종 · 1년 전(${c.pseudo_asof.slice(0, 7)}) 데이터로 적합 → ${c.sel_q[0]}~${c.sel_q.at(-1)} 실행분으로 평가</h3>${table([
+      ["후보", r => r.label + (r.candidate === c.chosen ? " ◀" : "")], ["실제/예측", r => f2(r.o_e_ratio)], ["log loss 개선", r => (r.rel_ll_gain * 100).toFixed(1) + "%"], ["AUC", r => f3(r.auc)],
+      ["개선 유의", r => mt(r) ? "" : ok(r.ok_gain && r.ok_gain_ci)], ["오차 감소", r => mt(r) ? "" : ok(r.ok_calibrated)], ["순위 유지", r => mt(r) ? "" : ok(r.ok_auc)], ["집단 악화 없음", r => mt(r) ? "" : ok(r.ok_groups)]],
+      c.table, r => r.candidate === c.chosen)}<p class="cap">선택 규칙: ${c.selection_note}</p></div>`; }
+  else h += `<p class="cap">조치 검토 기준 미달로 개선 후보 실험을 생략한 분기</p>`;
+  $("#detail").innerHTML = h;
+}
+function renderPost() {
+  const rows = D.posthoc.filter(r => r.asof_q === cur && r.part === "전체");
+  if (!rows.length) { $("#post").innerHTML = `<p class="cap">개선 후보 실험을 하지 않은 분기</p>`; return; }
+  $("#post").innerHTML = `<p class="cap">판단 시점에 24개월 결과가 미확정이던 보유 대출(${rows[0].cohorts} 실행, ${int(rows[0].n)}건)에 각 후보를 적용한 뒤 이후 확정된 실제 결과와 비교. 선택 로직과 분리된 사후 평가</p>${table([
+    ["후보", r => r.label + (r.is_chosen ? " ◀ 당시 선택" : "")], ["실제", r => pct(r.actual)], ["예측", r => pct(r.pred)], ["실제/예측", r => f2(r.o_e_ratio)], ["log loss 개선", r => (r.rel_ll_gain * 100).toFixed(1) + "%"], ["AUC", r => f3(r.auc)]], rows, r => r.is_chosen)}`;
+}
+function renderReport() {
+  const q = Q(), v = q.report_check;
+  $("#report").innerHTML = q.report ? `<p><span class="tag">수치 대조 일치 · ${v.n_numbers}개</span> <span class="cap">보고서의 모든 숫자·분기를 정량 근거 JSON과 자동 대조. 불일치하면 발행 보류</span></p><pre class="report">${q.report}</pre>`
+    : `<p class="cap">${v && v.n_numbers ? "수치 대조 불일치로 발행 보류: " + v.unmatched.join(", ") : "판정 유보·실행 실패 분기는 보고서를 만들지 않음"}</p>`;
+}
+function renderLog() {
+  $("#log").innerHTML = `<div><h3>무인 배치 재현 실행 이력</h3>${table([["분기", r => r.quarter], ["실행", r => r.run_status], ["상태", r => r.status], ["권고", r => r.recommendation], ["후보 실험", r => r.candidate_experiment], ["초", r => r.seconds]], D.runlog, r => r.quarter === cur)}
+    <p class="cap">데이터 ${D.meta.data_id} · 모형 ${D.meta.model_id} · 코드 ${D.meta.code_hash} · 같은 입력으로 다시 실행하면 결과를 다시 만들지 않음</p></div>
+    <div><h3>오류·변화 주입 시험 (시뮬레이션)</h3>${table([["시험", r => r.test], ["기대", r => r.expected], ["판정", r => r.pass ? "통과" : "실패"]], D.robustness)}</div>
+    ${D.injection ? `<div><h3>판정 규칙 탐지 성능 (시뮬레이션, 각 300회)</h3>${table([["주입한 예측 오차", r => r.test === "고정 차이" ? ((r.k - 1) * 100).toFixed(0) + "%" : "분기마다 +3%p"], ["조치 검토 판정 비율", r => (r.act_rate * 100).toFixed(0) + "%"], ["탐지까지 분기 (중앙값)", r => r.delay_median_q == null ? "–" : r.delay_median_q]], D.injection)}</div>` : ""}
+    ${D.timing ? `<div><h3>결과 확정 시점 가정 민감도 (상각 기록 지연 4·5·6개월)</h3><p class="cap">${D.timing}</p></div>` : ""}`;
+}
+function renderKpis() {
+  $("#kpis").innerHTML = (D.kpis || []).map(k => `<div class="kpi"><div class="eyebrow">${k.label}</div><b class="num">${k.value}</b><p>${k.note}</p></div>`).join("");
+}
+$("#lede").textContent = D.lede;
+$("#rv").textContent = D.meta.rule_version;
+$("#runBtn").onclick = play;
+renderKpis(); renderPol(); select(false);
+</script>

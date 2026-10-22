@@ -1,0 +1,107 @@
+{
+  "rows_total": 2260668,
+  "rows_policy_ok": 2257919,
+  "rows_policy_excluded": 2749,
+  "final36": {
+    "last_issue_month": "2015-09-01",
+    "n": 523392,
+    "final_co_rate": 0.13743236426999267,
+    "stop24_rate": 0.10588621912448032,
+    "capture_pct": 77.04605802783223,
+    "quarter_rate_corr": 0.9955942599452441,
+    "auc_subgrade_final": 0.6610278920397886,
+    "auc_subgrade_stop24": 0.6692963466935841
+  },
+  "lag": {
+    "late31_120_n": 21467,
+    "late31_120_months_since_last_pay": {
+      "0.0": 3137,
+      "1.0": 2038,
+      "2.0": 7109,
+      "3.0": 5125,
+      "4.0": 3938,
+      "5.0": 17,
+      "8.0": 1
+    },
+    "co_no_settle_n": 236039,
+    "co_no_settle_le4m_pct": 1.804786497146658,
+    "co_settle_n": 33281,
+    "co_settle_le4m_pct": 7.9745199963943385,
+    "note": "스냅샷 시점 31~120일 연체는 마지막 납부 후 0~4개월에 몰려 있고, 채무조정 없는 상각은 마지막 납부 후 4개월 이하가 드묾 -> 상환 중단 후 약 5개월째 상각 기록으로 근사"
+  },
+  "windows": {
+    "label": "실행 후 24개월 안 상환 중단 후 상각 (STOP 방식)",
+    "label_known_after_months": 30,
+    "train_cohort": "2010Q1~2012Q4 (적합 2010Q1~2012Q2, 선택용 2012Q3~Q4)",
+    "model_available_from": "2015Q3 (2012Q4 코호트 정답 확정 2015-06)",
+    "replay_asof": "2015Q4~2018Q4 (13분기)",
+    "last_label_complete_issue_q": "2016Q3",
+    "replay": [
+      {
+        "asof_q": "2015Q4",
+        "lead_check_issue_q": "2015Q4",
+        "lag_check_latest_labeled_issue_q": "2013Q2"
+      },
+      {
+        "asof_q": "2016Q1",
+        "lead_check_issue_q": "2016Q1",
+        "lag_check_latest_labeled_issue_q": "2013Q3"
+      },
+      {
+        "asof_q": "2016Q2",
+        "lead_check_issue_q": "2016Q2",
+        "lag_check_latest_labeled_issue_q": "2013Q4"
+      },
+      {
+        "asof_q": "2016Q3",
+        "lead_check_issue_q": "2016Q3",
+        "lag_check_latest_labeled_issue_q": "2014Q1"
+      },
+      {
+        "asof_q": "2016Q4",
+        "lead_check_issue_q": "2016Q4",
+        "lag_check_latest_labeled_issue_q": "2014Q2"
+      },
+      {
+        "asof_q": "2017Q1",
+        "lead_check_issue_q": "2017Q1",
+        "lag_check_latest_labeled_issue_q": "2014Q3"
+      },
+      {
+        "asof_q": "2017Q2",
+        "lead_check_issue_q": "2017Q2",
+        "lag_check_latest_labeled_issue_q": "2014Q4"
+      },
+      {
+        "asof_q": "2017Q3",
+        "lead_check_issue_q": "2017Q3",
+        "lag_check_latest_labeled_issue_q": "2015Q1"
+      },
+      {
+        "asof_q": "2017Q4",
+        "lead_check_issue_q": "2017Q4",
+        "lag_check_latest_labeled_issue_q": "2015Q2"
+      },
+      {
+        "asof_q": "2018Q1",
+        "lead_check_issue_q": "2018Q1",
+        "lag_check_latest_labeled_issue_q": "2015Q3"
+      },
+      {
+        "asof_q": "2018Q2",
+        "lead_check_issue_q": "2018Q2",
+        "lag_check_latest_labeled_issue_q": "2015Q4"
+      },
+      {
+        "asof_q": "2018Q3",
+        "lead_check_issue_q": "2018Q3",
+        "lag_check_latest_labeled_issue_q": "2016Q1"
+      },
+      {
+        "asof_q": "2018Q4",
+        "lead_check_issue_q": "2018Q4",
+        "lag_check_latest_labeled_issue_q": "2016Q2"
+      }
+    ]
+  }
+}

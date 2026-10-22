@@ -1,0 +1,21 @@
+{
+  "source": "accepted_2007_to_2018Q4.csv.gz",
+  "source_sha1": "da52263b44394a9a80c47212aee671525c24d9af",
+  "rows_raw": 2260701,
+  "rows_loans": 2260668,
+  "rows_policy_ok": 2257919,
+  "issue_min": "2007-06-01",
+  "issue_max": "2018-12-01",
+  "snapshot_last_pymnt_max": "2019-03-01",
+  "next_pymnt_max": "2019-05-01",
+  "loan_status_counts": {
+    "Fully Paid": 1078739,
+    "Current": 878317,
+    "Charged Off": 269320,
+    "Late (31-120 days)": 21467,
+    "In Grace Period": 8436,
+    "Late (16-30 days)": 4349,
+    "Default": 40
+  },
+  "seconds": 202.3
+}

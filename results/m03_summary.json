@@ -1,0 +1,171 @@
+{
+  "meta": {
+    "model_id": "champion_v1",
+    "trained_on": "2010Q1~2012Q4 실행 (적합 ~2012Q2, 선택 2012Q3~Q4)",
+    "train_n": 86624,
+    "train_rate": 0.1080878278537126,
+    "label": "STOP24",
+    "features": [
+      "loan_amnt",
+      "term_m",
+      "int_rate",
+      "installment",
+      "grade_num",
+      "emp_years",
+      "log_annual_inc",
+      "dti",
+      "delinq_2yrs",
+      "fico",
+      "inq_last_6mths",
+      "mths_since_last_delinq",
+      "mths_since_last_record",
+      "open_acc",
+      "pub_rec",
+      "log_revol_bal",
+      "revol_util",
+      "total_acc",
+      "credit_hist_m",
+      "collections_12_mths_ex_med",
+      "acc_now_delinq",
+      "chargeoff_within_12_mths",
+      "delinq_amnt",
+      "pub_rec_bankruptcies",
+      "tax_liens",
+      "loan_to_income",
+      "home_ownership_MORTGAGE",
+      "home_ownership_RENT",
+      "home_ownership_OWN",
+      "verification_status_Not Verified",
+      "verification_status_Verified",
+      "verification_status_Source Verified",
+      "purpose_debt_consolidation",
+      "purpose_credit_card",
+      "purpose_home_improvement",
+      "purpose_other",
+      "purpose_major_purchase",
+      "purpose_small_business",
+      "purpose_car",
+      "purpose_medical"
+    ],
+    "seed": 42,
+    "code_hash": "d971521f8bf7",
+    "logit": {
+      "C": 0.01,
+      "sel_logloss": {
+        "0.01": 0.33798754445364976,
+        "0.1": 0.33868171392162977,
+        "1.0": 0.33895812992386026
+      }
+    },
+    "lgbm": {
+      "params": {
+        "num_leaves": 31,
+        "min_child_samples": 200
+      },
+      "best_iter": 117,
+      "n_estimators": 128,
+      "sel_logloss": [
+        [
+          0.33736902987614364,
+          195,
+          "{'num_leaves': 15, 'min_child_samples': 400}"
+        ],
+        [
+          0.33722387389446734,
+          117,
+          "{'num_leaves': 31, 'min_child_samples': 200}"
+        ],
+        [
+          0.3373089533381886,
+          103,
+          "{'num_leaves': 63, 'min_child_samples': 400}"
+        ]
+      ]
+    }
+  },
+  "insample": {
+    "logit": {
+      "n": 86624,
+      "events": 9363,
+      "actual": 0.1080878278537126,
+      "pred": 0.10811058295139549,
+      "gap_pp": -0.002275509768288629,
+      "o_e_ratio": 0.9997895201648009,
+      "calib_z": -0.022045863194970344,
+      "calib_p": 0.9824113708765344,
+      "actual_lo": 0.10603748580024697,
+      "actual_hi": 0.11017292939726153,
+      "auc": 0.6845526896509393,
+      "auc_lo": 0.6783414599858137,
+      "auc_hi": 0.6907639193160648,
+      "pr_auc": 0.20240964827144212,
+      "brier": 0.09223499290205116,
+      "logloss": 0.32144429024183957,
+      "calib_a": 0.05495998202315393,
+      "calib_b": 1.028317827820846
+    },
+    "lgbm": {
+      "n": 86624,
+      "events": 9363,
+      "actual": 0.1080878278537126,
+      "pred": 0.10790917493304665,
+      "gap_pp": 0.017865292066594825,
+      "o_e_ratio": 1.0016555860127445,
+      "calib_z": 0.17282680312499504,
+      "calib_p": 0.8627875682092343,
+      "actual_lo": 0.10603748580024697,
+      "actual_hi": 0.11017292939726153,
+      "auc": 0.7230835875731544,
+      "auc_lo": 0.7170308635890701,
+      "auc_hi": 0.7291363115572387,
+      "pr_auc": 0.25003549527704033,
+      "brier": 0.09012085950552169,
+      "logloss": 0.31248948058081827,
+      "calib_a": 0.7129776266038454,
+      "calib_b": 1.370475982943379
+    }
+  },
+  "oot_overall": {
+    "logit": {
+      "n": 1122399,
+      "events": 144950,
+      "actual": 0.12914302311388373,
+      "pred": 0.11006296188298464,
+      "gap_pp": 1.9080061230899097,
+      "o_e_ratio": 1.1733558765316927,
+      "calib_z": 66.1334133891932,
+      "calib_p": 0.0,
+      "actual_lo": 0.12852386428126292,
+      "actual_hi": 0.12976472057899832,
+      "auc": 0.675747839709205,
+      "auc_lo": 0.6741501547273304,
+      "auc_hi": 0.6773455246910797,
+      "pr_auc": 0.22472172841831903,
+      "brier": 0.10795830448364711,
+      "logloss": 0.3647468058411268,
+      "calib_a": 0.08098047647581719,
+      "calib_b": 0.9437435072159985
+    },
+    "lgbm": {
+      "n": 1122399,
+      "events": 144950,
+      "actual": 0.12914302311388373,
+      "pred": 0.10873628620769679,
+      "gap_pp": 2.0406736906186955,
+      "o_e_ratio": 1.1876718215960413,
+      "calib_z": 70.9261506087697,
+      "calib_p": 0.0,
+      "actual_lo": 0.12852386428126292,
+      "actual_hi": 0.12976472057899832,
+      "auc": 0.6793102829623852,
+      "auc_lo": 0.6777154704809158,
+      "auc_hi": 0.6809050954438545,
+      "pr_auc": 0.22862191635241141,
+      "brier": 0.10776457932016227,
+      "logloss": 0.3637962055655073,
+      "calib_a": 0.21694646796010508,
+      "calib_b": 1.0064942041543468
+    }
+  },
+  "seconds": 101.6
+}

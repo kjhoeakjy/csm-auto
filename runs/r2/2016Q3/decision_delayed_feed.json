@@ -1,0 +1,17 @@
+{
+  "quarter": "2016Q3",
+  "input_key": "2016Q3|da52263b44@2019-03-01|champion_v1|r2|79605c82aa36|inject:delayed_feed",
+  "rule_version": "r2",
+  "model_id": "champion_v1",
+  "data_id": "da52263b44@2019-03-01",
+  "code_hash": "79605c82aa36",
+  "simulation": "delayed_feed",
+  "started": "2026-10-22T11:01:57",
+  "asof": "2016-09-01",
+  "run_status": "실패",
+  "status": "판정 유보",
+  "recommendation": "판정 유보",
+  "error": "ValueError: Encountered all NA values",
+  "trace": "Traceback (most recent call last):\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\modelops\\analysis\\pipeline.py\", line 217, in run_quarter\n    lead = _lead_summary(lead_raw)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\modelops\\analysis\\pipeline.py\", line 94, in _lead_summary\n    miss = f.loc[f[\"miss_delta_recent_pp\"].abs().idxmax()]\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\.venv\\Lib\\site-packages\\pandas\\core\\series.py\", line 2545, in idxmax\n    iloc = self.argmax(axis, skipna, *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\.venv\\Lib\\site-packages\\pandas\\core\\base.py\", line 814, in argmax\n    result = nanops.nanargmax(delegate, skipna=skipna)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\.venv\\Lib\\site-packages\\pandas\\core\\nanops.py\", line 1170, in nanargmax\n    result = _maybe_arg_null_out(result, axis, mask, skipna)  # type: ignore[arg-type]\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\SAMSUNG\\OneDrive\\바탕화~1-LAPTOP-VGOF9FJ7-25904429\\현대카드\\.venv\\Lib\\site-packages\\pandas\\core\\nanops.py\", line 1485, in _maybe_arg_null_out\n    raise ValueError(\"Encountered all NA values\")\nValueError: Encountered all NA values\n",
+  "seconds": 1.7
+}

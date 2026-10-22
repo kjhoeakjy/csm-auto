@@ -1,0 +1,461 @@
+{
+  "quarter": "2018Q4",
+  "input_key": "2018Q4|da52263b44@2019-03-01|champion_v1|r1|041ab7295742",
+  "rule_version": "r1",
+  "model_id": "champion_v1",
+  "data_id": "da52263b44@2019-03-01",
+  "code_hash": "041ab7295742",
+  "simulation": null,
+  "started": "2026-10-22T10:36:14",
+  "asof": "2018-12-01",
+  "run_status": "성공",
+  "status": "조치 검토",
+  "reasons": [
+    "lag24_material_persistent",
+    "early12_material_2q"
+  ],
+  "recommendation": "조사 (변경 보류)",
+  "evidence": [
+    {
+      "id": "input",
+      "title": "입력 분포·데이터 품질",
+      "text": "신규 128,412건. 점수 분포 변화 PSI 0.061(학습 대비), 0.006(직전 4분기 대비). 가장 크게 바뀐 변수 int_rate (PSI 0.10)"
+    },
+    {
+      "id": "outcome",
+      "title": "예측과 실제의 차이",
+      "text": "2016Q2 실행분(24개월 확정) 실제 13.8% vs 예측 10.2% (실제/예측 1.35). 조기 점검 2017Q2 실행분(12개월) 실제 6.4% vs 기대 5.0% (실제/기대 1.28)"
+    },
+    {
+      "id": "candidate",
+      "title": "개선 후보 검증",
+      "text": "후보 8개 모두 사전 기준 미달 (선택용 2016Q1~2016Q2). 변경 보류"
+    }
+  ],
+  "lead": {
+    "schema_ok": true,
+    "schema_notes": [],
+    "n": 128412,
+    "volume_vs_recent": 1.058025286418746,
+    "score_mean": 0.09739498025950069,
+    "score_mean_ref": 0.10790917493304665,
+    "score_psi_ref": 0.061022642300135384,
+    "score_psi_recent": 0.005631044369045162,
+    "n_feat_psi_recent_ge_0.25": 0,
+    "top_ref": [
+      {
+        "feature": "dti",
+        "psi": 0.20408070762010924
+      },
+      {
+        "feature": "revol_util",
+        "psi": 0.20221753181156815
+      },
+      {
+        "feature": "int_rate",
+        "psi": 0.19798711080129894
+      }
+    ],
+    "top_recent": [
+      {
+        "feature": "int_rate",
+        "psi": 0.09654530860501367
+      },
+      {
+        "feature": "emp_years",
+        "psi": 0.022077780362947177
+      },
+      {
+        "feature": "grade_num",
+        "psi": 0.015440517553054662
+      }
+    ],
+    "miss_max_delta_recent_pp": 1.4526503217826892,
+    "miss_max_feature": "mths_since_last_record",
+    "grade_psi_ref": 0.10141678450833863,
+    "joint_share_delta_ref": 0.13058872068031027
+  },
+  "early": [
+    {
+      "n": 105451,
+      "events": 6753,
+      "actual": 0.06403922200832614,
+      "pred": 0.050038445350210944,
+      "gap_pp": 1.4000776658115197,
+      "o_e_ratio": 1.2798003926805885,
+      "calib_z": 21.30332567513648,
+      "z_adj": 15.324769662035061,
+      "rel_err": 0.27980039268058854,
+      "auc": 0.6846224778348137,
+      "auc_lo": 0.6774160851110668,
+      "auc_hi": 0.6918288705585606,
+      "brier": 0.05849728308225249,
+      "logloss": 0.2278513430043471,
+      "calib_a": -0.397411605884252,
+      "calib_b": 0.7527052976209129,
+      "cohort_q": "2017Q2"
+    },
+    {
+      "n": 96779,
+      "events": 5883,
+      "actual": 0.06078798086361711,
+      "pred": 0.050170124752107366,
+      "gap_pp": 1.061785611150974,
+      "o_e_ratio": 1.211637028290701,
+      "calib_z": 15.44027865940183,
+      "z_adj": 11.107125600071486,
+      "rel_err": 0.21163702829070097,
+      "auc": 0.6874464245475861,
+      "auc_lo": 0.6797443422621093,
+      "auc_hi": 0.6951485068330628,
+      "brier": 0.05570699135290216,
+      "logloss": 0.21820215442744734,
+      "calib_a": -0.3903392565204123,
+      "calib_b": 0.7773300658375304,
+      "cohort_q": "2017Q1"
+    }
+  ],
+  "lag": [
+    {
+      "n": 97854,
+      "events": 13514,
+      "actual": 0.13810370552046927,
+      "pred": 0.10202321740775765,
+      "gap_pp": 3.608048811271162,
+      "o_e_ratio": 1.3536497772708758,
+      "calib_z": 38.131524081293385,
+      "z_adj": 17.655307644174886,
+      "rel_err": 0.35364977727087576,
+      "auc": 0.6900930262502961,
+      "auc_lo": 0.6848845241084138,
+      "auc_hi": 0.6953015283921784,
+      "brier": 0.11401035860609347,
+      "logloss": 0.38078049572842726,
+      "calib_a": 0.41575264971465764,
+      "calib_b": 1.026578798585479,
+      "cohort_q": "2016Q2",
+      "grade": [
+        {
+          "grade": "A",
+          "n": 20418,
+          "actual": 0.04295229699284945,
+          "pred": 0.040583757825042116,
+          "o_e_ratio": 1.0583617509748156
+        },
+        {
+          "grade": "B",
+          "n": 29550,
+          "actual": 0.09729272419627749,
+          "pred": 0.07383102118423993,
+          "o_e_ratio": 1.3177756806788652
+        },
+        {
+          "grade": "C",
+          "n": 27411,
+          "actual": 0.1556674327824596,
+          "pred": 0.11579255426021172,
+          "o_e_ratio": 1.3443647890575081
+        },
+        {
+          "grade": "D",
+          "n": 12247,
+          "actual": 0.2326283987915408,
+          "pred": 0.16410179104423867,
+          "o_e_ratio": 1.417585983134265
+        },
+        {
+          "grade": "E",
+          "n": 5521,
+          "actual": 0.29559862343778304,
+          "pred": 0.2057257426981302,
+          "o_e_ratio": 1.4368577289402569
+        },
+        {
+          "grade": "F",
+          "n": 2075,
+          "actual": 0.36,
+          "pred": 0.23510860383637525,
+          "o_e_ratio": 1.5312072553948022
+        }
+      ]
+    },
+    {
+      "n": 133887,
+      "events": 18338,
+      "actual": 0.13696624765660595,
+      "pred": 0.10224625035443657,
+      "gap_pp": 3.471999730216936,
+      "o_e_ratio": 1.339572328391628,
+      "calib_z": 42.91427070391614,
+      "z_adj": 19.86977100594668,
+      "rel_err": 0.3395723283916281,
+      "auc": 0.6965239738385458,
+      "auc_lo": 0.6920724098193297,
+      "auc_hi": 0.7009755378577619,
+      "brier": 0.1128749737013769,
+      "logloss": 0.37676541479181597,
+      "calib_a": 0.4361073126635591,
+      "calib_b": 1.0427288312716887,
+      "cohort_q": "2016Q1",
+      "grade": [
+        {
+          "grade": "A",
+          "n": 26482,
+          "actual": 0.03802582886488936,
+          "pred": 0.039421619897409485,
+          "o_e_ratio": 0.9645932603441331
+        },
+        {
+          "grade": "B",
+          "n": 40267,
+          "actual": 0.08885688032383837,
+          "pred": 0.07183389037333072,
+          "o_e_ratio": 1.236977140762345
+        },
+        {
+          "grade": "C",
+          "n": 36777,
+          "actual": 0.15316638116213938,
+          "pred": 0.11249768257760069,
+          "o_e_ratio": 1.3615069897683048
+        },
+        {
+          "grade": "D",
+          "n": 16454,
+          "actual": 0.2270572505165917,
+          "pred": 0.1605671098410721,
+          "o_e_ratio": 1.4140956435058898
+        },
+        {
+          "grade": "E",
+          "n": 9540,
+          "actual": 0.2868972746331237,
+          "pred": 0.2011812008072221,
+          "o_e_ratio": 1.4260640332296124
+        },
+        {
+          "grade": "F",
+          "n": 3482,
+          "actual": 0.3653072946582424,
+          "pred": 0.23462972062746665,
+          "o_e_ratio": 1.5569523489236858
+        }
+      ]
+    }
+  ],
+  "candidates": {
+    "chosen": null,
+    "sel_q": [
+      "2016Q1",
+      "2016Q2"
+    ],
+    "fit_recal_q": [
+      "2015Q3",
+      "2015Q4"
+    ],
+    "fit_retrain_q": [
+      "2014Q1",
+      "2014Q2",
+      "2014Q3",
+      "2014Q4",
+      "2015Q1",
+      "2015Q2",
+      "2015Q3",
+      "2015Q4"
+    ],
+    "table": [
+      {
+        "candidate": "maintain",
+        "kind": "keep",
+        "complexity": 0,
+        "logloss": 0.3784608063279324,
+        "rel_ll_gain": 0.0,
+        "dll_lo": 0.0,
+        "dll_hi": 0.0,
+        "brier": 0.11335439665400997,
+        "auc": 0.6938160116262492,
+        "o_e_ratio": 1.345509115762886,
+        "gap_pp": 3.529447254726971,
+        "worst_grade_rel": 0.5929539475579586,
+        "group_worsen": 0.0,
+        "ok_gain": false,
+        "ok_gain_ci": false,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": true,
+        "passed": false
+      },
+      {
+        "candidate": "recal_intercept",
+        "kind": "recal",
+        "complexity": 1,
+        "logloss": 0.37206258336658854,
+        "rel_ll_gain": 0.016905906382812735,
+        "dll_lo": -0.006790604005188544,
+        "dll_hi": -0.006074487732359348,
+        "brier": 0.11177839894751233,
+        "auc": 0.6938160116262492,
+        "o_e_ratio": 1.0380802850077886,
+        "gap_pp": 0.5042002740906898,
+        "worst_grade_rel": 0.28680329630690604,
+        "group_worsen": 0.2430977196517382,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": true,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "recal_platt",
+        "kind": "recal",
+        "complexity": 2,
+        "logloss": 0.3720374850236495,
+        "rel_ll_gain": 0.016972223270901064,
+        "dll_lo": -0.006859602745688475,
+        "dll_hi": -0.006084754343960408,
+        "brier": 0.11177846617167224,
+        "auc": 0.6938160116262492,
+        "o_e_ratio": 1.038257141567683,
+        "gap_pp": 0.5064556510185237,
+        "worst_grade_rel": 0.2456547625382759,
+        "group_worsen": 0.20384162550244334,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": true,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "recal_beta",
+        "kind": "recal",
+        "complexity": 3,
+        "logloss": 0.3719519281849582,
+        "rel_ll_gain": 0.01719828852590434,
+        "dll_lo": -0.006927205961526111,
+        "dll_hi": -0.006175841838883544,
+        "brier": 0.11176204526630883,
+        "auc": 0.6938160116262492,
+        "o_e_ratio": 1.0394767914769798,
+        "gap_pp": 0.5219884346949236,
+        "worst_grade_rel": 0.27640696126661424,
+        "group_worsen": 0.18529138153296754,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": true,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "recal_grade",
+        "kind": "recal",
+        "complexity": 4,
+        "logloss": 0.3710279774920847,
+        "rel_ll_gain": 0.019639626380247157,
+        "dll_lo": -0.007896524797272129,
+        "dll_hi": -0.007031190510164172,
+        "brier": 0.11148495723963876,
+        "auc": 0.6981210073286015,
+        "o_e_ratio": 1.0459059154530677,
+        "gap_pp": 0.6032674089976262,
+        "worst_grade_rel": 0.0897748640459588,
+        "group_worsen": 0.08368841773807656,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": true,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "recal_isotonic",
+        "kind": "recal",
+        "complexity": 5,
+        "logloss": 0.3718194605251071,
+        "rel_ll_gain": 0.017548305377414995,
+        "dll_lo": -0.007088936537716663,
+        "dll_hi": -0.006298719338482203,
+        "brier": 0.11176105992861841,
+        "auc": 0.6936116860096585,
+        "o_e_ratio": 1.04042695510707,
+        "gap_pp": 0.5340639546673974,
+        "worst_grade_rel": 0.2807715408691889,
+        "group_worsen": 0.10171518185815687,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": true,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "retrain_logit",
+        "kind": "retrain",
+        "complexity": 6,
+        "logloss": 0.36833839705185195,
+        "rel_ll_gain": 0.026746255112370797,
+        "dll_lo": -0.010776644891581024,
+        "dll_hi": -0.00962669020576596,
+        "brier": 0.11075988125289629,
+        "auc": 0.7101733957323082,
+        "o_e_ratio": 1.139994044783617,
+        "gap_pp": 1.6878770546305957,
+        "worst_grade_rel": 0.2533270039593667,
+        "group_worsen": 0.12535239184249003,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "retrain_lgbm",
+        "kind": "retrain",
+        "complexity": 7,
+        "logloss": 0.36630079832754725,
+        "rel_ll_gain": 0.03213016459582506,
+        "dll_lo": -0.01274904381179467,
+        "dll_hi": -0.011699608204780781,
+        "brier": 0.11029646155639478,
+        "auc": 0.7137235537034118,
+        "o_e_ratio": 1.1284411245330437,
+        "gap_pp": 1.5644404070735438,
+        "worst_grade_rel": 0.16932647123480105,
+        "group_worsen": 0.05312153719250401,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      },
+      {
+        "candidate": "retrain_lgbm_ext",
+        "kind": "retrain",
+        "complexity": 8,
+        "logloss": 0.36416112797237943,
+        "rel_ll_gain": 0.03778377606468035,
+        "dll_lo": -0.014966654209185188,
+        "dll_hi": -0.013802943556799539,
+        "brier": 0.10972859308412598,
+        "auc": 0.7196694650586959,
+        "o_e_ratio": 1.1189598575029993,
+        "gap_pp": 1.4612339672678119,
+        "worst_grade_rel": 0.18672985952979726,
+        "group_worsen": 0.050379211488410736,
+        "ok_gain": true,
+        "ok_gain_ci": true,
+        "ok_calibrated": false,
+        "ok_auc": true,
+        "ok_groups": false,
+        "passed": false
+      }
+    ]
+  },
+  "candidate_experiment": "실행",
+  "approval": null,
+  "seconds": 71.0
+}

@@ -1,0 +1,9 @@
+﻿data/
+runs/**/*.joblib
+results/models/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.log
+results/*.log
+analysis/*_snapshot.txt
