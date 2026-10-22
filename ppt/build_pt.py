@@ -1,4 +1,4 @@
-﻿"""역량PT 2장 (표지 제외) → modelops/ppt/역량PT_김연주.pptx
+"""역량PT 2장 (표지 제외) → modelops/ppt/역량PT_김연주.pptx
 - 1장: 중앙 타임라인 하나에 학업·활동(위)과 프로젝트(아래), BCG X 는 선 위의 가장 큰 이정표
 - 2장: 신용평가모형 운영 자동화. 화면 캡처(대표 분기) + 결과 숫자 3개 (results/ 에서 읽음)
 - 그리기 도구·글꼴 규칙은 이전 PPT(ppt/src/build.py)를 그대로 가져다 씀 (수정하지 않음)
@@ -149,11 +149,11 @@ def results():
     c = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["is_chosen"])
     s = {r["policy"][0]: r for r in load_json(RES / "m11_policy.json")["summary"]}
     gap = lambda oe: f"{abs(oe - 1) * 100:.0f}%"
-    return [(f"{early_q * 3}개월 단축", "연체율 차이 발견 시점", "대출 후 1년 시점 연체 결과 활용 (기존 2년)"),
+    return [(f"{early_q * 3}개월 단축", "연체율 차이 발견 시점", "대출 후 1년 시점 연체 결과 활용 (기존 2년)\n2016~2017년 사례 기준"),
             (gap(c['o_e_ratio']), "수정안 적용 후 예측 연체율 오차",
-             f"적용 전 {gap(m['o_e_ratio'])}\n2018년 1분기 보유 대출 {c['n'] / 1e4:.0f}만 건 기준"),
-            (f"{s['D']['changes']}회", "3년간 모형 교체 횟수",
-             f"3개월마다 재학습하는 방식 {s['B']['changes']}회 대비\n평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}% 대비 "
+             f"적용 전 {gap(m['o_e_ratio'])} (상대 오차: 실제÷예측-1)\n2018년 1분기 보유 대출 {c['n'] / 1e4:.0f}만 건 기준"),
+            (f"{s['D']['changes']}회", "3년간 모형 변경 횟수",
+             f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']}\n3개월마다 재학습하는 방식 {s['B']['changes']}회 대비\n평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}% 대비 "
              f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%")]
 
 
@@ -199,7 +199,8 @@ def slide2(prs, shot=None):
     text(s, M + qs + 0.15, H - 0.55 - qs + 0.18, 4.5, 0.6,
          [[("결과 화면 (시점별 점검 결과 확인)", {"weight": "bold", "size": 11})],
           [("kjhoeakjy.github.io/csm-auto", {"size": 9.5, "color": G1})]], spacing=1.3)
-    text(s, rx, H - 0.5, rw, 0.3, "시점별 판단에 해당 시점까지의 정보만 사용. 실제 금융회사 운영 사례 아님", size=7.5, color=G2)
+    text(s, rx, H - 0.62, rw, 0.4, [[("오차 개선은 2018년 1분기 단일 판단, 변경 횟수는 변경 승인 가정 3년 누적 운영 기준", {})],
+                                  [("시점별 판단에 해당 시점까지의 정보만 사용. 실제 금융회사 운영 사례 아님", {})]], size=7.5, color=G2, spacing=1.2)
 
 def main():
     shot = HERE / "app_card.png"

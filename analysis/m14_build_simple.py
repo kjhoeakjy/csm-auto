@@ -1,4 +1,4 @@
-﻿"""m14. 간단한 결과 화면: app/index.html (+ 저장소 첫 화면 index.html)
+"""m14. 간단한 결과 화면: app/index.html (+ 저장소 첫 화면 index.html)
 
 분기 선택 → 모형 상태 · 권고 · 이유 3개 · 권고 적용 결과, 예상 연체율 대 실제 연체율 그림.
 모든 문장은 runs/<규칙>/<분기>/decision.json 과 사후 평가 결과에서 그대로 만들며, 쉬운 표현만 사용.
@@ -111,11 +111,11 @@ def main():
     c0 = next(r for r in ph if r["asof_q"] == a.default and r["part"] == "전체" and r["is_chosen"])
     summary = [
         {"label": "연체율 차이 발견 시점", "value": f"{int(kpis(decs, ph, a.default)[0]['value'][0]) * 3}개월 단축",
-         "note": "대출 후 1년 시점 연체 결과 활용 (기존 2년)"},
+         "note": "대출 후 1년 시점 연체 결과 활용 (기존 2년), 2016~2017년 사례 기준"},
         {"label": "수정안 적용 후 예측 연체율 오차", "value": gap(c0["o_e_ratio"]),
-         "note": f"적용 전 {gap(d0['o_e_ratio'])}, {ql(a.default)} 보유 대출 {c0['n'] / 1e4:.0f}만 건 기준"},
-        {"label": "3년간 모형 교체 횟수", "value": f"{s['D']['changes']}회",
-         "note": f"3개월마다 재학습하는 방식 {s['B']['changes']}회 대비, 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}% 대비 "
+         "note": f"적용 전 {gap(d0['o_e_ratio'])} (상대 오차: 실제÷예측-1), {ql(a.default)} 단일 판단, 보유 대출 {c0['n'] / 1e4:.0f}만 건 기준"},
+        {"label": "3년간 모형 변경 횟수", "value": f"{s['D']['changes']}회",
+         "note": f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']} (변경 승인 가정 누적 운영). 3개월마다 재학습하는 방식 {s['B']['changes']}회 대비, 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}% 대비 "
                  f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%"},
     ]
     data = {"items": items, "cohorts": cohorts, "default_q": a.default, "summary": summary}
