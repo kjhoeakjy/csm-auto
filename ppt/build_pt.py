@@ -166,10 +166,15 @@ def slide2(prs, shot=None):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     text(s, M, 0.62, W - 2 * M, 0.45, "02 New Project", size=20, weight="bold")
     text(s, M, 1.12, W - 2 * M, 0.3, "신용평가모형 자동 점검 시스템", size=13, weight="med")
-    hline(s, M, 1.62, W - 2 * M, color=INK)
+    text(s, M, 1.45, W - 2 * M, 0.25,
+         [[("데이터", {"weight": "sb", "color": INK}), ("  Lending Club 대출 226만 건 (2007~2018년)      ", {"color": G1}),
+           ("모형", {"weight": "sb", "color": INK}),
+           ("  2010~2012년 대출 8.7만 건의 대출 조건, 소득, 신용 이력으로 학습한 LightGBM 연체 예측모형", {"color": G1})]],
+         size=10)
+    hline(s, M, 1.78, W - 2 * M, color=INK)
 
     lw = 6.0                                    # 왼쪽: 문제와 그림
-    text(s, M, 1.85, lw, 0.25, "문제", size=10, color=G1, weight="med")
+    text(s, M, 1.92, lw, 0.25, "문제", size=10, color=G1, weight="med")
     text(s, M, 2.12, lw, 0.6, [[("신용평가모형의 예측 연체율과 실제 연체율 차이 확대", {"weight": "bold", "size": 13})],
                                 [("실제 연체율 상승, 예측 연체율 하락 (연체율: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율)", {"size": 10, "color": G1})]],
          spacing=1.35)
@@ -179,7 +184,7 @@ def slide2(prs, shot=None):
 
     rx = M + lw + 0.55                          # 오른쪽: 하는 일과 결과
     rw = W - M - rx
-    text(s, rx, 1.85, rw, 0.25, "작동 방식", size=10, color=G1, weight="med")
+    text(s, rx, 1.92, rw, 0.25, "작동 방식", size=10, color=G1, weight="med")
     for i, t in enumerate(STEPS):
         text(s, rx, 2.15 + i * 0.36, rw, 0.3, [[(f"{i + 1}  ", {"weight": "bold", "color": G2}), (t, {})]], size=11)
     hline(s, rx, 3.32, rw)
@@ -194,8 +199,7 @@ def slide2(prs, shot=None):
     text(s, M + qs + 0.15, H - 0.55 - qs + 0.18, 4.5, 0.6,
          [[("결과 화면 (시점별 점검 결과 확인)", {"weight": "bold", "size": 11})],
           [("kjhoeakjy.github.io/csm-auto", {"size": 9.5, "color": G1})]], spacing=1.3)
-    text(s, rx, H - 0.5, rw, 0.3, "자료: Lending Club 공개 대출 226만 건. 시점별 판단에 해당 시점까지의 정보만 사용. "
-         "실제 금융회사 운영 사례 아님", size=7.5, color=G2)
+    text(s, rx, H - 0.5, rw, 0.3, "시점별 판단에 해당 시점까지의 정보만 사용. 실제 금융회사 운영 사례 아님", size=7.5, color=G2)
 
 def main():
     shot = HERE / "app_card.png"
