@@ -2,7 +2,7 @@
 <html lang="ko">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>대출 부실 예측모형 자동 점검</title>
+<title>신용평가모형 자동 점검</title>
 <style>
 /*__FONTS__*/
 :root { --bg: #fff; --ink: #000; --sub: #6b6b6b; --line: #e3e3e3; --soft: #f3f3f3; --mid: #a8a8a8;
@@ -59,8 +59,8 @@ footer a { color: var(--sub); }
 }
 </style>
 <div class="wrap">
-  <h1>대출 부실 예측모형<br>자동 점검</h1>
-  <p class="lede">분기별 부실 예측모형 점검 및 수정안 보고 시스템. Lending Club 공개 대출 자료 기반 2015~2018년 재현 결과.</p>
+  <h1>신용평가모형<br>자동 점검</h1>
+  <p class="lede">분기별 신용평가모형 점검 및 수정안 보고 시스템. Lending Club 공개 대출 자료 기반 2015~2018년 재현 결과.</p>
 
   <section class="ctl">
     <label for="q"><span>점검 시점</span><b class="num" id="ql"></b></label>
@@ -76,8 +76,8 @@ footer a { color: var(--sub); }
   </section>
 
   <section class="chart">
-    <h2>대출 실행 시기별 예측·실제 부실률</h2>
-    <p>부실률: 대출 실행 후 2년 내 미상환 비율. 회색 구간: 선택 시점 기준 실적 미확정 대출</p>
+    <h2>대출 실행 시기별 예측·실제 연체율</h2>
+    <p>연체율: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율. 회색 구간: 선택 시점 기준 실적 미확정 대출</p>
     <div id="ch"></div>
   </section>
 
@@ -96,7 +96,7 @@ function chart(item) {
   const vals = c.flatMap(r => [r.actual, r.pred]), lo = 0.08, hi = Math.max(0.15, Math.ceil(Math.max(...vals) * 100) / 100);
   const X = (k) => m.l + k * (W - m.l - m.r) / (n - 1), Y = (v) => m.t + (hi - v) / (hi - lo) * (H - m.t - m.b);
   const known = c.findIndex(r => r.q === item.known_until);
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="예측 부실률과 실제 부실률">`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="예측 연체율과 실제 연체율">`;
   if (known >= 0 && known < n - 1) s += `<rect x="${X(known) + 4}" y="${m.t}" width="${W - m.r - X(known) - 4}" height="${H - m.t - m.b}" fill="var(--soft)"/>`;
   for (let v = lo; v <= hi + 1e-9; v += 0.02) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${m.l - 8}" y="${Y(v) + 4}" font-size="12" text-anchor="end" fill="var(--sub)">${Math.round(v * 100)}%</text>`;
   const path = (k, cut) => c.map((r, j) => (j ? "L" : "M") + X(j) + " " + Y(r[k])).slice(0, cut).join("");

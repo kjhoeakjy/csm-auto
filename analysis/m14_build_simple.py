@@ -1,6 +1,6 @@
 ﻿"""m14. 간단한 결과 화면: app/index.html (+ 저장소 첫 화면 index.html)
 
-분기 선택 → 모형 상태 · 권고 · 이유 3개 · 권고 적용 결과, 예상 부실률 대 실제 부실률 그림.
+분기 선택 → 모형 상태 · 권고 · 이유 3개 · 권고 적용 결과, 예상 연체율 대 실제 연체율 그림.
 모든 문장은 runs/<규칙>/<분기>/decision.json 과 사후 평가 결과에서 그대로 만들며, 쉬운 표현만 사용.
 상세 분석 화면은 m08_build_app.py 가 app/detail.html 로 만듦.
 
@@ -60,7 +60,7 @@ def why_text(d):
     l0 = (d.get("lag") or [{}])[0]
     if l0:
         hi = "초과" if l0["o_e_ratio"] > 1 else "미달"
-        txt = (f"{ql(l0['cohort_q'])} 대출(2년 실적 확정) 실제 부실률 {pct(l0['actual'])}, "
+        txt = (f"{ql(l0['cohort_q'])} 대출(2년 실적 확정) 실제 연체율 {pct(l0['actual'])}, "
                f"예측 {pct(l0['pred'])}, 예측 대비 {gap(l0['o_e_ratio'])} {hi}")
         e0 = (d.get("early") or [{}])[0]
         if e0:
@@ -87,7 +87,7 @@ def after_text(ph, q):
     if not (m and c):
         return None
     return (f"사후 확인. 당시 보유 대출 {c['n']:,}건 적용 시 예측 오차 {gap(m['o_e_ratio'])}에서 "
-            f"{gap(c['o_e_ratio'])}로 감소 (실제 부실률 {pct(c['actual'])}, 기존 예측 {pct(m['pred'])}, "
+            f"{gap(c['o_e_ratio'])}로 감소 (실제 연체율 {pct(c['actual'])}, 기존 예측 {pct(m['pred'])}, "
             f"수정 예측 {pct(c['pred'])})")
 
 

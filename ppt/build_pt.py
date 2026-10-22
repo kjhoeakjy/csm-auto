@@ -157,7 +157,7 @@ def results():
              f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%")]
 
 
-STEPS = ["분기별 예측 부실률·실제 부실률 비교",
+STEPS = ["분기별 예측 연체율·실제 연체율 비교",
          "오차 확대 시 수정안 11종 검증 (1년 전 자료로 수립, 이후 실적으로 평가)",
          "기준 충족안만 담당자 보고, 적용 여부는 담당자 결정"]
 
@@ -165,13 +165,13 @@ STEPS = ["분기별 예측 부실률·실제 부실률 비교",
 def slide2(prs, shot=None):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     text(s, M, 0.62, W - 2 * M, 0.45, "02 New Project", size=20, weight="bold")
-    text(s, M, 1.12, W - 2 * M, 0.3, "대출 부실 예측모형 자동 점검 시스템", size=13, weight="med")
+    text(s, M, 1.12, W - 2 * M, 0.3, "신용평가모형 자동 점검 시스템", size=13, weight="med")
     hline(s, M, 1.62, W - 2 * M, color=INK)
 
     lw = 6.0                                    # 왼쪽: 문제와 그림
     text(s, M, 1.85, lw, 0.25, "문제", size=10, color=G1, weight="med")
-    text(s, M, 2.12, lw, 0.6, [[("시간 경과에 따른 부실 예측모형 정확도 저하", {"weight": "bold", "size": 13})],
-                                [("실제 부실률 상승, 모형 예측치 하락 (부실률: 대출 실행 후 2년 내 미상환 비율)", {"size": 10, "color": G1})]],
+    text(s, M, 2.12, lw, 0.6, [[("시간 경과에 따른 신용평가모형 정확도 저하", {"weight": "bold", "size": 13})],
+                                [("실제 연체율 상승, 모형 예측치 하락 (연체율: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율)", {"size": 10, "color": G1})]],
          spacing=1.35)
     img = HERE / "chart_default.png"
     ih = lw * Image.open(img).height / Image.open(img).width
