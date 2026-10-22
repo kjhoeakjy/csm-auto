@@ -181,7 +181,7 @@ def main():
     tpl = (APP / "template.html").read_text(encoding="utf-8")
     js = json.dumps(data, ensure_ascii=False, default=str).replace("</", "<\\/")
     html = tpl.replace("/*__DATA__*/null", js).replace("/*__FONTS__*/", font_faces())
-    (APP / "index.html").write_text(html, encoding="utf-8")
+    (APP / "detail.html").write_text(html, encoding="utf-8")
     bad = [q["q"] for q in quarters if q["report"] and not q["report_check"]["verified"]]
     print(f"index.html {len(html) / 1e6:.1f}MB, quarters {len(quarters)}, 보고서 대조 실패 {bad}")
 

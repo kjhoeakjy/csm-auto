@@ -122,55 +122,65 @@ def slide1(prs):
     ic_card(s, XE, YM)
     text(s, XE - 0.3, YM + 0.36, W - M - XE + 0.3, 0.3, "현대카드", size=13, weight="bold")
 
-# ---------------------------------------------------------------- 2장: 글자 최소
-FLOW = ["정기 실행", "점검", "개선안 검증", "보고"]
-SHORT = {}
-
-
-def kpis():
-    from m08_build_app import kpis as K, load_decisions
+# ---------------------------------------------------------------- 2장: 02 New Project
+def results():
+    """결과 숫자 3개 (results/ 의 계산 결과에서 읽음)"""
     import pandas as pd
-    rule = RULE
-    decs = load_decisions(rule)
-    ph = pd.read_csv(RES / f"m06_posthoc_{rule}.csv").to_dict("records")
-    return K(decs, ph, "2018Q1")
+    from m08_build_app import kpis as K, load_decisions, load_json
+    decs = load_decisions(RULE)
+    ph = pd.read_csv(RES / f"m06_posthoc_{RULE}.csv").to_dict("records")
+    early_q = int(K(decs, ph, "2018Q1")[0]["value"][0])
+    m = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["candidate"] == "maintain")
+    c = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["is_chosen"])
+    s = {r["policy"][0]: r for r in load_json(RES / "m11_policy.json")["summary"]}
+    gap = lambda oe: f"{abs(oe - 1) * 100:.0f}%"
+    return [(f"{early_q * 3}개월 빠름", "문제 발견 시점", "대출 1년 결과를 함께 확인"),
+            (f"{gap(m['o_e_ratio'])}에서 {gap(c['o_e_ratio'])}로", "예상 부실률과 실제의 차이",
+             f"2018년 1분기 권고 적용, 대출 {c['n'] / 1e4:.0f}만 건"),
+            (f"{s['B']['changes']}회에서 {s['D']['changes']}회로", "3년간 모형 교체 횟수",
+             f"3개월마다 새로 학습하는 방식 대비\n평균 차이 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%에서 "
+             f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%로")]
 
 
-def slide2(prs, shot):
+STEPS = ["3개월마다 모형의 예상 부실률과 실제 부실률을 비교",
+         "차이가 크면 수정안 11개를 1년 전 자료로 만들고 그 뒤 결과로 시험",
+         "기준을 넘은 수정안만 담당자에게 보고. 적용 여부는 담당자가 결정"]
+
+
+def slide2(prs, shot=None):
     s = prs.slides.add_slide(prs.slide_layouts[6])
-    text(s, M, 0.62, W - 2 * M, 0.45, "02 Project", size=20, weight="bold")
-    text(s, M, 1.12, W - 2 * M, 0.3, "신용평가모형 운영 자동화", size=13, weight="med")
+    text(s, M, 0.62, W - 2 * M, 0.45, "02 New Project", size=20, weight="bold")
+    text(s, M, 1.12, W - 2 * M, 0.3, "대출 부실 예측모형 자동 점검 시스템", size=13, weight="med")
     hline(s, M, 1.62, W - 2 * M, color=INK)
-    cw = (W - 2 * M - 1.6) / 4
-    for i, t in enumerate(FLOW):
-        x = M + i * cw
-        if i:
-            B.poly(s, [(x - 0.14, 1.8), (x - 0.06, 1.88), (x - 0.14, 1.96)], color=G2, width=1.0)
-        text(s, x + (0.06 if i else 0), 1.76, cw - 0.2, 0.3,
-             [[(f"{i + 1}  ", {"size": 11, "color": G2, "weight": "med"}), (t, {"size": 12, "weight": "bold"})]])
-    text(s, W - M - 1.7, 1.79, 1.7, 0.3, "모형 변경은 담당자 승인", size=9, color=G1)
-    hline(s, M, 2.2, W - 2 * M)
 
-    iw = 7.0
-    ih = min(iw * Image.open(shot).height / Image.open(shot).width, 4.55)
-    pic = s.shapes.add_picture(str(shot), Inches(M), Inches(2.42), Inches(iw), Inches(ih))
-    pic.line.color.rgb = LINE
-    pic.line.width = Pt(PX)
-    text(s, M, 2.42 + ih + 0.05, iw, 0.2, "2018년 1분기 판단 화면", size=8, color=G2)
+    lw = 6.0                                    # 왼쪽: 문제와 그림
+    text(s, M, 1.85, lw, 0.25, "문제", size=10, color=G1, weight="med")
+    text(s, M, 2.12, lw, 0.6, [[("대출 심사에 쓰는 부실 예측모형은 시간이 지나면 실제와 어긋남", {"weight": "bold", "size": 13})],
+                                [("실제 부실률은 오르는데 모형의 예상은 내려감 (실행 후 2년 안에 갚지 못한 대출의 비율)", {"size": 10, "color": G1})]],
+         spacing=1.35)
+    img = HERE / "chart_default.png"
+    ih = lw * Image.open(img).height / Image.open(img).width
+    s.shapes.add_picture(str(img), Inches(M - 0.05), Inches(2.95), Inches(lw), Inches(ih))
 
-    rx = M + iw + 0.5
+    rx = M + lw + 0.55                          # 오른쪽: 하는 일과 결과
     rw = W - M - rx
-    for i, k in enumerate(kpis()[:3]):
-        y0 = 2.42 + i * 1.45
-        if i:
-            hline(s, rx, y0 - 0.12, rw)
-        text(s, rx, y0, rw, 0.22, k["label"], size=9, color=G1, weight="med")
-        text(s, rx, y0 + 0.26, rw, 0.55, k["value"], size=30, weight="bold")
-        text(s, rx, y0 + 0.9, rw, 0.25, k.get("short", ""), size=9, color=G1)
-    text(s, M, H - 0.38, W - 2 * M, 0.2,
-         "Lending Club 공개 대출 데이터로 과거 분기를 재현한 프로토타입. 판단에는 당시 데이터만 쓰고, 평가는 이후 확정된 결과로 함",
-         size=7.5, color=G2)
-    s.notes_slide.notes_text_frame.text = notes("## 2장")
+    text(s, rx, 1.85, rw, 0.25, "시스템이 하는 일", size=10, color=G1, weight="med")
+    for i, t in enumerate(STEPS):
+        text(s, rx, 2.15 + i * 0.36, rw, 0.3, [[(f"{i + 1}  ", {"weight": "bold", "color": G2}), (t, {})]], size=11)
+    hline(s, rx, 3.32, rw)
+    text(s, rx, 3.45, rw, 0.25, "결과  2015~2018년 13개 분기 재실행", size=10, color=G1, weight="med")
+    for i, (v, lab, note) in enumerate(results()):
+        y0 = 3.78 + i * 0.82
+        text(s, rx, y0, 2.6, 0.45, v, size=20, weight="bold")
+        text(s, rx + 2.65, y0 + 0.02, rw - 2.65, 0.7, [[(lab, {"weight": "sb", "size": 10.5})]] +
+             [[(nl, {"size": 9, "color": G1})] for nl in note.split("\n")], spacing=1.25)
+    qs = 0.95                                   # QR
+    s.shapes.add_picture(str(HERE / "qr.png"), Inches(M), Inches(H - 0.55 - qs), Inches(qs), Inches(qs))
+    text(s, M + qs + 0.15, H - 0.55 - qs + 0.18, 4.5, 0.6,
+         [[("결과 화면 (직접 조작 가능)", {"weight": "bold", "size": 11})],
+          [("kjhoeakjy.github.io/csm-auto", {"size": 9.5, "color": G1})]], spacing=1.3)
+    text(s, rx, H - 0.5, rw, 0.3, "Lending Club 공개 대출 226만 건 사용. 각 시점의 판단에는 그 시점까지의 정보만 사용. "
+         "실제 금융회사 운영 아님", size=7.5, color=G2)
 
 def main():
     shot = HERE / "app_card.png"

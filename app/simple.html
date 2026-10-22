@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>대출 부실 예측모형 자동 점검</title>
+<style>
+/*__FONTS__*/
+:root { --bg: #fff; --ink: #000; --sub: #6b6b6b; --line: #e3e3e3; --soft: #f3f3f3; --mid: #a8a8a8;
+  --font: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #000; --ink: #fff; --sub: #9a9a9a; --line: #2a2a2a; --soft: #141414; --mid: #5c5c5c; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #000; --ink: #fff; --sub: #9a9a9a; --line: #2a2a2a; --soft: #141414; --mid: #5c5c5c; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--font); letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 880px; margin: 0 auto; padding: 48px 16px 64px; }
+h1 { margin: 0; font-size: clamp(28px, 5vw, 40px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.2; }
+.lede { margin: 14px 0 0; color: var(--sub); font-size: 15px; }
+.num { font-variant-numeric: tabular-nums; }
+.ctl { margin-top: 40px; padding-top: 20px; border-top: 2px solid var(--ink); }
+.ctl label { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.ctl label span { font-size: 13px; color: var(--sub); }
+.ctl label b { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 36px; background: transparent; margin: 10px 0 0; }
+input[type=range]::-webkit-slider-runnable-track { height: 2px; background: var(--ink); }
+input[type=range]::-moz-range-track { height: 2px; background: var(--ink); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--ink); margin-top: -10px; border: 4px solid var(--bg); box-shadow: 0 0 0 1px var(--ink); }
+input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg); }
+.ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--sub); }
+.btns { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+button { font: 600 14px var(--font); padding: 9px 16px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); cursor: pointer; }
+button.on, button:active { background: var(--ink); color: var(--bg); }
+button:disabled { opacity: .35; cursor: default; }
+.res { margin-top: 32px; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 0 20px; }
+.res > div { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.k { font-size: 13px; color: var(--sub); padding-top: 22px !important; }
+.status { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; display: flex; align-items: center; gap: 12px; }
+.dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--ink); display: inline-grid; place-items: center; }
+.dot.act { background: var(--ink); }
+.dot.warn::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
+.reco { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+ol { margin: 0; padding-left: 20px; } ol li { margin: 4px 0; }
+.after { margin-top: 10px; padding: 14px 16px; background: var(--soft); font-size: 15px; }
+.chart { margin-top: 40px; }
+.chart h2 { font-size: 17px; margin: 0 0 4px; font-weight: 700; }
+.chart p { margin: 0 0 10px; font-size: 13px; color: var(--sub); }
+.chart svg { width: 100%; height: auto; display: block; }
+.sum { margin-top: 44px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
+.sum div { padding: 18px 16px 0 0; }
+.sum div + div { padding-left: 16px; border-left: 1px solid var(--line); }
+.sum b { display: block; font-size: 26px; font-weight: 800; letter-spacing: -0.03em; margin-top: 4px; }
+.sum span { font-size: 13px; color: var(--sub); }
+footer { margin-top: 48px; font-size: 12px; color: var(--sub); }
+footer a { color: var(--sub); }
+@media (max-width: 640px) {
+  .res { grid-template-columns: minmax(0, 1fr); } .k { padding: 14px 0 0 !important; border-bottom: 0 !important; }
+  .sum { grid-template-columns: minmax(0, 1fr); } .sum div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); margin-top: 14px; }
+}
+</style>
+<div class="wrap">
+  <h1>대출 부실 예측모형<br>자동 점검</h1>
+  <p class="lede">3개월마다 모형이 예상한 부실률과 실제 부실률을 비교하고, 차이가 크면 수정안을 시험해 담당자에게 보고하는 시스템. Lending Club 공개 대출 데이터로 2015~2018년을 다시 실행한 결과임.</p>
+
+  <section class="ctl">
+    <label for="q"><span>점검 시점 선택</span><b class="num" id="ql"></b></label>
+    <input type="range" id="q" min="0" step="1" aria-label="점검 시점">
+    <div class="ticks"><span>2015년 4분기</span><span>2018년 4분기</span></div>
+    <div class="btns"><button id="play">처음부터 차례로 보기</button><button id="apply">권고대로 바꾼 결과 보기</button></div>
+  </section>
+
+  <section class="res" aria-live="polite">
+    <div class="k">모형 상태</div><div><span class="status" id="st"></span></div>
+    <div class="k">권고</div><div class="reco" id="rc"></div>
+    <div class="k">이유</div><div><ol id="why"></ol><div class="after" id="after" hidden></div></div>
+  </section>
+
+  <section class="chart">
+    <h2>모형이 예상한 부실률과 실제 부실률</h2>
+    <p>대출 실행 시기별, 실행 후 2년 안에 갚지 못한 대출의 비율. 회색 구간은 선택한 시점에 아직 결과를 알 수 없던 대출</p>
+    <div id="ch"></div>
+  </section>
+
+  <section class="sum" id="sum"></section>
+  <footer>판단에는 각 시점까지 알 수 있던 정보만 사용하고, 결과는 이후 실제로 확인된 값과 비교함. 실제 금융회사 운영 아님 · <a href="detail.html">분석 상세</a></footer>
+</div>
+<script>
+const D = /*__DATA__*/null;
+const $ = (s) => document.querySelector(s);
+const R = $("#q"); R.max = D.items.length - 1;
+let i = D.items.findIndex(x => x.q === D.default_q), showAfter = false, timer = null;
+const qlabel = (q) => `${q.slice(0, 4)}년 ${q.slice(5)}분기`;
+
+function chart(item) {
+  const c = D.cohorts, W = 840, H = 300, m = { l: 44, r: 16, t: 16, b: 34 }, n = c.length;
+  const vals = c.flatMap(r => [r.actual, r.pred]), lo = 0.08, hi = Math.max(0.15, Math.ceil(Math.max(...vals) * 100) / 100);
+  const X = (k) => m.l + k * (W - m.l - m.r) / (n - 1), Y = (v) => m.t + (hi - v) / (hi - lo) * (H - m.t - m.b);
+  const known = c.findIndex(r => r.q === item.known_until);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="예상 부실률과 실제 부실률">`;
+  if (known >= 0 && known < n - 1) s += `<rect x="${X(known) + 4}" y="${m.t}" width="${W - m.r - X(known) - 4}" height="${H - m.t - m.b}" fill="var(--soft)"/>`;
+  for (let v = lo; v <= hi + 1e-9; v += 0.02) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${m.l - 8}" y="${Y(v) + 4}" font-size="12" text-anchor="end" fill="var(--sub)">${Math.round(v * 100)}%</text>`;
+  const path = (k, cut) => c.map((r, j) => (j ? "L" : "M") + X(j) + " " + Y(r[k])).slice(0, cut).join("");
+  const cut = known >= 0 ? known + 1 : n;
+  s += `<path d="${path("pred", n)}" fill="none" stroke="var(--mid)" stroke-width="2.5" stroke-dasharray="6 5"/>`;
+  s += `<path d="${path("actual", cut)}" fill="none" stroke="var(--ink)" stroke-width="3"/>`;
+  c.forEach((r, j) => { if (r.q.endsWith("Q1")) s += `<text x="${X(j)}" y="${H - 10}" font-size="12" text-anchor="middle" fill="var(--sub)">${r.q.slice(0, 4)}</text>`; });
+  const last = c[cut - 1];
+  s += `<text x="${X(cut - 1) - 6}" y="${Y(last.actual) - 10}" font-size="13" font-weight="700" text-anchor="end" fill="var(--ink)">실제 ${(last.actual * 100).toFixed(1)}%</text>`;
+  s += `<text x="${X(cut - 1) - 6}" y="${Y(last.pred) + 20}" font-size="13" text-anchor="end" fill="var(--sub)">모형 예상 ${(last.pred * 100).toFixed(1)}%</text>`;
+  if (known >= 0 && known < n - 1) s += `<text x="${X(known) + 12}" y="${m.t + 18}" font-size="12" fill="var(--sub)">결과 미확인</text>`;
+  $("#ch").innerHTML = s + "</svg>";
+}
+
+function render() {
+  const it = D.items[i];
+  R.value = i; $("#ql").textContent = qlabel(it.q);
+  $("#st").innerHTML = `<span class="dot ${it.status === "조치 필요" ? "act" : it.status === "주의" ? "warn" : ""}"></span>${it.status}`;
+  $("#rc").textContent = it.reco;
+  $("#why").innerHTML = it.why.map(w => `<li>${w}</li>`).join("");
+  $("#apply").disabled = !it.after;
+  $("#apply").classList.toggle("on", showAfter && !!it.after);
+  const a = $("#after");
+  a.hidden = !(showAfter && it.after);
+  if (it.after) a.textContent = it.after;
+  chart(it);
+}
+R.oninput = () => { i = +R.value; render(); };
+$("#apply").onclick = () => { showAfter = !showAfter; render(); };
+$("#play").onclick = () => {
+  clearInterval(timer); i = 0; render();
+  timer = setInterval(() => { if (i >= D.items.length - 1) return clearInterval(timer); i += 1; render(); }, 1300);
+};
+$("#sum").innerHTML = D.summary.map(s => `<div><span>${s.label}</span><b class="num">${s.value}</b><span>${s.note}</span></div>`).join("");
+render();
+</script>
