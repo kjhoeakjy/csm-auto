@@ -160,11 +160,11 @@ def evidence(lead, early, lag, status, cand) -> list[dict]:
         if cand["chosen"]:
             c = t.loc[cand["chosen"]]
             txt = (f"1년 전 시점 데이터로 적합한 {LABEL[cand['chosen']]}을 그 뒤 확정된 "
-                   f"{cand['sel_q'][0]}~{cand['sel_q'][-1]} 실행분에 적용: 실제/예측 {m['o_e_ratio']:.2f} → "
-                   f"{c['o_e_ratio']:.2f}, log loss {c['rel_ll_gain'] * 100:.1f}% 개선, "
-                   f"AUC {m['auc']:.3f} → {c['auc']:.3f}")
+                   f"{cand['sel_q'][0]}~{cand['sel_q'][-1]} 실행분에 적용한 결과 실제/예측 {m['o_e_ratio']:.2f}에서 "
+                   f"{c['o_e_ratio']:.2f}로, log loss {c['rel_ll_gain'] * 100:.1f}% 개선, "
+                   f"AUC {m['auc']:.3f}에서 {c['auc']:.3f}로")
         else:
-            txt = (f"후보 {len(t) - 1}개 모두 사전 기준 미달 (1년 전 시점 적합 → "
+            txt = (f"후보 {len(t) - 1}개 모두 사전 기준 미달 (1년 전 시점 데이터로 적합한 뒤 "
                    f"{cand['sel_q'][0]}~{cand['sel_q'][-1]} 실행분 평가). 변경 보류")
         ev.append({"id": "candidate", "title": "개선 후보 검증", "text": txt})
     return ev

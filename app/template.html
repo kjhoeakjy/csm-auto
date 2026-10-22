@@ -145,7 +145,7 @@ body.capture .steps { margin-top: 0; }
     <details><summary>분기별 추세</summary><div class="inner" id="trend"></div></details>
     <details><summary>분석 상세</summary><div class="inner" id="detail"></div></details>
     <details><summary>사후 확인 <span class="cap">판단 당시에는 알 수 없던 결과</span></summary><div class="inner" id="post"></div></details>
-    <details><summary>검증된 보고서</summary><div class="inner" id="report"></div></details>
+    <details><summary>분기 보고서</summary><div class="inner" id="report"></div></details>
     <details><summary>실행 기록</summary><div class="inner" id="log"></div></details>
   </section>
   <footer><p class="cap">Lending Club 실행 대출 226만 건(2007~2018) · 정답 = 실행 후 24개월 내 상환 중단 후 상각 (상각 시점은 마지막 납부월 기준 근사) · 실제 금융회사 운영 아님 · 모형 변경은 담당자 승인 후 적용 · 판정 규칙 <span id="rv"></span></p></footer>
@@ -201,7 +201,7 @@ function renderCard() {
     <div class="k eyebrow">판단 근거</div>
     <div>${ev ? `<ol class="ev">${ev}</ol>` : '<span class="cap">근거 부족: 판정 유보</span>'}
       ${segs.length ? `<div class="seg">전체 수준과 다르게 움직인 집단: ${segs.join(" · ")}</div>` : ""}</div>
-    <div class="k eyebrow">승인</div><div class="cap">${q.candidates && q.candidates.chosen ? "담당자 검토·승인 후 적용 (시스템은 제안·검증·보고까지)" : "모형 변경 없음"} · 판단 기준월 ${(q.asof || "").slice(0, 7)}</div>`;
+    <div class="k eyebrow">승인</div><div class="cap">${q.candidates && q.candidates.chosen ? "담당자 검토와 승인 후 적용. 시스템은 제안과 보고까지 수행" : "모형 변경 없음"} · 판단 기준월 ${(q.asof || "").slice(0, 7)}</div>`;
 }
 function play() {
   clearInterval(timer);
@@ -225,7 +225,7 @@ function renderPol() {
     ${s.map(r => `<div class="pbar ${r.policy.startsWith("D") ? "me" : ""}"><span>${r.policy}</span><i style="width:${(r.book_mean_abs_oe_err / maxE * 100).toFixed(1)}%"></i><span class="num" style="text-align:right">${(r.book_mean_abs_oe_err * 100).toFixed(1)}%</span></div>`).join("")}</div>
     ${table([["정책", r => r.policy], ["모형 변경", r => r.changes + "회"], ["재학습", r => r.retrains + "회"], ["평균 오차", r => (r.book_mean_abs_oe_err * 100).toFixed(1) + "%"],
       ["평균 log loss", r => f3(r.book_mean_ll)], ["평균 AUC", r => f3(r.book_mean_auc)], ["신규 대출 오차", r => r.new_mean_abs_oe_err == null ? "–" : (r.new_mean_abs_oe_err * 100).toFixed(1) + "%"]], s, r => r.policy.startsWith("D"))}
-    <p class="cap">모든 정책은 각 분기 시점에 확정된 결과만으로 결정하고, 평가는 그 뒤 확정된 실제 결과로 함. 보유 대출 = 판단 시점에 결과가 미확정이던 대출, 신규 대출 = 그 분기에 실행된 대출(정답이 있는 2016Q3까지). D는 권고 시 승인을 가정</p>
+    <p class="cap">모든 정책은 각 분기 시점에 확정된 결과만으로 결정하고, 평가는 그 뒤 확정된 실제 결과로 함. 보유 대출 = 판단 시점에 결과가 미확정이던 대출, 신규 대출 = 그 분기에 실행된 대출(정답이 있는 2016Q3 실행분 한정). D는 권고 시 승인을 가정</p>
     ${P.d_log ? `<div><h3>D 제안 시스템의 분기별 판단</h3>${table([["분기", r => r.quarter], ["상태", r => r.status], ["문제 유형", r => r.problem], ["적용한 조치", r => r.chosen || "–"]], P.d_log)}</div>` : ""}`;
 }
 function lineChart(rows, keys, opt) {
@@ -285,7 +285,7 @@ function renderDetail() {
     <p class="cap">24개월 상각의 정답이 아닌 조기 경고용 중간 신호. 유용성은 24개월 결과가 확정된 코호트로 별도 검증</p></div>`;
   if (q.lead && q.lead.top_recent) h += `<div><h3>신규 실행 대출 (${int(q.lead.n)}건)</h3><p class="cap">점수 분포 PSI 학습 대비 ${f3(q.lead.score_psi_ref)} · 직전 4분기 대비 ${f3(q.lead.score_psi_recent)} · 평균 예측 ${pct(q.lead.score_mean)} (학습 ${pct(q.lead.score_mean_ref)})</p>${table([["변수 (직전 4분기 대비)", r => (D.feat_ko[r.feature] || r.feature)], ["PSI", r => f3(r.psi)]], q.lead.top_recent)}</div>`;
   if (q.candidates) { const c = q.candidates, ok = v => v ? "통과" : "–", mt = r => r.candidate === "maintain";
-    h += `<div><h3>개선 후보 ${c.table.length - 1}종 · 1년 전(${c.pseudo_asof.slice(0, 7)}) 데이터로 적합 → ${c.sel_q[0]}~${c.sel_q.at(-1)} 실행분으로 평가</h3>${table([
+    h += `<div><h3>개선 후보 ${c.table.length - 1}종 · 1년 전(${c.pseudo_asof.slice(0, 7)}) 데이터로 적합한 뒤 ${c.sel_q[0]}~${c.sel_q.at(-1)} 실행분으로 평가</h3>${table([
       ["후보", r => r.label + (r.candidate === c.chosen ? " ◀" : "")], ["실제/예측", r => f2(r.o_e_ratio)], ["log loss 개선", r => (r.rel_ll_gain * 100).toFixed(1) + "%"], ["AUC", r => f3(r.auc)],
       ["개선 유의", r => mt(r) ? "" : ok(r.ok_gain && r.ok_gain_ci)], ["오차 감소", r => mt(r) ? "" : ok(r.ok_calibrated)], ["순위 유지", r => mt(r) ? "" : ok(r.ok_auc)], ["집단 악화 없음", r => mt(r) ? "" : ok(r.ok_groups)]],
       c.table, r => r.candidate === c.chosen)}<p class="cap">선택 규칙: ${c.selection_note}</p></div>`; }
@@ -300,7 +300,7 @@ function renderPost() {
 }
 function renderReport() {
   const q = Q(), v = q.report_check, L = D.llm && D.llm[q.q];
-  const llm = !L ? "" : L.published ? `<div><h3>LLM 보고서 초안 · ${L.model}</h3><p><span class="tag">판정·권고 일치 · 수치 대조 통과</span> <span class="cap">검증된 도구로 조회한 값만 사용. 원인 단정·코드명 노출 자동 검사</span></p>
+  const llm = !L ? "" : L.published ? `<div><h3>LLM 보고서 초안 · ${L.model}</h3><p><span class="tag">판정·권고 일치 · 수치 대조 통과</span> <span class="cap">정해진 조회 도구의 값만 사용. 원인 단정·코드명 노출 자동 검사</span></p>
     <pre class="report">${L.output.summary}\n\n${L.output.evidence.map((e, i) => `${i + 1}. ${e.title}: ${e.text}`).join("\n")}\n\n조사 항목\n${L.output.investigate.map(x => "- " + x).join("\n")}</pre></div>`
     : `<p class="cap">LLM 보고서 초안 발행 보류 (${L.model}): ${L.problems.join(" / ")}</p>`;
   $("#report").innerHTML = (q.report ? `<p><span class="tag">수치 대조 일치 · ${v.n_numbers}개</span> <span class="cap">보고서의 모든 숫자·분기를 정량 근거 JSON과 자동 대조. 불일치하면 발행 보류</span></p><pre class="report">${q.report}</pre>`

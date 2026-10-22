@@ -80,6 +80,7 @@ def timing_summary():
 
 
 def kpis(decs, posthoc, default_q):
+    """핵심 수치 3개. value = 큰 숫자, short = 슬라이드용 한 줄, note = 화면용 설명"""
     out = []
     first = lambda pred: next((d["quarter"] for d in decs if pred(d)), None)
     e = first(lambda d: any(r.startswith("early12") for r in d.get("reasons", []))
@@ -88,26 +89,27 @@ def kpis(decs, posthoc, default_q):
               and d.get("lag") and d["lag"][0]["o_e_ratio"] > 1)
     if e and l:
         gap = pd.Period(l, freq="Q").ordinal - pd.Period(e, freq="Q").ordinal
-        out.append({"label": "조기 경고", "value": f"{gap}분기 먼저",
-                    "note": f"과소 예측을 12개월 중간 신호로 {e}에 포착. 24개월 확정 결과로는 {l}에 확인"})
+        out.append({"label": "이상 감지 시점", "value": f"{gap}분기 앞당김", "short": "12개월 중간 신호 사용",
+                    "note": f"과소 예측을 {e}에 감지. 24개월 확정 결과로는 {l}에 확인"})
     ph = [r for r in posthoc if r["asof_q"] == default_q and r["part"] == "전체"]
     m = next((r for r in ph if r["candidate"] == "maintain"), None)
     c = next((r for r in ph if r["is_chosen"]), None)
     if m and c:
-        out.append({"label": "예측 오차 (사후 확인)",
-                    "value": f"{abs(m['o_e_ratio'] - 1) * 100:.0f}% → {abs(c['o_e_ratio'] - 1) * 100:.0f}%",
-                    "note": f"{default_q} 권고({c['label']})를 판단 당시 보유 대출 {c['n']:,}건에 적용. "
-                            f"AUC {m['auc']:.3f} → {c['auc']:.3f}"})
+        q = pd.Period(default_q, freq="Q")
+        out.append({"label": "예측 오차", "value": f"{abs(c['o_e_ratio'] - 1) * 100:.0f}%",
+                    "short": f"적용 전 {abs(m['o_e_ratio'] - 1) * 100:.0f}%. {q.year}년 {q.quarter}분기 보유 대출 {c['n'] / 1e4:.0f}만 건",
+                    "note": f"{default_q} 권고({c['label']})를 당시 보유 대출 {c['n']:,}건에 적용한 사후 확인. "
+                            f"적용 전 {abs(m['o_e_ratio'] - 1) * 100:.0f}%, AUC {m['auc']:.3f}에서 {c['auc']:.3f}"})
     pol = load_json(RESULTS / "m11_policy.json")
     if pol:
         s = {r["policy"][0]: r for r in pol["summary"]}
         if all(k in s for k in "ABD"):
-            out.append({"label": "모형 변경 (13개 분기)",
-                        "value": f"{s['B']['changes']}회 → {s['D']['changes']}회",
-                        "note": f"매 분기 재학습 대비. 예측 오차는 비슷 ({s['B']['book_mean_abs_oe_err'] * 100:.1f}% vs "
-                                f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%, 고정 모형 {s['A']['book_mean_abs_oe_err'] * 100:.1f}%)"})
+            out.append({"label": "모형 변경 횟수", "value": f"{s['D']['changes']}회",
+                        "short": f"분기별 재학습 {s['B']['changes']}회와 비슷한 오차",
+                        "note": f"13개 분기 기준. 예측 오차 {s['D']['book_mean_abs_oe_err'] * 100:.1f}% "
+                                f"(분기별 재학습 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%, 고정 모형 "
+                                f"{s['A']['book_mean_abs_oe_err'] * 100:.1f}%)"})
     return out
-
 
 def main():
     ap = argparse.ArgumentParser()
@@ -162,7 +164,7 @@ def main():
 
     data = clean({
         "lede": "신규 대출의 24개월 내 상각 위험을 예측하는 모형 1개를 매 분기 자동 점검하고, 문제 발생 시 "
-                "유지·재보정·재학습 중 당시 데이터로 검증된 조치를 담당자에게 권고하는 시스템",
+                "유지, 재보정, 재학습 중 당시 데이터로 시험을 통과한 조치를 담당자에게 권고하는 시스템",
         "feat_ko": report.FEAT_KO, "kpis": kpis(decs, posthoc, a.default),
         "policy": load_json(RESULTS / "m11_policy.json"),
         "injection": pd.read_csv(RESULTS / "m10_injection.csv").to_dict("records")

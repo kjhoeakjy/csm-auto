@@ -81,7 +81,7 @@ def card_evidence(dec: dict) -> list[dict]:
         t = lead["top_recent"][0]
         same = "학습 시점과 비슷함" if lead["score_psi_ref"] < 0.1 else "학습 시점과 달라짐"
         ev.append({"title": "신규 대출 특성·데이터 품질",
-                   "short": f"점수 분포 {'안정' if lead['score_psi_ref'] < 0.1 else '변화'} (PSI {lead['score_psi_ref']:.3f}) · 형식 정상",
+                   "short": f"점수 분포 {'안정' if lead['score_psi_ref'] < 0.1 else '변화'} (PSI {lead['score_psi_ref']:.3f}), 데이터 형식 정상",
                    "text": (f"이번 분기 신규 {lead['n']:,}건. 모형 점수 분포는 {same} "
                             f"(PSI {lead['score_psi_ref']:.3f}). 직전 1년 대비 가장 크게 바뀐 입력은 "
                             f"{FEAT_KO.get(t['feature'], t['feature'])} (PSI {t['psi']:.2f})")})
@@ -96,7 +96,7 @@ def card_evidence(dec: dict) -> list[dict]:
     c = dec.get("candidates")
     if c is None:
         ev.append({"title": "개선안 별도 검증", "text": "조치 검토 기준에 못 미쳐 개선안 실험 생략",
-                   "short": "조치 기준 미달 · 실험 생략"})
+                   "short": "조치 기준 미달로 실험 생략"})
     else:
         t = {r["candidate"]: r for r in c["table"]}
         m = t["maintain"]
@@ -105,14 +105,14 @@ def card_evidence(dec: dict) -> list[dict]:
             ev.append({"title": "개선안 별도 검증",
                        "text": (f"{LABEL[c['chosen']]}을 1년 전 데이터로 만들어 이후 확정된 "
                                 f"{c['sel_q'][0]}~{c['sel_q'][-1]} 실행분에 적용: 실제/예측 "
-                                f"{m['o_e_ratio']:.2f}배 → {k['o_e_ratio']:.2f}배, 예측 오차(log loss) "
+                                f"{m['o_e_ratio']:.2f}배에서 {k['o_e_ratio']:.2f}배로, 예측 오차(log loss) "
                                 f"{k['rel_ll_gain'] * 100:.1f}% 감소"),
-                       "short": f"{LABEL[c['chosen']]} · 실제/예측 {m['o_e_ratio']:.2f} → {k['o_e_ratio']:.2f}"})
+                       "short": f"{LABEL[c['chosen']]}, 실제/예측 {m['o_e_ratio']:.2f}에서 {k['o_e_ratio']:.2f}로"})
         else:
             ev.append({"title": "개선안 별도 검증",
                        "text": (f"개선안 {len(t) - 1}개를 1년 전 데이터로 만들어 {c['sel_q'][0]}~"
                                 f"{c['sel_q'][-1]} 실행분에 시험했으나 모두 사전 기준 미달: 변경 보류"),
-                       "short": f"후보 {len(t) - 1}개 모두 기준 미달 · 변경 보류"})
+                       "short": f"후보 {len(t) - 1}개 모두 기준 미달, 변경 보류"})
     return ev
 
 
