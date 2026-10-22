@@ -17,18 +17,21 @@ from sklearn.linear_model import LogisticRegression
 import features as F
 from config import SEED
 from metrics import evaluate
+from lightgbm import early_stopping
+
 from models import lgb_model, logit_pipeline
 from rules import R
 
 EPS = 1e-6
-COMPLEXITY = {"maintain": 0, "recal_intercept": 1, "recal_early": 2, "recal_platt": 3,
-              "recal_beta": 4, "recal_grade": 5, "recal_isotonic": 6, "retrain_logit": 7,
-              "retrain_lgbm": 8, "retrain_lgbm_ext": 9}
+COMPLEXITY = {"maintain": 0, "recal_intercept": 1, "recal_early": 2, "recal_trend": 3, "recal_platt": 4,
+              "recal_beta": 5, "recal_grade": 6, "recal_isotonic": 7, "retrain_logit": 8,
+              "retrain_lgbm": 9, "retrain_lgbm_ext": 10, "retrain_lgbm_ext_tw": 11}
 LABEL = {"maintain": "현행 유지", "recal_intercept": "전역 재보정(수준)",
          "recal_early": "조기 결과 반영 재보정", "recal_platt": "전역 재보정(Platt)",
          "recal_beta": "전역 재보정(beta)", "recal_grade": "등급별 재보정",
          "recal_isotonic": "전역 재보정(isotonic)", "retrain_logit": "재학습(로지스틱)",
-         "retrain_lgbm": "재학습(LightGBM)", "retrain_lgbm_ext": "재학습(LightGBM+확장 변수)"}
+         "retrain_lgbm": "재학습(LightGBM)", "retrain_lgbm_ext": "재학습(LightGBM+확장 변수)",
+         "recal_trend": "추세 반영 재보정", "retrain_lgbm_ext_tw": "재학습(확장 변수+최근 가중)"}
 KIND = {k: ("keep" if k == "maintain" else "recal" if k.startswith("recal") else "retrain")
         for k in COMPLEXITY}
 
@@ -105,25 +108,62 @@ RECAL = {"recal_intercept": Intercept, "recal_platt": Platt, "recal_beta": Beta,
          "recal_grade": GradeIntercept, "recal_isotonic": Isotonic}
 
 
+class TrendIntercept:
+    """추세 반영 재보정 (r4): 최근 확정 코호트별 절편 이동량의 추세를 as-of 로 연장
+    a_q (분기별 수준 차이) ~ 분기 순번 선형 회귀 → 마지막 적합 분기 + ahead 분기 시점 값 (관측 범위 ±0.3 로 제한)"""
+    def __init__(self, ahead=3):
+        self.ahead = ahead
+
+    def fit(self, p, y, q):
+        qs = sorted(np.unique(q))
+        a = np.array([Intercept().fit(p[q == k], y[q == k]).a_ for k in qs])
+        x = np.arange(len(qs))
+        slope, icpt = np.polyfit(x, a, 1) if len(qs) >= 3 else (0.0, a.mean())
+        self.a_ = float(np.clip(icpt + slope * (len(qs) - 1 + self.ahead), a.min() - 0.3, a.max() + 0.3))
+        self.slope_ = float(slope)
+        return self
+
+    def predict(self, p, g=None):
+        return _sigmoid(_logit(p) + self.a_)
+
+
 # ---------------- 재학습 ----------------
 class Retrain:
+    """LightGBM 재학습 (r4): 적합 창의 마지막 2분기로 시간순 조기 종료 → 반복 수 정한 뒤 창 전체 재적합.
+    _tw 는 최근 분기 가중 (반감기 4분기). 튜닝은 적합 창 안에서만 (선택용·미래 코호트 사용 안 함)"""
     def __init__(self, kind, champion_meta):
         self.kind, self.meta = kind, champion_meta
 
+    def _ext(self):
+        return self.kind.startswith("retrain_lgbm_ext")
+
     def fit(self, d):
-        ext = self.kind == "retrain_lgbm_ext"
+        ext = self._ext()
         self.cols_ = F.num_cols(ext) + F.CAT_COLS
         X = F.build(d, extended=ext)[self.cols_]
         if self.kind == "retrain_logit":
             self.m_ = logit_pipeline(F.num_cols(), F.CAT_COLS, self.meta["logit"]["C"]).fit(X, d["y"])
-        else:   # 챔피언과 같은 구조·반복 수 (선택용 구간으로 다시 튜닝하지 않음)
-            self.m_ = lgb_model(n_estimators=self.meta["lgbm"]["n_estimators"],
-                                **self.meta["lgbm"]["params"]).fit(X, d["y"])
+            return self
+        qord = np.array([p.ordinal for p in d["q"]]) if "q" in d else None
+        w = None
+        if self.kind.endswith("_tw") and qord is not None:
+            w = 0.5 ** ((qord.max() - qord) / 4.0)
+        params = dict(self.meta["lgbm"]["params"])
+        if qord is not None and len(np.unique(qord)) >= 4:
+            val = qord >= np.sort(np.unique(qord))[-2]
+            m = lgb_model(n_estimators=1500, learning_rate=0.05, **params).fit(
+                X[~val], d["y"].values[~val], sample_weight=None if w is None else w[~val],
+                eval_set=[(X[val], d["y"].values[val])], eval_metric="binary_logloss",
+                callbacks=[early_stopping(100, verbose=False)])
+            n = max(int(m.best_iteration_ * 1.1), 50)
+        else:
+            n = self.meta["lgbm"]["n_estimators"]
+        self.n_iter_ = n
+        self.m_ = lgb_model(n_estimators=n, learning_rate=0.05, **params).fit(X, d["y"], sample_weight=w)
         return self
 
     def predict(self, d):
-        ext = self.kind == "retrain_lgbm_ext"
-        return self.m_.predict_proba(F.build(d, extended=ext)[self.cols_])[:, 1]
+        return self.m_.predict_proba(F.build(d, extended=self._ext())[self.cols_])[:, 1]
 
 
 # ---------------- 평가 ----------------
@@ -179,10 +219,13 @@ def _fit_all(lab24, lab12, meta, emap, with_retrain):
     fitted = {k: cls().fit(fr["p"].values, fr["y"].values, fr["grade"].values)
               for k, cls in RECAL.items()}
     fitted["recal_early"] = EarlyIntercept(emap).fit(fe["p"].values, fe["y12"].values)
+    f4 = lab24[lab24["q"].isin(_last_q(lab24, 4))]
+    fitted["recal_trend"] = TrendIntercept().fit(f4["p"].values, f4["y"].values,
+                                                 np.array([p.ordinal for p in f4["q"]]))
     if with_retrain:
         ft = lab24[lab24["q"].isin(fit_t_q)]
-        for k in ["retrain_logit", "retrain_lgbm", "retrain_lgbm_ext"]:
-            d = ft if k != "retrain_lgbm_ext" else ft[ft["issue_d"] >= "2013-01-01"]
+        for k in ["retrain_logit", "retrain_lgbm", "retrain_lgbm_ext", "retrain_lgbm_ext_tw"]:
+            d = ft if not k.startswith("retrain_lgbm_ext") else ft[ft["issue_d"] >= "2013-01-01"]
             if len(d) >= 50000:
                 fitted[k] = Retrain(k, meta).fit(d)
     windows = {"recal": [str(q) for q in fit_r_q], "early": [str(q) for q in fit_e_q],
@@ -217,13 +260,19 @@ def run_candidates(lab24: pd.DataFrame, lab12: pd.DataFrame, asof: pd.Timestamp,
         e = evaluate(ys, p)
         grp = _grade_rel(ys, p, gs)
         worsen = max([abs(grp[g]) - abs(base_grp[g]) for g in grp if g in base_grp] or [0])
+        # r4 집단 기준: 상각 건수 가중 평균 등급 오차가 유지보다 나빠지지 않고, 어느 등급도 유지의 최악 등급 오차를 넘지 않음
+        wts = {g: ys[gs == g].sum() for g in grp}
+        wavg = lambda d: sum(abs(d[g]) * wts[g] for g in d if g in wts) / max(sum(wts[g] for g in d if g in wts), 1)
+        base_worst = max([abs(v) for v in base_grp.values()] or [0])
+        groups_ok = (wavg(grp) <= wavg(base_grp) + 1e-9
+                     and max([abs(v) for v in grp.values()] or [0]) <= max(base_worst, R["max_group_worsen"]))
         dm, dlo, dhi = boot_delta(ys, ps, p, R["bootstrap_b"]) if k != "maintain" else (0, 0, 0)
         checks = {
             "gain": (base_ll - e["logloss"]) / base_ll >= R["min_rel_logloss_gain"],
             "gain_ci": dhi < 0,
             "calibrated": abs(e["o_e_ratio"] - 1) < abs(base["o_e_ratio"] - 1),
             "auc": e["auc"] >= base["auc"] - R["max_auc_drop"],
-            "groups": worsen <= R["max_group_worsen"],
+            "groups": groups_ok,
         }
         rows.append({"candidate": k, "label": LABEL[k], "kind": KIND[k],
                      "complexity": COMPLEXITY[k], "logloss": e["logloss"],
@@ -231,7 +280,7 @@ def run_candidates(lab24: pd.DataFrame, lab12: pd.DataFrame, asof: pd.Timestamp,
                      "dll_lo": dlo, "dll_hi": dhi, "brier": e["brier"], "auc": e["auc"],
                      "o_e_ratio": e["o_e_ratio"], "gap_pp": e["gap_pp"],
                      "worst_grade_rel": max([abs(v) for v in grp.values()] or [np.nan]),
-                     "group_worsen": worsen,
+                     "group_worsen": worsen, "grade_wavg_err": wavg(grp),
                      **{f"ok_{c}": v for c, v in checks.items()},
                      "passed": k != "maintain" and all(checks.values())})
     table = pd.DataFrame(rows).sort_values("complexity").reset_index(drop=True)

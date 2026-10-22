@@ -65,6 +65,7 @@ OUTPUT_SCHEMA = {
     "additionalProperties": False,
 }
 
+SPOKEN = re.compile(r"(니다|어요|아요|해요|세요|죠|네요|군요|예요|에요)(?=[\s.,!?)]|$)")
 CAUSAL = re.compile(r"때문(이다|임|에)|원인은(?! 무엇)(?![^.?]*\?)|로 인해|로 인한|탓")
 
 
@@ -129,6 +130,8 @@ def validate(out, dec, tool_texts):
     v = report.verify(text, ref)
     if not v["verified"]:
         probs.append("근거에 없는 숫자·분기: " + ", ".join(v["unmatched"][:8]))
+    if SPOKEN.search(text):
+        probs.append("구어체 표현: " + SPOKEN.search(text).group(0))
     if CAUSAL.search(text):
         probs.append("원인 단정 표현: " + CAUSAL.search(text).group(0))
     leak = [t["name"] for t in TOOLS if t["name"] in text] + re.findall(r"\b(int_rate|fico|dti|grade_num)\b", text)

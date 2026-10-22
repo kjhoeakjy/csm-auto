@@ -64,6 +64,10 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.6 v
 .ev b { display: block; font-size: 15px; }
 .ev span { opacity: .82; }
 .seg { margin-top: 12px; font-size: 13px; color: var(--sub); }
+.ev .short { display: block; font-size: 17px; font-weight: 600; opacity: 1; letter-spacing: -0.02em; margin-top: 2px; }
+details.evd { border: 0; margin-top: 4px; } details.evd summary { padding: 0; font-size: 12px; font-weight: 500; color: var(--sub); }
+details.evd summary::after { content: ""; } details.evd span { display: block; font-size: 13px; color: var(--sub); margin-top: 4px; }
+body.capture details.evd, body.capture .steps, body.capture .seg { display: none; }
 .hidden { display: none !important; }
 .kpis { margin-top: 72px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--ink); }
 .kpi { padding: 24px 24px 28px 0; }
@@ -189,7 +193,7 @@ function renderSteps(n) {
 function renderCard() {
   const q = Q();
   const segs = (q.segments || []).slice(0, 2).map(s => `${s.group} ${s.level} (전체 대비 ${s.rel_to_all > 0 ? "+" : ""}${(s.rel_to_all * 100).toFixed(0)}%${s.repeated ? ", 직전 코호트에서도 확인" : ""})`);
-  const ev = (q.card || []).map(e => `<li><div><b>${e.title}</b><span>${e.text}</span></div></li>`).join("");
+  const ev = (q.card || []).map(e => `<li><div><b>${e.title}</b><span class="short">${e.short || e.text}</span>${e.short ? `<details class="evd"><summary>자세히</summary><span>${e.text}</span></details>` : ""}</div></li>`).join("");
   $("#card").innerHTML = `
     <div class="k eyebrow">상태 · ${q.q}</div>
     <div><div class="status"><span class="mk ${cls(q.status)}"></span>${q.status}<small>${q.problem_label || ""}</small></div></div>

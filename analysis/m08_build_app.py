@@ -120,7 +120,7 @@ def main():
         txt = report.build(d)
         chk = report.verify(txt, d) if txt else {"verified": False, "n_numbers": 0, "unmatched": []}
         card = report.card_evidence(d)
-        card_chk = report.verify(" ".join(e["text"] for e in card), d)
+        card_chk = report.verify(" ".join(e["text"] + " " + e.get("short", "") for e in card), d)
         if not card_chk["verified"]:           # 대조 실패 시 정량 근거 원문 사용
             card = d.get("evidence", [])
         lag0 = (d.get("lag") or [{}])[0]
@@ -161,8 +161,8 @@ def main():
              "reco": d["recommendation"]} for d in decs]
 
     data = clean({
-        "lede": "신규 대출의 24개월 내 상각 위험을 예측하는 모형 1개를 매 분기 자동으로 점검하고, 문제가 생기면 "
-                "유지·재보정·재학습 중 당시 데이터로 검증된 조치를 담당자에게 권고합니다.",
+        "lede": "신규 대출의 24개월 내 상각 위험을 예측하는 모형 1개를 매 분기 자동 점검하고, 문제 발생 시 "
+                "유지·재보정·재학습 중 당시 데이터로 검증된 조치를 담당자에게 권고하는 시스템",
         "feat_ko": report.FEAT_KO, "kpis": kpis(decs, posthoc, a.default),
         "policy": load_json(RESULTS / "m11_policy.json"),
         "injection": pd.read_csv(RESULTS / "m10_injection.csv").to_dict("records")
