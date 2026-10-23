@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image
 from pptx import Presentation
 from pptx.dml.color import RGBColor
-from pptx.enum.text import MSO_ANCHOR
+from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Inches, Pt
 
 HERE = Path(__file__).resolve().parent
@@ -172,16 +172,12 @@ def results():
     auc_txt = ("변별력(AUC) 우위" if s["D"]["book_mean_auc"] > s["B"]["book_mean_auc"] + 0.0005
                else "변별력(AUC) 정기 재학습 우위")
     return [(f"{early_m}개월 전 사전 예측", "상각률 이상 경고 시점",
-             "대출 후 1년 중간 실적 활용 (기존 2년 실적)\n2016~2017년 단일 사례"),
+             "대출 후 1년 중간 실적 활용\n(기존 방식은 2년 실적 확인 후 경고)"),
             (gap(oe["D"]), "모형 갱신 후 상각률 예측 오차",
-             f"갱신 없음 {gap(oe['A'])}, 상대 오차 (실제÷예측-1)\n"
-             f"절대 차이 {abs(act - act / oe['A']) * 100:.1f}%p에서 {abs(act - act / oe['D']) * 100:.1f}%p로\n"
-             f"{y}년 {qn}분기 보유 대출 (그림의 마지막 시점)"),
+             f"모형을 그대로 두면 {gap(oe['A'])}\n{y}년 {qn}분기 기준"),
             (f"{s['D']['changes']}회", "3년간 모형 갱신 횟수",
-             (f"예측치 조정 {s['D']['changes'] - s['D']['retrains']}회" + (f", 재학습 {s['D']['retrains']}회" if s["D"]["retrains"] else "") + " (갱신 승인 가정)\n") +
-             f"정기 재학습 {s['B']['changes']}회 대비 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%에서 "
-             f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%로\n"
-             f"{auc_txt} ({s['D']['book_mean_auc']:.3f} 대 {s['B']['book_mean_auc']:.3f})")]
+             f"평균 오차 {s['D']['book_mean_abs_oe_err'] * 100:.1f}%\n"
+             f"3개월마다 재학습({s['B']['changes']}회)은 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%")]
 
 
 STEPS = ["3개월마다 예측 상각률과 실제 상각률 비교",
@@ -240,18 +236,20 @@ def slide2(prs, shot=None):
     for i, (v, lab, note) in enumerate(results()):
         x = rx + i * (cw + gap)
         if i:
-            vline(s, x - gap / 2, y0, 2.45)
-        text(s, x, y0, cw, 0.42, [[(ln, {})] for ln in wrap(lab, 12)], size=10, weight="sb", spacing=1.15)
+            vline(s, x - gap / 2, y0, 2.1)
+        labs = wrap(lab, 12)
+        text(s, x, y0, cw, 0.22 * len(labs), [[(ln, {})] for ln in labs], size=10, weight="sb", spacing=1.15)
         val = v.replace("전 사전", "전\n사전") if len(v) > 6 else v
-        text(s, x, y0 + 0.42, cw, 0.8, [[(ln, {})] for ln in val.split("\n")], size=22, weight="bold",
-             anchor=MSO_ANCHOR.BOTTOM, spacing=1.0)
-        lines = [ln for part in note.split("\n") for ln in wrap(part, 16)]
-        text(s, x, y0 + 1.35, cw, 1.4, [[(ln, {})] for ln in lines], size=8.5, color=G1, spacing=1.2)
-    qs = 0.85                                   # QR
-    s.shapes.add_picture(str(HERE / "qr.png"), Inches(M), Inches(H - 0.32 - qs), Inches(qs), Inches(qs))
-    text(s, M + qs + 0.15, H - 0.32 - qs + 0.15, 4.5, 0.6,
-         [[("결과 화면 (시점별 점검 결과 확인)", {"weight": "bold", "size": 11})],
-          [("kjhoeakjy.github.io/csm-auto", {"size": 9.5, "color": G1})]], spacing=1.3)
+        vy = y0 + 0.22 * len(labs) + 0.08
+        vh = 0.42 * len(val.split("\n"))
+        text(s, x, vy, cw, vh, [[(ln, {})] for ln in val.split("\n")], size=22, weight="bold", spacing=1.0)
+        lines = [ln for part in note.split("\n") for ln in wrap(part, 18)]
+        text(s, x, vy + vh + 0.12, cw, 1.0, [[(ln, {})] for ln in lines], size=9, color=G1, spacing=1.25)
+    qs = 0.8                                    # QR: 제목 줄 오른쪽
+    s.shapes.add_picture(str(HERE / "qr.png"), Inches(W - M - qs), Inches(0.42), Inches(qs), Inches(qs))
+    text(s, W - M - qs - 3.2, 0.62, 3.05, 0.5,
+         [[("결과 화면 (시점별 점검 결과 확인)", {"weight": "bold", "size": 10})],
+          [("kjhoeakjy.github.io/csm-auto", {"size": 9, "color": G1})]], spacing=1.3, align=PP_ALIGN.RIGHT)
     text(s, rx, H - 0.62, rw, 0.4, [[("판정 규칙과 모형 설정은 같은 기간 결과를 보고 정한 탐색 단계 결과. 상각 시점은 마지막 납부월 기준 근사", {})],
                                   [("시점별 판단은 해당 시점까지 확정된 정보로 수행. 공개 자료 기반 과거 재현, 실제 금융회사 운영 사례 아님", {})]], size=8, color=G2, spacing=1.2)
 

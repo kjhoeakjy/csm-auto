@@ -71,7 +71,7 @@ A["act"] = act
 A["pred"] = A["act"] / A["book_oe"]
 Dp["pred"] = A["act"] / Dp["book_oe"]
 xs = range(len(A))
-fig, ax = plt.subplots(figsize=(6.2, 3.55), dpi=300)
+fig, ax = plt.subplots(figsize=(6.2, 4.25), dpi=300)
 ax.plot(xs, A["act"], color="black", lw=2.8)
 ax.plot(xs, A["pred"], color="#8a8a8a", lw=2.4, ls=(0, (4, 3)))
 ax.plot(xs, Dp["pred"], color="#444444", lw=2.0, ls=(0, (1, 1.6)), zorder=4)   # 갱신 전 구간은 모형 예측과 같음
