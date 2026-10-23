@@ -1,15 +1,20 @@
-﻿"""모형 운영 자동화 프로젝트 공통 설정
+"""모형 운영 자동화 프로젝트 공통 설정
 
 변수 목록은 '실행 시점에 알 수 있는가'를 기준으로 나눔.
   ORIGINATION : 대출 실행(신청) 시점에 관측되는 값 -> 모형 입력 후보
   OUTCOME     : 실행 이후 상환 경과로 정해지는 값 -> 정답 정의에만 사용
   LEAKAGE     : 모형 입력에 절대 쓰지 않는 값 (tests/test_leakage.py 에서 점검)
 """
+import os
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]          # 현대카드/
-MO = ROOT / "modelops"
-RAW_CSV = ROOT / "data" / "raw" / "accepted_2007_to_2018Q4.csv.gz"
+# 프로젝트 폴더(저장소 최상위) 기준 경로. 환경변수로 위치 변경 가능
+MO = Path(os.environ.get("CSM_PROJECT_ROOT", Path(__file__).resolve().parents[1]))
+_RAW_NAME = "accepted_2007_to_2018Q4.csv.gz"
+RAW_CSV = Path(os.environ["CSM_RAW_CSV"]) if os.environ.get("CSM_RAW_CSV") else next(
+    (p for p in (MO / "data" / "raw" / _RAW_NAME, MO.parent / "data" / "raw" / _RAW_NAME) if p.exists()),
+    MO / "data" / "raw" / _RAW_NAME)
+ROOT = MO.parent
 DATA = MO / "data"
 RESULTS = MO / "results"
 REPORTS = MO / "reports"

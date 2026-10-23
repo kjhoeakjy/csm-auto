@@ -1,6 +1,7 @@
-﻿"""분기 보고서 생성(규칙 기반)과 수치 대조
+"""분기 보고서 생성(규칙 기반)과 수치 대조
 
-verify(text, decision): 보고서 본문의 모든 숫자·분기 표기가 decision.json 의 값에서 나온 것인지 확인.
+verify(text, decision): 보고서 본문의 모든 숫자·분기 표기가 decision.json 의 값에서 나온 것인지 확인하고,
+'실제', '예측', '실제/예측' 수치가 해당 코호트의 같은 항목 값인지 항목별로 대조.
 대조 실패 시 발행 보류. LLM 보고서도 같은 함수로 검사.
 """
 import re
@@ -42,14 +43,57 @@ def allowed_tokens(dec: dict):
     return nums, qs
 
 
+KQ_RE = re.compile(r"(\d{4})년\s*([1-4])분기")
+SENT_RE = re.compile(r"(?<=[.。])\s+|\n|;")
+FIELD_RE = {
+    "actual": re.compile(r"실제(?:\s*(?:상각률|연체율|위험률|결과))?\s*(\d+(?:\.\d+)?)%"),
+    "pred": re.compile(r"(?<!평균 )(?:예측|기대)(?:\s*(?:상각률|연체율|위험률))?\s*(\d+(?:\.\d+)?)%"),
+    "o_e_ratio": re.compile(r"(?:실제/예측|실제/기대)\s*(\d+\.\d+)|예측의\s*(\d+\.\d+)배|기대의\s*(\d+\.\d+)배"),
+}
+
+
+def _cohort_rows(dec: dict) -> list[dict]:
+    return [r for k in ("lag", "early") for r in (dec.get(k) or []) if isinstance(r, dict) and "cohort_q" in r]
+
+
+def verify_fields(text: str, dec: dict) -> list[str]:
+    """항목별 대조: '실제 X%', '예측 Y%', '실제/예측 Z' 가 같은 문장에 언급된 코호트의 해당 항목 값과 일치하는지.
+    숫자가 근거에 존재하더라도 다른 항목(예: 실제와 예측 뒤바뀜)에 붙으면 불일치로 처리"""
+    rows = _cohort_rows(dec)
+    # 실제/예측 비율은 후보 비교표, 등급별 값도 정당한 출처
+    extra = list((dec.get("candidates") or {}).get("table") or []) + \
+        [g for r in rows for g in (r.get("grade") or []) if isinstance(g, dict) and "o_e_ratio" in g]
+    bad = []
+    for sent in SENT_RE.split(text):
+        if "기준" in sent or "규칙" in sent:        # 판정 임계값 서술(예: 1.10 이상)은 항목 대조 제외
+            continue
+        cq = set(Q_RE.findall(sent)) | {f"{y}Q{q}" for y, q in KQ_RE.findall(sent)}
+        scope = [r for r in rows if r["cohort_q"] in cq] or rows
+        oe_scope = scope + extra
+        if not scope:
+            continue
+        for field, rx in FIELD_RE.items():
+            for m in rx.finditer(sent):
+                v = next(g for g in m.groups() if g)
+                if field == "o_e_ratio":
+                    ok = any(f"{r[field]:.2f}" == v or f"{r[field]:.1f}" == v for r in oe_scope)
+                else:
+                    ok = any(f"{r[field] * 100:.1f}" == v or f"{r[field] * 100:.0f}" == v for r in scope)
+                if not ok:
+                    bad.append(f"{field}:{m.group(0)}")
+    return bad
+
+
 def verify(text: str, dec: dict) -> dict:
     nums, qs = allowed_tokens(dec)
     bad_q = [q for q in Q_RE.findall(text) if q not in qs]
     body = Q_RE.sub(" ", text)
     toks = [t.replace(",", "").lstrip("+") for t in NUM_RE.findall(body)]
     bad_n = [t for t in toks if t not in nums and t.lstrip("-") not in nums]
-    return {"verified": not bad_q and not bad_n, "n_numbers": len(toks) + len(Q_RE.findall(text)),
-            "unmatched": bad_q + bad_n}
+    bad_f = verify_fields(text, dec)
+    return {"verified": not bad_q and not bad_n and not bad_f,
+            "n_numbers": len(toks) + len(Q_RE.findall(text)),
+            "unmatched": bad_q + bad_n, "field_mismatch": bad_f}
 
 
 def _p(x):

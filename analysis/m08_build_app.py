@@ -1,4 +1,4 @@
-﻿"""m08. 결과 화면 생성: modelops/app/index.html (단일 파일, 데이터·글꼴 내장, 인터넷 불필요)
+"""m08. 결과 화면 생성: modelops/app/index.html (단일 파일, 데이터·글꼴 내장, 인터넷 불필요)
 
 입력: runs/<규칙>/<분기>/decision.json, results/m03_backtest_quarter.csv, results/m06_posthoc_<규칙>.csv,
       runs/<규칙>/run_log.jsonl, results/m07_robustness.csv, runs/r1/*/decision.json
@@ -14,11 +14,11 @@ import numpy as np
 import pandas as pd
 
 import report
-from config import MO, RESULTS, ROOT
+from config import MO, RESULTS
 from pipeline import RUNS
 
 APP = MO / "app"
-FONTS = ROOT / "app" / "fonts"          # 이전 프로젝트 글꼴(OFL) 재사용, 읽기만 함
+FONTS = MO / "app" / "fonts"            # Pretendard 부분 글꼴 (SIL OFL)
 
 
 def font_faces():

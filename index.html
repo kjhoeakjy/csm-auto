@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,8 +17,23 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.6 v
   -webkit-font-smoothing: antialiased; }
 .wrap { max-width: 880px; margin: 0 auto; padding: 48px 16px 64px; }
 h1 { margin: 0; font-size: clamp(28px, 5vw, 40px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.2; }
+h2 { font-size: 17px; margin: 0 0 4px; font-weight: 700; }
 .lede { margin: 14px 0 0; color: var(--sub); font-size: 15px; }
 .num { font-variant-numeric: tabular-nums; }
+.hint { margin: 8px 0 0; font-size: 13px; color: var(--sub); }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 28px; border-top: 2px solid var(--ink); }
+.steps div { padding: 14px 16px 0 0; font-size: 14px; }
+.steps div + div { padding-left: 16px; border-left: 1px solid var(--line); }
+.steps b { display: block; font-size: 13px; color: var(--sub); font-weight: 600; }
+details.about { margin-top: 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+details.about summary { cursor: pointer; padding: 12px 0; font-size: 14px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; }
+details.about summary::-webkit-details-marker { display: none; }
+details.about summary::after { content: "+"; font-weight: 400; }
+details.about[open] summary::after { content: "-"; }
+.about-grid { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 0 20px; padding-bottom: 8px; }
+.about-grid > div { padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.about-grid .k { color: var(--sub); font-size: 13px; padding-top: 11px; }
+.about-grid ol { margin: 0; padding-left: 18px; }
 .ctl { margin-top: 40px; padding-top: 20px; border-top: 2px solid var(--ink); }
 .ctl label { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .ctl label span { font-size: 13px; color: var(--sub); }
@@ -29,25 +44,40 @@ input[type=range]::-moz-range-track { height: 2px; background: var(--ink); }
 input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
   background: var(--ink); margin-top: -10px; border: 4px solid var(--bg); box-shadow: 0 0 0 1px var(--ink); }
 input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg); }
-.ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--sub); }
-.btns { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-button { font: 600 14px var(--font); padding: 9px 16px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); cursor: pointer; }
-button.on, button:active { background: var(--ink); color: var(--bg); }
-button:disabled { opacity: .35; cursor: default; }
-.res { margin-top: 32px; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 0 20px; }
-.res > div { padding: 16px 0; border-bottom: 1px solid var(--line); }
-.k { font-size: 13px; color: var(--sub); padding-top: 22px !important; }
-.status { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; display: flex; align-items: center; gap: 12px; }
-.dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--ink); display: inline-grid; place-items: center; }
+.strip { display: grid; gap: 2px; }
+.strip button { padding: 6px 0 4px; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font: 500 10px var(--font); color: var(--sub); cursor: pointer; }
+.strip button.cur { color: var(--ink); font-weight: 800; }
+.strip button:focus-visible { outline: 1px solid var(--ink); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--sub); margin-top: 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); display: inline-grid; place-items: center; flex: none; }
 .dot.act { background: var(--ink); }
-.dot.warn::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
+.dot.warn::after { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--ink); }
+.btns { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+button.b { font: 600 14px var(--font); padding: 9px 16px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); cursor: pointer; }
+button.b.on { background: var(--ink); color: var(--bg); }
+button.b:disabled { opacity: .35; cursor: default; }
+.res { margin-top: 28px; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 0 20px; }
+.res > div { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.res .k { font-size: 13px; color: var(--sub); padding-top: 22px; }
+.status { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; display: flex; align-items: center; gap: 12px; }
+.status .dot { width: 18px; height: 18px; }
+.status .dot.warn::after { width: 8px; height: 8px; }
+.smean { font-size: 13px; color: var(--sub); margin-top: 2px; }
 .reco { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
-ol { margin: 0; padding-left: 20px; } ol li { margin: 4px 0; }
-.after { margin-top: 10px; padding: 14px 16px; background: var(--soft); font-size: 15px; }
-.chart { margin-top: 40px; }
-.chart h2 { font-size: 17px; margin: 0 0 4px; font-weight: 700; }
+#why { margin: 0; padding-left: 20px; } #why li { margin: 4px 0; }
+.after { margin-top: 12px; padding: 14px 16px; background: var(--soft); font-size: 15px; }
+.after b { display: block; font-size: 13px; margin-bottom: 4px; }
+.bars { margin-top: 10px; display: grid; grid-template-columns: 76px minmax(0, 1fr) 54px; gap: 6px 10px; align-items: center; font-size: 13px; }
+.bars i { display: block; height: 10px; background: var(--mid); transition: width .5s ease; }
+.bars i.ink { background: var(--ink); }
+.bars i.half { background: var(--ink); opacity: .55; }
+.chart { margin-top: 40px; position: relative; }
 .chart p { margin: 0 0 10px; font-size: 13px; color: var(--sub); }
 .chart svg { width: 100%; height: auto; display: block; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; line-height: 1.4;
+  white-space: nowrap; transform: translate(-50%, -115%); opacity: 0; transition: opacity .1s; }
 .sum { margin-top: 44px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
 .sum div { padding: 18px 16px 0 0; }
 .sum div + div { padding-left: 16px; border-left: 1px solid var(--line); }
@@ -56,82 +86,174 @@ ol { margin: 0; padding-left: 20px; } ol li { margin: 4px 0; }
 footer { margin-top: 48px; font-size: 12px; color: var(--sub); }
 footer a { color: var(--sub); }
 @media (max-width: 640px) {
-  .res { grid-template-columns: minmax(0, 1fr); } .k { padding: 14px 0 0 !important; border-bottom: 0 !important; }
-  .sum { grid-template-columns: minmax(0, 1fr); } .sum div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); margin-top: 14px; }
+  .steps, .sum { grid-template-columns: minmax(0, 1fr); }
+  .steps div + div, .sum div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); margin-top: 12px; }
+  .res, .about-grid { grid-template-columns: minmax(0, 1fr); }
+  .res .k, .about-grid .k { padding: 12px 0 0; border-bottom: 0; }
+  .strip button { font-size: 0; }
 }
 </style>
 <div class="wrap">
   <h1>신용평가모형<br>자동 점검</h1>
-  <p class="lede">3개월마다 신용평가모형의 예측 연체율과 실제 연체율을 비교하고, 차이가 크면 모형 수정안을 비교해 담당자에게 보고하는 시스템. Lending Club 공개 대출 자료로 2015~2018년 운영 재현.</p>
+  <p class="lede">신용평가모형은 시간이 지나면 예측이 실제와 어긋남. 이 시스템은 3개월마다 모형의 예측 상각률과 실제 상각률을 비교하고, 차이가 크면 모형 수정안을 검증해 담당자에게 권고함. Lending Club 공개 대출 자료로 2015~2018년 13개 분기 운영 재현.</p>
+
+  <section class="steps" aria-label="화면 사용법">
+    <div><b>1. 점검 시점 선택</b>막대 이동 또는 분기 표시 클릭</div>
+    <div><b>2. 판단 결과 확인</b>상태, 권고, 근거 3개</div>
+    <div><b>3. 권고안 효과 확인</b>'권고안 적용 결과' 버튼으로 이후 실제 결과와 비교</div>
+  </section>
+
+  <details class="about">
+    <summary>데이터, 모형, 작동 방식</summary>
+    <div class="about-grid">
+      <div class="k">데이터</div><div>Lending Club 공개 대출 226만 건 (2007~2018년 실행). 대출 실행 시점 정보만 사용</div>
+      <div class="k">모형</div><div>LightGBM (의사결정나무 여러 개를 차례로 결합하는 기계학습 모형). 입력: 대출 금액, 기간, 금리, 등급, 소득, 부채 비율, 신용 이력. 출력: 대출 후 2년 내 상각 확률. 2010~2012년 대출 8.7만 건으로 학습, 이후 기간 AUC 0.68 (0.5 무작위, 1 완전 구분)</div>
+      <div class="k">상각률</div><div>대출 실행 후 2년 내 상환 중단 후 손실 처리(상각) 비율. 결과 확정은 대출 후 30개월</div>
+      <div class="k">작동 방식</div><div><ol>
+        <li>3개월마다 자동 실행, 그 시점까지 확정된 자료만 사용</li>
+        <li>신규 대출 구성, 대출 후 1년 중간 실적, 2년 확정 실적의 예측 대비 차이 점검</li>
+        <li>상태 판정 (정상, 주의, 조치 필요, 판단 보류)</li>
+        <li>조치 필요 시 수정안 11종(예측치 조정 7, 재학습 4)을 1년 전 자료로 만든 뒤 이후 실적으로 비교</li>
+        <li>기준 통과안만 담당자 보고, 적용 여부는 담당자 결정</li></ol></div>
+      <div class="k">보고서</div><div>규칙 기반 문장과 Claude Opus 5.5 초안. 보고서 수치는 계산 결과와 항목별 자동 대조 후 발행</div>
+    </div>
+  </details>
 
   <section class="ctl">
     <label for="q"><span>점검 시점</span><b class="num" id="ql"></b></label>
     <input type="range" id="q" min="0" step="1" aria-label="점검 시점">
-    <div class="ticks"><span>2015년 4분기</span><span>2018년 4분기</span></div>
-    <div class="btns"><button id="play">전체 기간 재생</button><button id="apply">수정안 적용 결과</button></div>
+    <div class="strip" id="strip" role="group" aria-label="분기별 상태"></div>
+    <div class="legend"><span><i class="dot act"></i>조치 필요</span><span><i class="dot warn"></i>주의</span><span><i class="dot"></i>정상</span></div>
+    <div class="btns"><button class="b" id="play">전체 기간 재생</button><button class="b" id="apply">권고안 적용 결과</button></div>
+    <p class="hint" id="hint"></p>
   </section>
 
   <section class="res" aria-live="polite">
-    <div class="k">상태</div><div><span class="status" id="st"></span></div>
+    <div class="k">상태</div><div><span class="status" id="st"></span><div class="smean" id="sm"></div></div>
     <div class="k">권고</div><div class="reco" id="rc"></div>
     <div class="k">근거</div><div><ol id="why"></ol><div class="after" id="after" hidden></div></div>
   </section>
 
-  <section class="chart">
-    <h2>대출 실행 시기별 예측·실제 연체율</h2>
-    <p>연체율: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율. 회색 구간: 선택 시점에 결과가 나오지 않은 대출</p>
+  <section class="chart" id="chw">
+    <h2>대출 실행 시기별 예측 상각률과 실제 상각률</h2>
+    <p>실선: 실제, 점선: 모형 예측. 회색 구간: 선택 시점에 결과가 확정되지 않은 대출. 그림 위에 마우스를 올리면 분기별 수치 표시</p>
     <div id="ch"></div>
+    <div class="tip" id="tip"></div>
   </section>
 
   <section class="sum" id="sum"></section>
-  <footer>시점별 판단에 해당 시점까지의 정보만 사용, 결과는 이후 확정된 실제 결과와 비교. 실제 금융회사 운영 사례 아님 · <a href="app/detail.html">분석 상세</a></footer>
+  <footer>시점별 판단에 해당 시점까지의 정보만 사용. 권고안 적용 결과는 이후 확정된 실제 결과와 비교한 사후 평가. 공개 자료 기반 과거 재현, 실제 금융회사 운영 사례 아님 · <a href="app/detail.html">분석 상세</a></footer>
 </div>
 <script>
-const D = {"items": [{"q": "2015Q4", "status": "조치 필요", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 130,504건, 모형 개발 시점 대비 고객 구성 변화 미미", "2013년 2분기 대출(2년 결과 확인 완료) 실제 연체율 11.1%, 예측 12.1%, 예측 대비 8% 미달. 2014년 2분기 대출의 1년 시점 연체 결과도 예측 대비 13% 미달", "수정안 7종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). 기준 통과안 없음"], "after": null, "known_until": "2013Q2"}, {"q": "2016Q1", "status": "조치 필요", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 133,887건, 모형 개발 시점 대비 고객 구성 변화 미미", "2013년 3분기 대출(2년 결과 확인 완료) 실제 연체율 10.7%, 예측 11.9%, 예측 대비 10% 미달. 2014년 3분기 대출의 1년 시점 연체 결과도 예측 대비 5% 미달", "수정안 9종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). 기준 통과안 없음"], "after": null, "known_until": "2013Q3"}, {"q": "2016Q2", "status": "주의", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 97,854건, 모형 개발 시점 대비 고객 구성 변화 미미", "2013년 4분기 대출(2년 결과 확인 완료) 실제 연체율 10.4%, 예측 11.5%, 예측 대비 10% 미달. 2014년 4분기 대출의 1년 시점 연체 결과도 예측 대비 0% 미달", "예측과 실제의 차이가 기준 이내, 수정안 비교 생략"], "after": null, "known_until": "2013Q4"}, {"q": "2016Q3", "status": "주의", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 99,120건, 모형 개발 시점 대비 고객 구성 변화 미미", "2014년 1분기 대출(2년 결과 확인 완료) 실제 연체율 10.9%, 예측 11.8%, 예측 대비 7% 미달. 2015년 1분기 대출의 1년 시점 연체 결과도 예측 대비 5% 초과", "예측과 실제의 차이가 기준 이내, 수정안 비교 생략"], "after": null, "known_until": "2014Q1"}, {"q": "2016Q4", "status": "주의", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 103,546건, 모형 개발 시점 대비 고객 구성 변화 미미", "2014년 2분기 대출(2년 결과 확인 완료) 실제 연체율 11.7%, 예측 11.8%, 예측 대비 1% 미달. 2015년 2분기 대출의 1년 시점 연체 결과도 예측 대비 12% 초과", "예측과 실제의 차이가 기준 이내, 수정안 비교 생략"], "after": null, "known_until": "2014Q2"}, {"q": "2017Q1", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고", "why": ["신규 대출 96,779건, 모형 개발 시점 대비 고객 구성 변화 미미", "2014년 3분기 대출(2년 결과 확인 완료) 실제 연체율 12.3%, 예측 11.6%, 예측 대비 6% 초과. 2015년 3분기 대출의 1년 시점 연체 결과도 예측 대비 20% 초과", "수정안 11종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). '최근 대출 자료로 모형 재학습' 안의 오차 2%에서 2%로 감소"], "after": "사후 확인. 당시 보유 대출 826,100건 적용 시 예측 오차 28%에서 28%로 감소 (실제 연체율 13.5%, 기존 예측 10.6%, 수정 예측 10.6%)", "known_until": "2014Q3"}, {"q": "2017Q2", "status": "조치 필요", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 105,451건, 모형 개발 시점 대비 고객 구성 변화 미미", "2014년 4분기 대출(2년 결과 확인 완료) 실제 연체율 12.6%, 예측 11.1%, 예측 대비 13% 초과. 2015년 4분기 대출의 1년 시점 연체 결과도 예측 대비 31% 초과", "수정안 11종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). 기준 통과안 없음"], "after": null, "known_until": "2014Q4"}, {"q": "2017Q3", "status": "조치 필요", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 122,701건, 모형 개발 시점 대비 고객 구성 변화 미미", "2015년 1분기 대출(2년 결과 확인 완료) 실제 연체율 13.1%, 예측 10.9%, 예측 대비 20% 초과. 2016년 1분기 대출의 1년 시점 연체 결과도 예측 대비 34% 초과", "수정안 11종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). 기준 통과안 없음"], "after": null, "known_until": "2015Q1"}, {"q": "2017Q4", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고 (적용 후에도 오차 일부 남음, 원인 확인 병행)", "why": ["신규 대출 118,648건, 모형 개발 시점 대비 고객 구성 변화 미미", "2015년 2분기 대출(2년 결과 확인 완료) 실제 연체율 13.5%, 예측 10.8%, 예측 대비 25% 초과. 2016년 2분기 대출의 1년 시점 연체 결과도 예측 대비 40% 초과", "수정안 11종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). '최근 대출 자료로 모형 재학습' 안의 오차 17%에서 16%로 감소"], "after": "사후 확인. 당시 보유 대출 571,854건 적용 시 예측 오차 32%에서 14%로 감소 (실제 연체율 13.7%, 기존 예측 10.4%, 수정 예측 12.1%)", "known_until": "2015Q2"}, {"q": "2018Q1", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고 (적용 후에도 오차 일부 남음, 원인 확인 병행)", "why": ["신규 대출 107,864건, 모형 개발 시점 대비 고객 구성 변화 미미", "2015년 3분기 대출(2년 결과 확인 완료) 실제 연체율 13.4%, 예측 10.6%, 예측 대비 27% 초과. 2016년 3분기 대출의 1년 시점 연체 결과도 예측 대비 36% 초과", "수정안 11종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). '최근 대출 자료로 모형 재학습' 안의 오차 22%에서 15%로 감소"], "after": "사후 확인. 당시 보유 대출 461,365건 적용 시 예측 오차 33%에서 13%로 감소 (실제 연체율 13.8%, 기존 예측 10.4%, 수정 예측 12.2%)", "known_until": "2015Q3"}, {"q": "2018Q2", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고 (적용 후에도 오차 일부 남음, 원인 확인 병행)", "why": ["신규 대출 130,772건, 모형 개발 시점 대비 고객 구성 변화 미미", "2015년 4분기 대출(2년 결과 확인 완료) 실제 연체율 13.4%, 예측 10.2%, 예측 대비 32% 초과. 2016년 4분기 대출의 1년 시점 연체 결과도 예측 대비 25% 초과", "수정안 11종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). '최근 대출 자료로 모형 재학습' 안의 오차 27%에서 16%로 감소"], "after": "사후 확인. 당시 보유 대출 330,861건 적용 시 예측 오차 33%에서 11%로 감소 (실제 연체율 13.9%, 기존 예측 10.4%, 수정 예측 12.6%)", "known_until": "2015Q4"}, {"q": "2018Q3", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고 (적용 후에도 오차 일부 남음, 원인 확인 병행)", "why": ["신규 대출 128,194건, 모형 개발 시점 대비 고객 구성 변화 미미", "2016년 1분기 대출(2년 결과 확인 완료) 실제 연체율 13.7%, 예측 10.2%, 예측 대비 34% 초과. 2017년 1분기 대출의 1년 시점 연체 결과도 예측 대비 21% 초과", "수정안 11종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). '최근 대출 자료로 모형 재학습' 안의 오차 30%에서 13%로 감소"], "after": "사후 확인. 당시 보유 대출 196,974건 적용 시 예측 오차 33%에서 5%로 감소 (실제 연체율 14.1%, 기존 예측 10.6%, 수정 예측 13.4%)", "known_until": "2016Q1"}, {"q": "2018Q4", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고 (적용 후에도 오차 일부 남음, 원인 확인 병행)", "why": ["신규 대출 128,412건, 모형 개발 시점 대비 고객 구성 변화 미미", "2016년 2분기 대출(2년 결과 확인 완료) 실제 연체율 13.8%, 예측 10.2%, 예측 대비 35% 초과. 2017년 2분기 대출의 1년 시점 연체 결과도 예측 대비 28% 초과", "수정안 11종 성능 비교 (과거 자료로 만든 뒤 이후 실제 결과로 평가). '최근 대출 자료로 모형 재학습' 안의 오차 32%에서 13%로 감소"], "after": "사후 확인. 당시 보유 대출 99,120건 적용 시 예측 오차 31%에서 2%로 감소 (실제 연체율 14.4%, 기존 예측 11.0%, 수정 예측 14.1%)", "known_until": "2016Q2"}], "cohorts": [{"q": "2012Q1", "actual": 0.1139177810797424, "pred": 0.1047229071141621}, {"q": "2012Q2", "actual": 0.1230975399636259, "pred": 0.111190698132912}, {"q": "2012Q3", "actual": 0.1188247691067997, "pred": 0.1157813087972985}, {"q": "2012Q4", "actual": 0.1091336646892202, "pred": 0.1140842583170704}, {"q": "2013Q1", "actual": 0.1050383158636483, "pred": 0.1137389801337781}, {"q": "2013Q2", "actual": 0.1108647450110864, "pred": 0.1209801389699074}, {"q": "2013Q3", "actual": 0.1071304995874477, "pred": 0.1191265894798606}, {"q": "2013Q4", "actual": 0.1038774533269507, "pred": 0.1152185052330121}, {"q": "2014Q1", "actual": 0.1092174646699008, "pred": 0.1177594007349786}, {"q": "2014Q2", "actual": 0.1166055393954723, "pred": 0.1179099142059865}, {"q": "2014Q3", "actual": 0.1226884173960426, "pred": 0.115812766597055}, {"q": "2014Q4", "actual": 0.1258092360811394, "pred": 0.1114544916670191}, {"q": "2015Q1", "actual": 0.1314000261043938, "pred": 0.1092285785610235}, {"q": "2015Q2", "actual": 0.1348082441951474, "pred": 0.1081636210830178}, {"q": "2015Q3", "actual": 0.1340676447429155, "pred": 0.1056452015931572}, {"q": "2015Q4", "actual": 0.1343790228651995, "pred": 0.1016840124270777}, {"q": "2016Q1", "actual": 0.1369662476566059, "pred": 0.1022462503544365}, {"q": "2016Q2", "actual": 0.1381037055204692, "pred": 0.1020232174077576}, {"q": "2016Q3", "actual": 0.143502824858757, "pred": 0.1095900226765545}], "default_q": "2018Q1", "summary": [{"label": "연체율 차이 발견 시점", "value": "6개월 단축", "note": "대출 후 1년 시점 연체 결과 활용 (기존 2년), 2016~2017년 사례 기준"}, {"label": "수정안 적용 후 예측 연체율 오차", "value": "13%", "note": "적용 전 33% (상대 오차: 실제÷예측-1), 2018년 1분기 단일 판단, 보유 대출 46만 건 기준"}, {"label": "3년간 모형 변경 횟수", "value": "4회", "note": "재학습 1, 예측치 조정 3 (변경 승인 가정 누적 운영). 3개월마다 재학습하는 방식 13회 대비, 평균 오차 19.4% 대비 17.3%"}]};
+const D = {"items": [{"q": "2015Q4", "status": "조치 필요", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 130,504건, 모형 개발 시점 대비 고객 구성 변화 미미", "2013년 2분기 대출(2년 결과 확인 완료) 실제 상각률 11.1%, 예측 12.1%, 예측 대비 8% 미달. 2014년 2분기 대출의 1년 시점 상각 결과도 예측 대비 13% 미달", "수정안 선택 단계 검증: 7종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. 기준 통과안 없음"], "after": null, "known_until": "2013Q2"}, {"q": "2016Q1", "status": "조치 필요", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 133,887건, 모형 개발 시점 대비 고객 구성 변화 미미", "2013년 3분기 대출(2년 결과 확인 완료) 실제 상각률 10.7%, 예측 11.9%, 예측 대비 10% 미달. 2014년 3분기 대출의 1년 시점 상각 결과도 예측 대비 5% 미달", "수정안 선택 단계 검증: 9종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. 기준 통과안 없음"], "after": null, "known_until": "2013Q3"}, {"q": "2016Q2", "status": "주의", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 97,854건, 모형 개발 시점 대비 고객 구성 변화 미미", "2013년 4분기 대출(2년 결과 확인 완료) 실제 상각률 10.4%, 예측 11.5%, 예측 대비 10% 미달. 2014년 4분기 대출의 1년 시점 상각 결과도 예측 대비 0% 미달", "예측과 실제의 차이가 기준 이내, 수정안 비교 생략"], "after": null, "known_until": "2013Q4"}, {"q": "2016Q3", "status": "주의", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 99,120건, 모형 개발 시점 대비 고객 구성 변화 미미", "2014년 1분기 대출(2년 결과 확인 완료) 실제 상각률 10.9%, 예측 11.8%, 예측 대비 7% 미달. 2015년 1분기 대출의 1년 시점 상각 결과도 예측 대비 5% 초과", "예측과 실제의 차이가 기준 이내, 수정안 비교 생략"], "after": null, "known_until": "2014Q1"}, {"q": "2016Q4", "status": "주의", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 103,546건, 모형 개발 시점 대비 고객 구성 변화 미미", "2014년 2분기 대출(2년 결과 확인 완료) 실제 상각률 11.7%, 예측 11.8%, 예측 대비 1% 미달. 2015년 2분기 대출의 1년 시점 상각 결과도 예측 대비 12% 초과", "예측과 실제의 차이가 기준 이내, 수정안 비교 생략"], "after": null, "known_until": "2014Q2"}, {"q": "2017Q1", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고", "why": ["신규 대출 96,779건, 모형 개발 시점 대비 고객 구성 변화 미미", "2014년 3분기 대출(2년 결과 확인 완료) 실제 상각률 12.3%, 예측 11.6%, 예측 대비 6% 초과. 2015년 3분기 대출의 1년 시점 상각 결과도 예측 대비 20% 초과", "수정안 선택 단계 검증: 11종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. '최근 대출 자료로 모형 재학습' 안의 오차 2%에서 2%로 감소"], "after": {"from": "2014Q4", "to": "2016Q3", "n": 826100, "actual": 0.1352693378525602, "pred_m": 0.1056919349443892, "pred_c": 0.1060273927640721, "text": "예측 오차(상대) 28%에서 28%로 감소, 절대 차이 3.0%p에서 2.9%p로 감소"}, "known_until": "2014Q3"}, {"q": "2017Q2", "status": "조치 필요", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 105,451건, 모형 개발 시점 대비 고객 구성 변화 미미", "2014년 4분기 대출(2년 결과 확인 완료) 실제 상각률 12.6%, 예측 11.1%, 예측 대비 13% 초과. 2015년 4분기 대출의 1년 시점 상각 결과도 예측 대비 31% 초과", "수정안 선택 단계 검증: 11종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. 기준 통과안 없음"], "after": null, "known_until": "2014Q4"}, {"q": "2017Q3", "status": "조치 필요", "reco": "모형 변경 보류 및 원인 확인", "why": ["신규 대출 122,701건, 모형 개발 시점 대비 고객 구성 변화 미미", "2015년 1분기 대출(2년 결과 확인 완료) 실제 상각률 13.1%, 예측 10.9%, 예측 대비 20% 초과. 2016년 1분기 대출의 1년 시점 상각 결과도 예측 대비 34% 초과", "수정안 선택 단계 검증: 11종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. 기준 통과안 없음"], "after": null, "known_until": "2015Q1"}, {"q": "2017Q4", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고 (적용 후에도 오차 일부 남음, 원인 확인 병행)", "why": ["신규 대출 118,648건, 모형 개발 시점 대비 고객 구성 변화 미미", "2015년 2분기 대출(2년 결과 확인 완료) 실제 상각률 13.5%, 예측 10.8%, 예측 대비 25% 초과. 2016년 2분기 대출의 1년 시점 상각 결과도 예측 대비 40% 초과", "수정안 선택 단계 검증: 11종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. '최근 대출 자료로 모형 재학습' 안의 오차 17%에서 16%로 감소"], "after": {"from": "2015Q3", "to": "2016Q3", "n": 571854, "actual": 0.1371433967411262, "pred_m": 0.1040093970169535, "pred_c": 0.1205262515323228, "text": "예측 오차(상대) 32%에서 14%로 감소, 절대 차이 3.3%p에서 1.7%p로 감소"}, "known_until": "2015Q2"}, {"q": "2018Q1", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고 (적용 후에도 오차 일부 남음, 원인 확인 병행)", "why": ["신규 대출 107,864건, 모형 개발 시점 대비 고객 구성 변화 미미", "2015년 3분기 대출(2년 결과 확인 완료) 실제 상각률 13.4%, 예측 10.6%, 예측 대비 27% 초과. 2016년 3분기 대출의 1년 시점 상각 결과도 예측 대비 36% 초과", "수정안 선택 단계 검증: 11종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. '최근 대출 자료로 모형 재학습' 안의 오차 22%에서 15%로 감소"], "after": {"from": "2015Q4", "to": "2016Q3", "n": 461365, "actual": 0.137879986561616, "pred_m": 0.1036176498930491, "pred_c": 0.1220834268349486, "text": "예측 오차(상대) 33%에서 13%로 감소, 절대 차이 3.4%p에서 1.6%p로 감소"}, "known_until": "2015Q3"}, {"q": "2018Q2", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고 (적용 후에도 오차 일부 남음, 원인 확인 병행)", "why": ["신규 대출 130,772건, 모형 개발 시점 대비 고객 구성 변화 미미", "2015년 4분기 대출(2년 결과 확인 완료) 실제 상각률 13.4%, 예측 10.2%, 예측 대비 32% 초과. 2016년 4분기 대출의 1년 시점 상각 결과도 예측 대비 25% 초과", "수정안 선택 단계 검증: 11종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. '최근 대출 자료로 모형 재학습' 안의 오차 27%에서 16%로 감소"], "after": {"from": "2016Q1", "to": "2016Q3", "n": 330861, "actual": 0.1392608980810672, "pred_m": 0.1043803491046791, "pred_c": 0.1256275875441369, "text": "예측 오차(상대) 33%에서 11%로 감소, 절대 차이 3.5%p에서 1.4%p로 감소"}, "known_until": "2015Q4"}, {"q": "2018Q3", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고 (적용 후에도 오차 일부 남음, 원인 확인 병행)", "why": ["신규 대출 128,194건, 모형 개발 시점 대비 고객 구성 변화 미미", "2016년 1분기 대출(2년 결과 확인 완료) 실제 상각률 13.7%, 예측 10.2%, 예측 대비 34% 초과. 2017년 1분기 대출의 1년 시점 상각 결과도 예측 대비 21% 초과", "수정안 선택 단계 검증: 11종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. '최근 대출 자료로 모형 재학습' 안의 오차 30%에서 13%로 감소"], "after": {"from": "2016Q2", "to": "2016Q3", "n": 196974, "actual": 0.1408206159188522, "pred_m": 0.1058309368948125, "pred_c": 0.1344004679835559, "text": "예측 오차(상대) 33%에서 5%로 감소, 절대 차이 3.5%p에서 0.6%p로 감소"}, "known_until": "2016Q1"}, {"q": "2018Q4", "status": "조치 필요", "reco": "최근 대출 자료로 모형 재학습 권고 (적용 후에도 오차 일부 남음, 원인 확인 병행)", "why": ["신규 대출 128,412건, 모형 개발 시점 대비 고객 구성 변화 미미", "2016년 2분기 대출(2년 결과 확인 완료) 실제 상각률 13.8%, 예측 10.2%, 예측 대비 35% 초과. 2017년 2분기 대출의 1년 시점 상각 결과도 예측 대비 28% 초과", "수정안 선택 단계 검증: 11종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. '최근 대출 자료로 모형 재학습' 안의 오차 32%에서 13%로 감소"], "after": {"from": "2016Q3", "to": "2016Q3", "n": 99120, "actual": 0.143502824858757, "pred_m": 0.1095900226765545, "pred_c": 0.1411894410075475, "text": "예측 오차(상대) 31%에서 2%로 감소, 절대 차이 3.4%p에서 0.2%p로 감소"}, "known_until": "2016Q2"}], "cohorts": [{"q": "2012Q1", "actual": 0.1139177810797424, "pred": 0.1047229071141621}, {"q": "2012Q2", "actual": 0.1230975399636259, "pred": 0.111190698132912}, {"q": "2012Q3", "actual": 0.1188247691067997, "pred": 0.1157813087972985}, {"q": "2012Q4", "actual": 0.1091336646892202, "pred": 0.1140842583170704}, {"q": "2013Q1", "actual": 0.1050383158636483, "pred": 0.1137389801337781}, {"q": "2013Q2", "actual": 0.1108647450110864, "pred": 0.1209801389699074}, {"q": "2013Q3", "actual": 0.1071304995874477, "pred": 0.1191265894798606}, {"q": "2013Q4", "actual": 0.1038774533269507, "pred": 0.1152185052330121}, {"q": "2014Q1", "actual": 0.1092174646699008, "pred": 0.1177594007349786}, {"q": "2014Q2", "actual": 0.1166055393954723, "pred": 0.1179099142059865}, {"q": "2014Q3", "actual": 0.1226884173960426, "pred": 0.115812766597055}, {"q": "2014Q4", "actual": 0.1258092360811394, "pred": 0.1114544916670191}, {"q": "2015Q1", "actual": 0.1314000261043938, "pred": 0.1092285785610235}, {"q": "2015Q2", "actual": 0.1348082441951474, "pred": 0.1081636210830178}, {"q": "2015Q3", "actual": 0.1340676447429155, "pred": 0.1056452015931572}, {"q": "2015Q4", "actual": 0.1343790228651995, "pred": 0.1016840124270777}, {"q": "2016Q1", "actual": 0.1369662476566059, "pred": 0.1022462503544365}, {"q": "2016Q2", "actual": 0.1381037055204692, "pred": 0.1020232174077576}, {"q": "2016Q3", "actual": 0.143502824858757, "pred": 0.1095900226765545}], "default_q": "2018Q1", "summary": [{"label": "상각률 이상 경고 시점", "value": "2분기 앞당김", "note": "대출 후 1년 중간 실적 활용 (기존 2년 실적), 2016~2017년 단일 사례"}, {"label": "수정안 적용 후 상각률 예측 오차", "value": "13%", "note": "적용 전 33%, 상대 오차 (실제÷예측-1). 절대 차이 3.4%p에서 1.6%p로. 2018년 1분기 판단의 사후 평가, 보유 대출 46만 건"}, {"label": "3년간 모형 변경 횟수", "value": "4회", "note": "재학습 1, 예측치 조정 3 (변경 승인 가정 누적 운영). 정기 재학습 13회 대비 평균 오차 19.4%에서 17.3%로. 변별력(AUC)은 정기 재학습 우위 (0.701 대 0.693)"}]};
 const $ = (s) => document.querySelector(s);
 const R = $("#q"); R.max = D.items.length - 1;
-let i = D.items.findIndex(x => x.q === D.default_q), showAfter = false, timer = null;
+let i = D.items.findIndex(x => x.q === D.default_q), showAfter = false, timer = null, G = null;
 const qlabel = (q) => `${q.slice(0, 4)}년 ${q.slice(5)}분기`;
+const pc = (v) => (v * 100).toFixed(1) + "%";
+const dotClass = (s) => s === "조치 필요" ? "act" : s === "주의" ? "warn" : "";
+const MEAN = { "조치 필요": "예측과 실제의 차이가 기준 초과, 모형 수정 검토 대상",
+  "주의": "차이 발생 초기 단계, 다음 분기 재확인 대상", "정상": "예측과 실제의 차이가 기준 범위 이내",
+  "판단 보류": "자료 부족 또는 오류로 판단 보류" };
+
+$("#strip").style.gridTemplateColumns = `repeat(${D.items.length}, minmax(0, 1fr))`;
+$("#strip").innerHTML = D.items.map((x, k) =>
+  `<button data-k="${k}" aria-label="${qlabel(x.q)} ${x.status}"><i class="dot ${dotClass(x.status)}"></i>` +
+  `${x.q.endsWith("Q1") || k === 0 ? x.q.slice(2, 4) + "." + x.q.slice(5) : x.q.slice(5)}</button>`).join("");
+$("#strip").onclick = (e) => { const b = e.target.closest("button"); if (b) { stop(); i = +b.dataset.k; render(); } };
 
 function chart(item) {
   const c = D.cohorts, W = 840, H = 300, m = { l: 44, r: 16, t: 16, b: 34 }, n = c.length;
-  const vals = c.flatMap(r => [r.actual, r.pred]), lo = 0.08, hi = Math.max(0.15, Math.ceil(Math.max(...vals) * 100) / 100);
+  const vals = c.flatMap(r => [r.actual, r.pred]), lo = 0.08, hi = Math.max(0.16, Math.ceil(Math.max(...vals) * 100) / 100);
   const X = (k) => m.l + k * (W - m.l - m.r) / (n - 1), Y = (v) => m.t + (hi - v) / (hi - lo) * (H - m.t - m.b);
   const known = c.findIndex(r => r.q === item.known_until);
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="예측 연체율과 실제 연체율">`;
+  const cut = known >= 0 ? known + 1 : n;
+  G = { X, Y, n, m, W, H, cut };
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="예측 상각률과 실제 상각률">`;
   if (known >= 0 && known < n - 1) s += `<rect x="${X(known) + 4}" y="${m.t}" width="${W - m.r - X(known) - 4}" height="${H - m.t - m.b}" fill="var(--soft)"/>`;
   for (let v = lo; v <= hi + 1e-9; v += 0.02) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${m.l - 8}" y="${Y(v) + 4}" font-size="12" text-anchor="end" fill="var(--sub)">${Math.round(v * 100)}%</text>`;
-  const path = (k, cut) => c.map((r, j) => (j ? "L" : "M") + X(j) + " " + Y(r[k])).slice(0, cut).join("");
-  const cut = known >= 0 ? known + 1 : n;
+  const path = (k, b) => c.slice(0, b).map((r, j) => (j ? "L" : "M") + X(j) + " " + Y(r[k])).join("");
   s += `<path d="${path("pred", n)}" fill="none" stroke="var(--mid)" stroke-width="2.5" stroke-dasharray="6 5"/>`;
   s += `<path d="${path("actual", cut)}" fill="none" stroke="var(--ink)" stroke-width="3"/>`;
   c.forEach((r, j) => { if (r.q.endsWith("Q1")) s += `<text x="${X(j)}" y="${H - 10}" font-size="12" text-anchor="middle" fill="var(--sub)">${r.q.slice(0, 4)}</text>`; });
-  const last = c[cut - 1];
-  s += `<text x="${X(cut - 1) - 6}" y="${Y(last.actual) - 10}" font-size="13" font-weight="700" text-anchor="end" fill="var(--ink)">실제 ${(last.actual * 100).toFixed(1)}%</text>`;
-  s += `<text x="${X(cut - 1) - 6}" y="${Y(last.pred) + 20}" font-size="13" text-anchor="end" fill="var(--sub)">모형 예측 ${(last.pred * 100).toFixed(1)}%</text>`;
-  if (known >= 0 && known < n - 1) s += `<text x="${X(known) + 12}" y="${m.t + 18}" font-size="12" fill="var(--sub)">결과 미확정</text>`;
+  const a = item.after;
+  const k0 = a ? c.findIndex(r => r.q === a.from) : -1, k1 = a ? c.findIndex(r => r.q === a.to) : -1;
+  if (showAfter && k0 >= 0 && k1 >= 0) {     // 권고안 적용 대상 대출 구간의 평균: 실제, 기존 예측, 권고안 예측
+    const x0 = X(k0) - 6, x1 = X(k1) + 6;
+    s += `<rect x="${x0}" y="${m.t}" width="${x1 - x0}" height="${H - m.t - m.b}" fill="none" stroke="var(--ink)" stroke-dasharray="2 3"/>`;
+    const L = [["actual", "var(--ink)", 3, "", "실제"], ["pred_m", "var(--sub)", 2.5, "6 5", "기존 예측"], ["pred_c", "var(--ink)", 2.5, "2 3", "권고안 예측"]];
+    const order = L.map((_, j) => j).sort((p, q) => Y(a[L[p][0]]) - Y(a[L[q][0]]));
+    const ty = {}; let prev = -1e9;               // 글자 겹침 방지: 위에서부터 최소 15px 간격
+    order.forEach(j => { ty[j] = Math.max(Y(a[L[j][0]]), prev + 15); prev = ty[j]; });
+    L.forEach(([k, col, w, dash, lab], j) => {
+      const y = Y(a[k]);
+      s += `<line x1="${x0}" x2="${x1}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="${w}" stroke-dasharray="${dash}"/>`;
+      s += `<text x="${x0 - 8}" y="${ty[j] + 4}" font-size="12" text-anchor="end" fill="${col}" font-weight="700">${lab} ${pc(a[k])}</text>`;
+    });
+  } else {
+    const last = c[cut - 1];
+    s += `<text x="${X(cut - 1) - 6}" y="${Y(last.actual) - 10}" font-size="13" font-weight="700" text-anchor="end" fill="var(--ink)">실제 ${pc(last.actual)}</text>`;
+    s += `<text x="${X(cut - 1) - 6}" y="${Y(last.pred) + 20}" font-size="13" text-anchor="end" fill="var(--sub)">모형 예측 ${pc(last.pred)}</text>`;
+    if (known >= 0 && known < n - 1) s += `<text x="${X(known) + 12}" y="${m.t + 18}" font-size="12" fill="var(--sub)">결과 미확정</text>`;
+  }
+  s += `<line id="guide" x1="0" x2="0" y1="${m.t}" y2="${H - m.b}" stroke="var(--ink)" stroke-width="1" opacity="0"/>`;
   $("#ch").innerHTML = s + "</svg>";
 }
 
+function hover(e) {
+  const svg = $("#ch svg"); if (!svg || !G) return;
+  const box = svg.getBoundingClientRect(), sx = (e.clientX - box.left) * G.W / box.width;
+  const k = Math.max(0, Math.min(G.n - 1, Math.round((sx - G.m.l) / ((G.W - G.m.l - G.m.r) / (G.n - 1)))));
+  const r = D.cohorts[k], gx = G.X(k);
+  const g = svg.querySelector("#guide"); g.setAttribute("x1", gx); g.setAttribute("x2", gx); g.setAttribute("opacity", .3);
+  const t = $("#tip"), wr = $("#chw").getBoundingClientRect();
+  t.innerHTML = `${qlabel(r.q)} 실행 대출<br>실제 ${k < G.cut ? pc(r.actual) : "미확정"}, 예측 ${pc(r.pred)}`;
+  t.style.left = Math.min(Math.max(box.left - wr.left + gx * box.width / G.W, 70), wr.width - 70) + "px";
+  t.style.top = (box.top - wr.top + G.Y(Math.max(r.actual, r.pred)) * box.height / G.H) + "px";
+  t.style.opacity = 1;
+}
+$("#ch").addEventListener("pointermove", hover);
+$("#ch").addEventListener("pointerleave", () => { $("#tip").style.opacity = 0; const g = $("#guide"); if (g) g.setAttribute("opacity", 0); });
+
 function render() {
-  const it = D.items[i];
+  const it = D.items[i], a = it.after;
   R.value = i; $("#ql").textContent = qlabel(it.q);
-  $("#st").innerHTML = `<span class="dot ${it.status === "조치 필요" ? "act" : it.status === "주의" ? "warn" : ""}"></span>${it.status}`;
+  document.querySelectorAll("#strip button").forEach((b, k) => b.classList.toggle("cur", k === i));
+  $("#st").innerHTML = `<span class="dot ${dotClass(it.status)}"></span>${it.status}`;
+  $("#sm").textContent = MEAN[it.status] || "";
   $("#rc").textContent = it.reco;
   $("#why").innerHTML = it.why.map(w => `<li>${w}</li>`).join("");
-  $("#apply").disabled = !it.after;
-  $("#apply").classList.toggle("on", showAfter && !!it.after);
-  const a = $("#after");
-  a.hidden = !(showAfter && it.after);
-  if (it.after) a.textContent = it.after;
+  $("#apply").disabled = !a;
+  $("#apply").classList.toggle("on", showAfter && !!a);
+  $("#apply").textContent = showAfter && a ? "적용 결과 닫기" : "권고안 적용 결과";
+  $("#hint").textContent = a
+    ? "권고안 적용 결과: 이 시점 권고안을 당시 보유 대출에 적용한 예측과 이후 확정된 실제 상각률 비교. 그림에 해당 대출 구간 표시 (판단에는 미사용)"
+    : "권고안 적용 결과: 모형 변경 권고가 있는 분기에서만 선택 가능. 이 분기는 변경 권고 없음";
+  const box = $("#after");
+  box.hidden = !(showAfter && a);
+  if (a) {
+    const w = (v) => (v / Math.max(a.actual, a.pred_m, a.pred_c) * 100).toFixed(1) + "%";
+    box.innerHTML = `<b>사후 평가, ${qlabel(a.from)}~${qlabel(a.to)} 실행 대출 ${a.n.toLocaleString()}건</b>${a.text}
+      <div class="bars num"><span>실제</span><i class="ink" style="width:${w(a.actual)}"></i><span>${pc(a.actual)}</span>
+      <span>기존 예측</span><i style="width:${w(a.pred_m)}"></i><span>${pc(a.pred_m)}</span>
+      <span>권고안 예측</span><i class="half" style="width:${w(a.pred_c)}"></i><span>${pc(a.pred_c)}</span></div>`;
+  }
   chart(it);
 }
-R.oninput = () => { i = +R.value; render(); };
+function stop() { clearInterval(timer); timer = null; $("#play").textContent = "전체 기간 재생"; $("#play").classList.remove("on"); }
+R.oninput = () => { stop(); i = +R.value; render(); };
 $("#apply").onclick = () => { showAfter = !showAfter; render(); };
 $("#play").onclick = () => {
-  clearInterval(timer); i = 0; render();
-  timer = setInterval(() => { if (i >= D.items.length - 1) return clearInterval(timer); i += 1; render(); }, 1300);
+  if (timer) return stop();
+  if (i >= D.items.length - 1) i = 0;
+  $("#play").textContent = "일시 정지"; $("#play").classList.add("on"); render();
+  timer = setInterval(() => { if (i >= D.items.length - 1) return stop(); i += 1; render(); }, 1400);
 };
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest("input, summary")) return;
+  if (e.key === "ArrowRight" && i < D.items.length - 1) { stop(); i++; render(); }
+  if (e.key === "ArrowLeft" && i > 0) { stop(); i--; render(); }
+});
 $("#sum").innerHTML = D.summary.map(s => `<div><span>${s.label}</span><b class="num">${s.value}</b><span>${s.note}</span></div>`).join("");
 render();
 </script>

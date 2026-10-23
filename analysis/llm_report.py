@@ -128,8 +128,12 @@ def validate(out, dec, tool_texts):
     # 숫자 대조: 정량 근거 JSON + 도구가 반환한 값(반올림 표기 포함)
     ref = {"dec": dec, "tools": [json.loads(t) for t in tool_texts]}
     v = report.verify(text, ref)
-    if not v["verified"]:
+    if v["unmatched"]:
         probs.append("근거에 없는 숫자·분기: " + ", ".join(v["unmatched"][:8]))
+    # 항목별 대조: 실제·예측·실제/예측 값이 해당 코호트의 같은 항목인지
+    bad_f = report.verify_fields(text, dec)
+    if bad_f:
+        probs.append("항목 불일치: " + ", ".join(bad_f[:8]))
     if SPOKEN.search(text):
         probs.append("구어체 표현: " + SPOKEN.search(text).group(0))
     if CAUSAL.search(text):

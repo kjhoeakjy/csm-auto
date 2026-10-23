@@ -1,14 +1,14 @@
 {
   "quarter": "2018Q4",
-  "input_key": "2018Q4|da52263b44@2019-03-01|champion_v1|r4|021060ca8991",
+  "input_key": "2018Q4|da52263b44@2019-03-01|champion_v1|r4|254d41d3f988",
   "rule_version": "r4",
   "model_id": "champion_v1",
   "data_id": "da52263b44@2019-03-01",
-  "code_hash": "021060ca8991",
+  "code_hash": "254d41d3f988",
   "simulation": null,
-  "started": "2026-10-22T14:25:44",
+  "started": "2026-10-23T09:12:23",
   "run_status": "성공",
-  "asof": "2018-12-01",
+  "asof": "2018-12-31",
   "status": "조치 검토",
   "reasons": [
     "lag24_material_persistent",
@@ -32,7 +32,7 @@
     {
       "id": "candidate",
       "title": "개선 후보 검증",
-      "text": "1년 전 시점 데이터로 적합한 재학습(LightGBM+확장 변수)을 그 뒤 확정된 2015Q3~2016Q2 실행분에 적용: 실제/예측 1.32 → 1.13, log loss 4.1% 개선, AUC 0.691 → 0.723"
+      "text": "1년 전 시점 데이터로 적합한 재학습(LightGBM+확장 변수)을 그 뒤 확정된 2015Q3~2016Q2 실행분에 적용한 결과 실제/예측 1.32에서 1.13로, log loss 4.1% 개선, AUC 0.691에서 0.723로"
     }
   ],
   "lead": {
@@ -296,7 +296,7 @@
       "2016Q1",
       "2016Q2"
     ],
-    "pseudo_asof": "2017-12-01",
+    "pseudo_asof": "2017-12-31",
     "windows_pseudo": {
       "recal": [
         "2015Q1",
@@ -618,5 +618,5 @@
   },
   "candidate_experiment": "실행",
   "approval": "담당자 승인 대기",
-  "seconds": 709.8
+  "seconds": 319.5
 }

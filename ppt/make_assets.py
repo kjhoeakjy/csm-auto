@@ -1,4 +1,4 @@
-﻿"""2장용 그림: 예상 부실률 대 실제 부실률(흑백) + 화면 주소 QR 코드
+"""2장용 그림: 예측 상각률 대 실제 상각률(흑백), 학습 기간 표시 + 화면 주소 QR 코드
 실행: .venv/Scripts/python modelops/ppt/make_assets.py
 """
 import os
@@ -25,6 +25,10 @@ bt = pd.read_csv(RES / "m03_backtest_quarter.csv")
 d = bt[(bt.model == "lgbm") & (bt.issue_q >= "2012Q1")].reset_index(drop=True)
 x = range(len(d))
 fig, ax = plt.subplots(figsize=(6.2, 3.0), dpi=300)
+k_tr = d.index[d.issue_q == "2012Q4"][0]               # 학습 기간(2010~2012) 끝, 이후 시간외 평가
+ax.axvspan(-0.3, k_tr + 0.5, color="#f0f0f0", lw=0, zorder=0)
+ax.text(k_tr / 2, 14.6, "학습 기간", ha="center", fontsize=8.5, color="#555555")
+ax.text(k_tr + 1.0, 14.6, "이후 평가 기간", ha="left", fontsize=8.5, color="#555555")
 ax.plot(x, d["actual"] * 100, color="black", lw=2.6)
 ax.plot(x, d["pred"] * 100, color="#8a8a8a", lw=2.2, ls=(0, (4, 3)))
 i = d.index[d.issue_q == "2016Q2"][0]

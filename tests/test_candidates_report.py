@@ -45,3 +45,17 @@ def test_report_verify_catches_changed_number():
     assert verify(ok, dec)["verified"]
     assert not verify(ok.replace("13.4%", "15.2%"), dec)["verified"]
     assert not verify(ok.replace("2015Q3", "2016Q1"), dec)["verified"]
+
+
+def test_report_verify_catches_swapped_fields():
+    """숫자는 근거에 있으나 항목이 뒤바뀐 경우(실제와 예측 교환) 불일치로 처리"""
+    dec = {"quarter": "2018Q1",
+           "lag": [{"cohort_q": "2015Q3", "actual": 0.1341, "pred": 0.1056, "o_e_ratio": 1.2690, "n": 110489}],
+           "early": [{"cohort_q": "2016Q3", "actual": 0.0820, "pred": 0.0603, "o_e_ratio": 1.36, "n": 99120}]}
+    ok = "2015년 3분기 대출 실제 상각률 13.4%, 예측 10.6%. 2016Q3 실행분 12개월 결과는 기대의 1.36배"
+    assert verify(ok, dec)["verified"]
+    swapped = "2015년 3분기 대출 실제 상각률 10.6%, 예측 13.4%"
+    r = verify(swapped, dec)
+    assert not r["verified"] and r["field_mismatch"]
+    # 다른 코호트의 값을 이 코호트에 붙인 경우
+    assert not verify("2015Q3 실행분 실제/예측 1.36", dec)["verified"]

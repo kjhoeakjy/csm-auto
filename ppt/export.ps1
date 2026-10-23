@@ -1,12 +1,12 @@
 ﻿# PowerPoint 로 글꼴 포함 저장 → PDF(글꼴 포함)와 미리보기 이미지 내보내기
 # 정적 Pretendard 글꼴을 만들어 이번 Windows 세션에만 불러옴 (설치·레지스트리 변경 없음, 재부팅하면 사라짐)
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$proj = Split-Path -Parent (Split-Path -Parent $root)
-$src  = Join-Path $proj "ppt\src"
+$proj = Split-Path -Parent $root                       # 프로젝트 폴더 (modelops)
+$py   = if (Test-Path (Join-Path $proj ".venv\Scripts\python.exe")) { Join-Path $proj ".venv\Scripts\python.exe" } else { Join-Path (Split-Path -Parent $proj) ".venv\Scripts\python.exe" }
 $pptx = Join-Path $root "역량PT_김연주.pptx"
 $pdf  = Join-Path $root "역량PT_김연주.pdf"
 $fd   = Join-Path $env:TEMP "pretendard_static"
-& (Join-Path $proj ".venv\Scripts\python.exe") (Join-Path $src "fonts.py") $fd
+& $py (Join-Path $root "fonts.py") $fd
 Add-Type -Namespace W -Name Gdi -MemberDefinition @'
 [DllImport("gdi32.dll", CharSet = CharSet.Unicode)] public static extern int AddFontResource(string f);
 [DllImport("user32.dll")] public static extern int SendMessageTimeout(IntPtr h, uint m, IntPtr w, IntPtr l, uint f, uint t, out IntPtr r);

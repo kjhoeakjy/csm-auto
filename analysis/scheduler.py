@@ -38,10 +38,11 @@ def replay(start="2015Q4", end="2018Q4", with_retrain=True):
 
 
 def live():
-    ctx = Context.load()
     sched = BlockingScheduler()
 
     def job():
+        # 실행마다 최신 적재 자료를 다시 읽음 (원천 갱신 반영). 신규 원천 적재와 점수 산출은 m01, m03 단계
+        ctx = Context.load()
         q = pd.Timestamp.now().to_period("Q") - 1
         run_quarter(ctx, q)
 

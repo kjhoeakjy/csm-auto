@@ -1,14 +1,14 @@
 {
   "quarter": "2016Q2",
-  "input_key": "2016Q2|da52263b44@2019-03-01|champion_v1|r4|95b23ff5aebc",
+  "input_key": "2016Q2|da52263b44@2019-03-01|champion_v1|r4|254d41d3f988",
   "rule_version": "r4",
   "model_id": "champion_v1",
   "data_id": "da52263b44@2019-03-01",
-  "code_hash": "95b23ff5aebc",
+  "code_hash": "254d41d3f988",
   "simulation": null,
-  "started": "2026-10-22T13:46:21",
+  "started": "2026-10-23T08:52:46",
   "run_status": "성공",
-  "asof": "2016-06-01",
+  "asof": "2016-06-30",
   "status": "주의",
   "reasons": [
     "lag24_drift"
@@ -250,5 +250,5 @@
   "candidates": null,
   "candidate_experiment": "생략",
   "approval": null,
-  "seconds": 4.3
+  "seconds": 4.4
 }

@@ -11,3 +11,9 @@ joblib==1.6.0
 apscheduler
 anthropic
 pytest
+# 발표 자료 생성 (ppt/)
+python-pptx==1.0.2
+qrcode
+fonttools==4.67.0
+pillow==13.0.0
+pypdf==6.21.1

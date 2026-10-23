@@ -1,4 +1,4 @@
-﻿"""m11. 운영 정책 4종 비교 (과거 분기 재현, 결정은 as-of 데이터만, 평가는 이후 확정 결과)
+"""m11. 운영 정책 4종 비교 (과거 분기 재현, 결정은 as-of 데이터만, 평가는 이후 확정 결과)
 
   A 고정 모형       : 2010~2012 학습 모형을 끝까지 사용
   B 정기 재학습     : 매 분기 최신 확정 8분기로 LightGBM 재학습
@@ -25,7 +25,7 @@ from config import RESULTS
 from labels import HORIZON
 from metrics import evaluate
 from monitor import EarlyMap
-from pipeline import Context, decide, latest_labeled_q
+from pipeline import Context, asof_month, decide, latest_labeled_q
 from rules import R
 
 QUARTERS = list(pd.period_range("2015Q4", "2018Q4", freq="Q"))
@@ -86,7 +86,7 @@ def main():
     pols = {k: Policy(k, p0) for k in ["A 고정 모형", "B 정기 재학습", "C 단순 임계값", "D 제안 시스템"]}
     rows = []
     for t in QUARTERS:
-        asof = t.asfreq("M", "end").to_timestamp()
+        asof = asof_month(t)
         q24 = latest_labeled_q(t, HORIZON)
         lab_last = ctx.df["q"] == q24
         for name, pol in pols.items():

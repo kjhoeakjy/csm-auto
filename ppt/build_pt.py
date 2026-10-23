@@ -1,7 +1,7 @@
 """역량PT 2장 (표지 제외) → modelops/ppt/역량PT_김연주.pptx
 - 1장: 중앙 타임라인 하나에 학업·활동(위)과 프로젝트(아래), BCG X 는 선 위의 가장 큰 이정표
 - 2장: 신용평가모형 운영 자동화. 화면 캡처(대표 분기) + 결과 숫자 3개 (results/ 에서 읽음)
-- 그리기 도구·글꼴 규칙은 이전 PPT(ppt/src/build.py)를 그대로 가져다 씀 (수정하지 않음)
+- 그리기 도구·글꼴 규칙: ppt/pt_base.py
 실행: .venv/Scripts/python modelops/ppt/build_pt.py  → export.ps1 로 PDF·미리보기
 """
 import json
@@ -15,15 +15,14 @@ from pptx.util import Inches, Pt
 
 HERE = Path(__file__).resolve().parent
 MO = HERE.parent
-sys.path.insert(0, str(MO.parent / "ppt" / "src"))
 sys.path.insert(0, str(MO / "analysis"))
-import build as B  # noqa: E402  (이전 PPT 도구)
-from build import (F, G1, G2, H, INK, LINE, M, PX, W, WHITE, BAND, circle, header, hline, rect,  # noqa: E402
+import pt_base as B  # noqa: E402  (그리기 도구)
+from pt_base import (F, G1, G2, H, INK, LINE, M, PX, W, WHITE, BAND, circle, header, hline, rect,  # noqa: E402
                    seg, text, vline, ic_bar, ic_building, ic_curve, ic_dots, ic_flag, ic_layers, ic_net)
 
 OUT = HERE / "역량PT_김연주.pptx"
 RES = MO / "results"
-RULE = sys.argv[1] if len(sys.argv) > 1 else "r3"
+RULE = sys.argv[1] if len(sys.argv) > 1 else "r4"
 
 
 def notes(part):
@@ -112,6 +111,9 @@ def slide1(prs):
         seg(s, x0, yt + 0.36, x0, Y1 - 0.23, color=LINE, width=0.75)
         circle(s, x0, Y1, 0.46, fill=WHITE)
         ic(s, x0, Y1)
+    bx0, bx1 = tx((2026, 6)), tx((2026, 9))      # BCG 인턴 기간 막대 (석사 막대 아래)
+    rect(s, bx0, 3.3, bx1 - bx0, 0.09, BAR)
+    text(s, bx1 + 0.08, 3.22, 1.2, 0.22, "BCG 인턴", size=8.5, color=G1)
     x0, x1 = 1.75, 9.0                           # 프로젝트: 시간순 점 + 아래 3단 엇갈림 글
     pos = [(x0 + i * (x1 - x0) / (len(PROJ) - 1), Y2 + 0.32 + (i % 3) * 0.62) for i in range(len(PROJ))]
     for (x, ty) in pos:                          # 연결선을 먼저, 글 상자(흰 바탕)를 위에
@@ -149,17 +151,23 @@ def results():
     c = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["is_chosen"])
     s = {r["policy"][0]: r for r in load_json(RES / "m11_policy.json")["summary"]}
     gap = lambda oe: f"{abs(oe - 1) * 100:.0f}%"
-    return [(f"{early_q * 3}개월 단축", "연체율 차이 발견 시점", "대출 후 1년 시점 연체 결과 활용 (기존 2년)\n2016~2017년 사례 기준"),
-            (gap(c['o_e_ratio']), "수정안 적용 후 예측 연체율 오차",
-             f"적용 전 {gap(m['o_e_ratio'])} (상대 오차: 실제÷예측-1)\n2018년 1분기 보유 대출 {c['n'] / 1e4:.0f}만 건 기준"),
+    return [(f"{early_q}분기 앞당김", "상각률 이상 경고 시점",
+             "대출 후 1년 중간 실적 활용 (기존 2년 실적)\n2016~2017년 단일 사례"),
+            (gap(c['o_e_ratio']), "수정안 적용 후 상각률 예측 오차",
+             f"적용 전 {gap(m['o_e_ratio'])}, 상대 오차 (실제÷예측-1)\n"
+             f"절대 차이 {abs(m['actual'] - m['pred']) * 100:.1f}%p에서 {abs(c['actual'] - c['pred']) * 100:.1f}%p로\n"
+             f"2018년 1분기 보유 대출 {c['n'] / 1e4:.0f}만 건 사후 평가"),
             (f"{s['D']['changes']}회", "3년간 모형 변경 횟수",
-             f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']}\n3개월마다 재학습하는 방식 {s['B']['changes']}회 대비\n평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}% 대비 "
-             f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%")]
+             f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']} (변경 승인 가정)\n"
+             f"정기 재학습 {s['B']['changes']}회 대비 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%에서 "
+             f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%로\n"
+             f"변별력(AUC)은 정기 재학습 우위 ({s['B']['book_mean_auc']:.3f} 대 {s['D']['book_mean_auc']:.3f})")]
 
 
-STEPS = ["3개월마다 예측 연체율과 실제 연체율 비교",
+STEPS = ["3개월마다 예측 상각률과 실제 상각률 비교",
          "차이가 기준 초과 시 모형 수정안 11종 성능 비교",
          "기준 통과안만 담당자 보고, 적용 여부는 담당자 결정"]
+LLM_NOTE = "보고서 초안: Claude Opus 5.5, 보고서 수치는 계산 결과와 항목별 자동 대조"
 
 
 def slide2(prs, shot=None):
@@ -169,14 +177,14 @@ def slide2(prs, shot=None):
     text(s, M, 1.45, W - 2 * M, 0.25,
          [[("데이터", {"weight": "sb", "color": INK}), ("  Lending Club 대출 226만 건 (2007~2018년)      ", {"color": G1}),
            ("모형", {"weight": "sb", "color": INK}),
-           ("  2010~2012년 대출 8.7만 건의 대출 조건, 소득, 신용 이력으로 학습한 LightGBM 연체 예측모형", {"color": G1})]],
+           ("  2010~2012년 대출 8.7만 건의 대출 조건, 소득, 신용 이력으로 학습한 LightGBM 모형 (2년 내 상각 확률 예측)", {"color": G1})]],
          size=10)
     hline(s, M, 1.78, W - 2 * M, color=INK)
 
     lw = 6.0                                    # 왼쪽: 문제와 그림
     text(s, M, 1.92, lw, 0.25, "문제", size=10, color=G1, weight="med")
-    text(s, M, 2.12, lw, 0.6, [[("신용평가모형의 예측 연체율과 실제 연체율 차이 확대", {"weight": "bold", "size": 13})],
-                                [("실제 연체율 상승, 예측 연체율 하락 (연체율: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율)", {"size": 10, "color": G1})]],
+    text(s, M, 2.12, lw, 0.6, [[("신용평가모형의 예측 상각률과 실제 상각률 차이 확대", {"weight": "bold", "size": 13})],
+                                [("실제 상각률 상승, 예측 상각률 하락 (상각률: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율)", {"size": 10, "color": G1})]],
          spacing=1.35)
     img = HERE / "chart_default.png"
     ih = lw * Image.open(img).height / Image.open(img).width
@@ -187,6 +195,7 @@ def slide2(prs, shot=None):
     text(s, rx, 1.92, rw, 0.25, "작동 방식", size=10, color=G1, weight="med")
     for i, t in enumerate(STEPS):
         text(s, rx, 2.15 + i * 0.36, rw, 0.3, [[(f"{i + 1}  ", {"weight": "bold", "color": G2}), (t, {})]], size=11)
+    text(s, rx + 0.2, 2.15 + 2 * 0.36 + 0.27, rw - 0.2, 0.22, LLM_NOTE, size=8.5, color=G1)
     hline(s, rx, 3.32, rw)
     text(s, rx, 3.45, rw, 0.25, "성과  2015~2018년 자료로 3년간 운영 재현", size=10, color=G1, weight="med")
     for i, (v, lab, note) in enumerate(results()):
@@ -199,8 +208,8 @@ def slide2(prs, shot=None):
     text(s, M + qs + 0.15, H - 0.55 - qs + 0.18, 4.5, 0.6,
          [[("결과 화면 (시점별 점검 결과 확인)", {"weight": "bold", "size": 11})],
           [("kjhoeakjy.github.io/csm-auto", {"size": 9.5, "color": G1})]], spacing=1.3)
-    text(s, rx, H - 0.62, rw, 0.4, [[("오차 개선은 2018년 1분기 단일 판단, 변경 횟수는 변경 승인 가정 3년 누적 운영 기준", {})],
-                                  [("시점별 판단에 해당 시점까지의 정보만 사용. 실제 금융회사 운영 사례 아님", {})]], size=7.5, color=G2, spacing=1.2)
+    text(s, rx, H - 0.62, rw, 0.4, [[("판정 규칙은 같은 기간 결과를 보고 조정한 탐색 단계 결과. 상각 시점은 마지막 납부월 기준 근사", {})],
+                                  [("시점별 판단에 해당 시점까지의 정보만 사용. 공개 자료 기반 과거 재현, 실제 금융회사 운영 사례 아님", {})]], size=8, color=G2, spacing=1.2)
 
 def main():
     shot = HERE / "app_card.png"

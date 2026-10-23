@@ -1,4 +1,4 @@
-﻿"""분기 처리 함수: 스케줄러(정기 실행)와 과거 분기 재현이 같은 함수를 호출
+"""분기 처리 함수: 스케줄러(정기 실행)와 과거 분기 재현이 같은 함수를 호출
 
 run_quarter(T):
   as-of 자르기 -> 선행 점검 -> 조기 결과 점검 -> 후행 검증 -> 판정
@@ -39,7 +39,9 @@ def code_hash():
 
 
 def asof_month(t: pd.Period) -> pd.Timestamp:
-    return t.asfreq("M", "end").to_timestamp()
+    """판단 시점: 분기 말일 (예: 2018Q1 -> 2018-03-31). 자료는 월 단위(매월 1일 표기)이므로
+    분기 마지막 달 실행 대출과 그 달까지 확정된 실적을 포함"""
+    return t.asfreq("D", "end").to_timestamp().normalize()
 
 
 def latest_labeled_q(t: pd.Period, horizon: int) -> pd.Period:
