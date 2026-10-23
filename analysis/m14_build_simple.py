@@ -143,12 +143,12 @@ def main():
                else "변별력(AUC) 정기 재학습 우위")
     summary = [
         {"label": "상각률 이상 경고 시점", "value": kpis(decs, ph, a.default)[0]["value"],
-         "note": "대출 후 1년 중간 실적 활용 (기존 방식은 2년 실적 확인 후 경고)"},
+         "note": "대출 1년 차 실적으로 경고. 기존 방식은 2년 차 실적 확인 후 경고"},
         {"label": "모형 갱신 후 상각률 예측 오차", "value": f"{abs(oe_last['D'] - 1) * 100:.0f}%",
-         "note": f"모형을 그대로 두면 {abs(oe_last['A'] - 1) * 100:.0f}%, {ql(last_q)} 기준"},
+         "note": f"갱신 안 할 시 예측 오차 {abs(oe_last['A'] - 1) * 100:.0f}% ({ql(last_q)} 기준)"},
         {"label": "3년간 모형 갱신 횟수", "value": f"{s['D']['changes']}회",
-         "note": f"평균 오차 {s['D']['book_mean_abs_oe_err'] * 100:.1f}%. 3개월마다 재학습({s['B']['changes']}회)은 "
-                 f"{s['B']['book_mean_abs_oe_err'] * 100:.1f}%"},
+         "note": f"3년 평균 예측 오차 {s['D']['book_mean_abs_oe_err'] * 100:.1f}%. 3개월마다 재학습 시 {s['B']['changes']}회 갱신, "
+                 f"예측 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%"},
     ]
     data = {"items": items, "cohorts": cohorts, "default_q": a.default, "summary": summary}
     tpl = (APP / "simple.html").read_text(encoding="utf-8")
