@@ -83,7 +83,7 @@ def timing_summary():
     same_s = int(((w[4] == w[5]) & (w[6] == w[5])).sum())
     same_r = int(((r[4] == r[5]) & (r[6] == r[5])).sum())
     diff = [q for q in w.index if not (w.loc[q, 4] == w.loc[q, 5] == w.loc[q, 6])]
-    return (f"13개 분기 중 상태 일치 {same_s}개, 권고 일치 {same_r}개 (재학습 제외, 재보정 후보만 비교)."
+    return (f"13개 분기 중 상태 일치 {same_s}개, 권고 일치 {same_r}개 (재학습 제외, 재보정 후보 비교)."
             + (f" 상태가 달라진 분기는 {', '.join(diff)}" if diff else ""))
 
 
@@ -104,7 +104,7 @@ def kpis(decs, posthoc, default_q):
               and d.get("lag") and d["lag"][0]["o_e_ratio"] > 1)
     if e and l:
         gap = pd.Period(l, freq="Q").ordinal - pd.Period(e, freq="Q").ordinal
-        out.append({"label": "이상 감지 시점", "value": f"{gap}분기 앞당김", "short": "12개월 중간 신호 사용",
+        out.append({"label": "이상 감지 시점", "value": f"{gap * 3}개월 미리 예측", "short": "12개월 중간 신호 사용",
                     "note": f"과소 예측을 {e}에 감지. 24개월 확정 결과로는 {l}에 확인"})
     ph = [r for r in posthoc if r["asof_q"] == default_q and r["part"] == "전체"]
     m = next((r for r in ph if r["candidate"] == "maintain"), None)

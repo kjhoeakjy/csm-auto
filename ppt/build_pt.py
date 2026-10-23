@@ -5,6 +5,7 @@
 실행: .venv/Scripts/python modelops/ppt/build_pt.py  → export.ps1 로 PDF·미리보기
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -145,12 +146,12 @@ def results():
     from m08_build_app import kpis as K, load_decisions, load_json
     decs = load_decisions(RULE)
     ph = pd.read_csv(RES / f"m06_posthoc_{RULE}.csv").to_dict("records")
-    early_q = int(K(decs, ph, "2018Q1")[0]["value"][0])
+    early_m = int(re.match(r"\d+", K(decs, ph, "2018Q1")[0]["value"]).group())   # 앞당긴 개월 수
     m = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["candidate"] == "maintain")
     c = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["is_chosen"])
     s = {r["policy"][0]: r for r in load_json(RES / "m11_policy.json")["summary"]}
     gap = lambda oe: f"{abs(oe - 1) * 100:.0f}%"
-    return [(f"{early_q}분기 앞당김", "상각률 이상 경고 시점",
+    return [(f"{early_m}개월 미리 예측", "상각률 이상 경고 시점",
              "대출 후 1년 중간 실적 활용 (기존 2년 실적)\n2016~2017년 단일 사례"),
             (gap(c['o_e_ratio']), "수정안 적용 후 상각률 예측 오차",
              f"적용 전 {gap(m['o_e_ratio'])}, 상대 오차 (실제÷예측-1)\n"
@@ -165,7 +166,7 @@ def results():
 
 STEPS = ["3개월마다 예측 상각률과 실제 상각률 비교",
          "차이가 기준 초과 시 모형 수정안 11종 성능 비교",
-         "기준 통과안만 담당자 보고, 적용 여부는 담당자 결정"]
+         "기준 통과안 담당자 보고, 적용 여부는 담당자 결정"]
 LLM_NOTE = "보고서 초안은 Claude Opus 5.5 작성, 수치는 계산 결과와 항목별 자동 대조"
 
 
@@ -208,7 +209,7 @@ def slide2(prs, shot=None):
          [[("결과 화면 (시점별 점검 결과 확인)", {"weight": "bold", "size": 11})],
           [("kjhoeakjy.github.io/csm-auto", {"size": 9.5, "color": G1})]], spacing=1.3)
     text(s, rx, H - 0.62, rw, 0.4, [[("판정 규칙은 같은 기간 결과를 보고 조정한 탐색 단계 결과. 상각 시점은 마지막 납부월 기준 근사", {})],
-                                  [("시점별 판단에 해당 시점까지의 정보만 사용. 공개 자료 기반 과거 재현, 실제 금융회사 운영 사례 아님", {})]], size=8, color=G2, spacing=1.2)
+                                  [("시점별 판단은 해당 시점까지 확정된 정보로 수행. 공개 자료 기반 과거 재현, 실제 금융회사 운영 사례 아님", {})]], size=8, color=G2, spacing=1.2)
 
 def main():
     shot = HERE / "app_card.png"

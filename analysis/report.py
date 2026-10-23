@@ -220,8 +220,9 @@ def tidy(s: str) -> str:
         return s
     s = re.sub(r"(?<=[가-힣\d)%])\s?:\s", ", ", s)
     s = re.sub(r"(?<=[가-힣A-Za-z\d])·(?=[가-힣A-Za-z\d-])", ", ", s)
-    s = s.replace(" vs ", ", ")
+    s = s.replace(" vs ", ", ").replace("입력 분포 변화만", "입력 분포 변화 (수준 오차 없음)")
     s = re.sub(r"(?<=(?:았|었|였|했|하|되|있|없|않|이|르|지|높|낮|크|작|많|같|좋))(고|며),\s", r"\1 ", s)  # 연결 어미 뒤 쉼표 삭제
     s = re.sub(r"예:\s", "예시 ", s)
+    s = re.sub(r"(?<=[가-힣])(?<![미다지])만(?=[\s),.|])", "", s)        # 한정 조사 '-만' 삭제 (숫자 단위 만은 유지)
     s = re.sub(r"[①②③]\s*", "", s)
     return re.sub(r"\b(" + "|".join(FEAT_KO) + r")\b", lambda m: FEAT_KO[m.group(1)], s)

@@ -126,7 +126,7 @@ def main():
     d0 = next(r for r in ph if r["asof_q"] == a.default and r["part"] == "전체" and r["candidate"] == "maintain")
     c0 = next(r for r in ph if r["asof_q"] == a.default and r["part"] == "전체" and r["is_chosen"])
     summary = [
-        {"label": "상각률 이상 경고 시점", "value": f"{int(kpis(decs, ph, a.default)[0]['value'][0])}분기 앞당김",
+        {"label": "상각률 이상 경고 시점", "value": kpis(decs, ph, a.default)[0]["value"],
          "note": "대출 후 1년 중간 실적 활용 (기존 2년 실적), 2016~2017년 단일 사례"},
         {"label": "수정안 적용 후 상각률 예측 오차", "value": gap(c0["o_e_ratio"]),
          "note": f"적용 전 {gap(d0['o_e_ratio'])}, 상대 오차 (실제÷예측-1). 절대 차이 {abs(d0['actual'] - d0['pred']) * 100:.1f}%p에서 "
