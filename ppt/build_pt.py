@@ -186,7 +186,7 @@ def slide2(prs, shot=None):
     text(s, M, 2.12, lw, 0.6, [[("신용평가모형의 예측 상각률과 실제 상각률 차이 확대", {"weight": "bold", "size": 13})],
                                 [("상각률은 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율. 예측 오차는 |실제÷예측-1|", {"size": 10, "color": G1})]],
          spacing=1.35)
-    text(s, M, 2.72, lw, 0.25, "판단 시점별 보유 대출의 상각률 예측 오차, 모형 유지 대비 본 시스템 적용 (변경 승인 가정)",
+    text(s, M, 2.72, lw, 0.25, "판단 시점별 보유 대출의 실제 상각률과 예측 상각률. 숫자는 모형 갱신 시점 (갱신 승인 가정)",
          size=9, color=G1, weight="med")
     img = HERE / "chart_effect.png"
     ih = lw * Image.open(img).height / Image.open(img).width

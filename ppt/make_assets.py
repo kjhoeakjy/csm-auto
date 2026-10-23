@@ -50,32 +50,46 @@ fig.tight_layout()
 fig.savefig(HERE / "chart_default.png", transparent=False, facecolor="white")
 plt.close(fig)
 
-# 2장 그림: 모형 유지 대비 본 시스템 적용 시 예측 오차 (판단 분기별, 운영 방식 비교 m11)
+# 2장 그림: 판단 시점별 보유 대출의 실제 상각률, 모형 예측(유지), 모형 갱신 시 예측 (운영 방식 비교 m11)
+import sys                                                    # noqa: E402
+sys.path.insert(0, str(HERE.parent / "analysis"))
+from labels import HORIZON                                    # noqa: E402
+from pipeline import latest_labeled_q                         # noqa: E402
 pq = pd.read_csv(RES / "m11_policy_quarter.csv")
-pq["err"] = (pq["book_oe"] - 1).abs() * 100
 A = pq[pq.policy.str.startswith("A")].reset_index(drop=True)
 Dp = pq[pq.policy.str.startswith("D")].reset_index(drop=True)
+bq = bt[bt.model == "lgbm"].set_index("issue_q")
+act = []
+for t in A.quarter:                                           # 보유 대출 = 24개월 결과 미확정 실행분 (2016Q3 까지)
+    T = pd.Period(t, freq="Q")
+    qs = [str(q) for q in pd.period_range(latest_labeled_q(T, HORIZON) + 1, min(T, pd.Period("2016Q3", freq="Q")), freq="Q")]
+    b = bq.loc[qs]
+    act.append((b.actual * b.n).sum() / b.n.sum() * 100)
+A["act"] = act
+A["pred"] = A["act"] / A["book_oe"]
+Dp["pred"] = A["act"] / Dp["book_oe"]
 xs = range(len(A))
 fig, ax = plt.subplots(figsize=(6.2, 3.0), dpi=300)
-ax.plot(xs, Dp["err"], color="black", lw=2.8)
-ax.plot(xs, A["err"], color="#8a8a8a", lw=2.4, ls=(0, (4, 3)), zorder=4)   # 변경 전 구간은 두 선이 같음
+ax.plot(xs, A["act"], color="black", lw=2.8)
+ax.plot(xs, A["pred"], color="#8a8a8a", lw=2.4, ls=(0, (4, 3)))
+ax.plot(xs, Dp["pred"], color="#444444", lw=2.0, ls=(0, (1, 1.6)), zorder=4)   # 갱신 전 구간은 모형 예측과 같음
 chg = [k for k in range(len(Dp)) if Dp.changes_cum[k] > (Dp.changes_cum[k - 1] if k else 0)]
-ax.scatter(chg, Dp["err"][chg], s=46, color="black", zorder=3)
-for j, k in enumerate(chg):                                  # 모형 변경 시점 표시 (번호)
-    ax.annotate(f"변경 {j + 1}", (k, Dp["err"][k]), xytext=(0, -15 if j else 9), textcoords="offset points",
+ax.scatter(chg, Dp["pred"][chg], s=34, color="#444444", zorder=5)
+for j, k in enumerate(chg):                                  # 모형 갱신 시점 표시 (번호)
+    ax.annotate(f"{j + 1}", (k, Dp["pred"][k]), xytext=(0, -13 if j == 0 else 7), textcoords="offset points",
                 ha="center", fontsize=8, color="#333333")
 n = len(A) - 1
-ax.annotate(f"모형 유지\n{A['err'][n]:.0f}%", (n, A["err"][n]), xytext=(8, 0), textcoords="offset points",
-            ha="left", va="center", fontsize=10, color="#555555")
-ax.annotate(f"본 시스템\n{Dp['err'][n]:.0f}%", (n, Dp["err"][n]), xytext=(8, 0), textcoords="offset points",
-            ha="left", va="center", fontsize=10, fontweight="bold")
+for y, lab, kw in [(A["act"][n], "실제", {"fontweight": "bold"}), (Dp["pred"][n], "모형 갱신 시", {"color": "#444444"}),
+                   (A["pred"][n], "모형 예측", {"color": "#555555"})]:
+    ax.annotate(f"{lab} {y:.1f}%", (n, y), xytext=(8, 0), textcoords="offset points", ha="left", va="center",
+                fontsize=9.5, **kw)
 ticks = [k for k, q in enumerate(A.quarter) if q.endswith("Q1")]
 ax.set_xticks(ticks, [A.quarter[k][:4] + "년" for k in ticks], fontsize=9, color="#555555")
-ax.set_yticks([0, 10, 20, 30], ["0%", "10%", "20%", "30%"], fontsize=9, color="#555555")
-ax.set_ylim(-1, 38)
-ax.set_xlim(-0.4, n + 2.2)
-ax.hlines([0, 10, 20, 30], -0.4, n + 0.3, color="#e3e3e3", lw=0.8, zorder=0)   # 오른쪽 글자 영역에는 격자선 없음
-ax.set_ylabel("상각률 예측 오차", fontsize=9, color="#555555")
+ax.set_yticks([10, 12, 14, 16], ["10%", "12%", "14%", "16%"], fontsize=9, color="#555555")
+ax.set_ylim(9.3, 16.5)
+ax.set_xlim(-0.4, n + 3.4)
+ax.hlines([10, 12, 14, 16], -0.4, n + 0.3, color="#e3e3e3", lw=0.8, zorder=0)   # 오른쪽 글자 영역에는 격자선 없음
+ax.set_ylabel("보유 대출 상각률", fontsize=9, color="#555555")
 for s in ("top", "right", "left"):
     ax.spines[s].set_visible(False)
 ax.spines["bottom"].set_color("#999999")
