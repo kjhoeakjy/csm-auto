@@ -37,6 +37,21 @@ def gap(oe):
     return f"{abs(oe - 1) * 100:.0f}%"
 
 
+def change(a, b):
+    """오차 변화 문구. 정수 반올림이 같으면 소수 첫째 자리까지, 증감 방향을 그대로 표기"""
+    x, y = abs(a - 1) * 100, abs(b - 1) * 100
+    d = 0 if round(x) != round(y) else 1
+    if round(x, d) == round(y, d):
+        return f"{x:.{d}f}%로 변화 없음"
+    return f"{x:.{d}f}%에서 {y:.{d}f}%로 {'감소' if y < x else '증가'}"
+
+
+def vs_pred(oe):
+    """예측 대비 차이 문구 (0%로 반올림되면 일치)"""
+    g = abs(oe - 1) * 100
+    return "예측과 일치" if round(g) == 0 else f"예측 대비 {g:.0f}% {'초과' if oe > 1 else '미달'}"
+
+
 def reco_text(d):
     c = d.get("candidates") or {}
     if d["status"] == "판정 유보":
@@ -59,12 +74,11 @@ def why_text(d):
         out.append(f"신규 대출 {lead['n']:,}건, 모형 개발 시점 대비 고객 구성 {same}")
     l0 = (d.get("lag") or [{}])[0]
     if l0:
-        hi = "초과" if l0["o_e_ratio"] > 1 else "미달"
         txt = (f"{ql(l0['cohort_q'])} 대출(2년 결과 확인 완료) 실제 상각률 {pct(l0['actual'])}, "
-               f"예측 {pct(l0['pred'])}, 예측 대비 {gap(l0['o_e_ratio'])} {hi}")
+               f"예측 {pct(l0['pred'])}, {vs_pred(l0['o_e_ratio'])}")
         e0 = (d.get("early") or [{}])[0]
         if e0:
-            txt += f". {ql(e0['cohort_q'])} 대출의 1년 시점 상각 결과도 예측 대비 {gap(e0['o_e_ratio'])} {'초과' if e0['o_e_ratio'] > 1 else '미달'}"
+            txt += f". {ql(e0['cohort_q'])} 대출의 1년 시점 상각 결과는 {vs_pred(e0['o_e_ratio'])}"
         out.append(txt)
     c = d.get("candidates")
     if c is None:
@@ -73,10 +87,10 @@ def why_text(d):
         t = {r["candidate"]: r for r in c["table"]}
         if c["chosen"]:
             k, m = t[c["chosen"]], t["maintain"]
-            out.append(f"수정안 선택 단계 검증: {len(t) - 1}종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. "
-                       f"'{PLAIN[c['chosen']]}' 안의 오차 {gap(m['o_e_ratio'])}에서 {gap(k['o_e_ratio'])}로 감소")
+            out.append(f"수정안 {len(t) - 1}종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교 (수정안 선택 단계 검증). "
+                       f"'{PLAIN[c['chosen']]}' 안의 오차 {change(m['o_e_ratio'], k['o_e_ratio'])}, 예측 정확도 지표(log loss) {k['rel_ll_gain'] * 100:.1f}% 개선")
         else:
-            out.append(f"수정안 선택 단계 검증: {len(t) - 1}종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교. 기준 통과안 없음")
+            out.append(f"수정안 {len(t) - 1}종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교 (수정안 선택 단계 검증). 기준 통과안 없음")
     return out
 
 
@@ -89,8 +103,8 @@ def after_text(ph, q):
         return None
     lo, hi = c["cohorts"].split("~")
     return {"from": lo, "to": hi, "n": int(c["n"]), "actual": c["actual"], "pred_m": m["pred"], "pred_c": c["pred"],
-            "text": f"예측 오차(상대) {gap(m['o_e_ratio'])}에서 {gap(c['o_e_ratio'])}로 감소, "
-                    f"절대 차이 {abs(m['actual'] - m['pred']) * 100:.1f}%p에서 {abs(c['actual'] - c['pred']) * 100:.1f}%p로 감소"}
+            "text": f"예측 오차(상대) {change(m['o_e_ratio'], c['o_e_ratio'])}, "
+                    f"절대 차이 {abs(m['actual'] - m['pred']) * 100:.1f}%p에서 {abs(c['actual'] - c['pred']) * 100:.1f}%p로"}
 
 
 def main():

@@ -74,6 +74,12 @@ button.b:disabled { opacity: .35; cursor: default; }
 .chart { margin-top: 40px; position: relative; }
 .chart p { margin: 0 0 10px; font-size: 13px; color: var(--sub); }
 .chart svg { width: 100%; height: auto; display: block; }
+.lg { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; margin: 0 0 8px; }
+.lg span { display: inline-flex; align-items: center; gap: 8px; }
+.lg i { display: inline-block; width: 22px; border-top: 3px solid var(--ink); }
+.lg i.p { border-top: 3px dashed var(--mid); }
+.lg i.c { border-top: 3px dotted var(--ink); }
+.lg i.m { border-top: 3px dashed var(--sub); }
 .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; line-height: 1.4;
   white-space: nowrap; transform: translate(-50%, -115%); opacity: 0; transition: opacity .1s; }
 .sum { margin-top: 44px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
@@ -93,7 +99,7 @@ footer a { color: var(--sub); }
 </style>
 <div class="wrap">
   <h1>신용평가모형<br>자동 점검</h1>
-  <p class="lede">신용평가모형은 시간이 지나면 예측이 실제와 어긋남. 이 시스템은 3개월마다 모형의 예측 상각률과 실제 상각률을 비교하고, 차이가 크면 모형 수정안을 검증해 담당자에게 권고함. Lending Club 공개 대출 자료로 2015~2018년 13개 분기 운영 재현.</p>
+  <p class="lede">신용평가모형은 시간이 지나면 예측이 실제와 어긋남. 이 시스템은 3개월마다 모형의 예측 상각률과 실제 상각률을 비교하고 차이가 크면 모형 수정안을 검증해 담당자에게 권고함. Lending Club 공개 대출 자료로 2015~2018년 13개 분기 운영 재현.</p>
 
   <section class="steps" aria-label="화면 사용법">
     <div><b>1. 점검 시점 선택</b>막대 이동 또는 분기 표시 클릭</div>
@@ -105,7 +111,7 @@ footer a { color: var(--sub); }
     <summary>데이터, 모형, 작동 방식</summary>
     <div class="about-grid">
       <div class="k">데이터</div><div>Lending Club 공개 대출 226만 건 (2007~2018년 실행). 대출 실행 시점 정보만 사용</div>
-      <div class="k">모형</div><div>LightGBM (의사결정나무 여러 개를 차례로 결합하는 기계학습 모형). 입력: 대출 금액, 기간, 금리, 등급, 소득, 부채 비율, 신용 이력. 출력: 대출 후 2년 내 상각 확률. 2010~2012년 대출 8.7만 건으로 학습, 이후 기간 AUC 0.68 (0.5 무작위, 1 완전 구분)</div>
+      <div class="k">모형</div><div>LightGBM (의사결정나무 여러 개를 차례로 결합하는 기계학습 모형). 입력은 대출 금액, 기간, 금리, 등급, 소득, 부채 비율, 신용 이력. 출력은 대출 후 2년 내 상각 확률. 2010~2012년 대출 8.7만 건으로 학습, 이후 기간 AUC 0.68 (0.5 무작위, 1 완전 구분)</div>
       <div class="k">상각률</div><div>대출 실행 후 2년 내 상환 중단 후 손실 처리(상각) 비율. 결과 확정은 대출 후 30개월</div>
       <div class="k">작동 방식</div><div><ol>
         <li>3개월마다 자동 실행, 그 시점까지 확정된 자료만 사용</li>
@@ -134,13 +140,14 @@ footer a { color: var(--sub); }
 
   <section class="chart" id="chw">
     <h2>대출 실행 시기별 예측 상각률과 실제 상각률</h2>
-    <p>실선: 실제, 점선: 모형 예측. 회색 구간: 선택 시점에 결과가 확정되지 않은 대출. 그림 위에 마우스를 올리면 분기별 수치 표시</p>
+    <p>회색 구간은 선택 시점에 결과가 확정되지 않은 대출. 그림 위에 마우스를 올리면 분기별 수치 표시</p>
+    <div class="lg" id="lg"></div>
     <div id="ch"></div>
     <div class="tip" id="tip"></div>
   </section>
 
   <section class="sum" id="sum"></section>
-  <footer>시점별 판단에 해당 시점까지의 정보만 사용. 권고안 적용 결과는 이후 확정된 실제 결과와 비교한 사후 평가. 공개 자료 기반 과거 재현, 실제 금융회사 운영 사례 아님 · <a href="detail.html">분석 상세</a></footer>
+  <footer>시점별 판단에 해당 시점까지의 정보만 사용. 권고안 적용 결과는 이후 확정된 실제 결과와 비교한 사후 평가. 공개 자료 기반 과거 재현, 실제 금융회사 운영 사례 아님.<br><a href="detail.html">분석 상세 화면</a></footer>
 </div>
 <script>
 const D = /*__DATA__*/null;
@@ -179,19 +186,16 @@ function chart(item) {
   if (showAfter && k0 >= 0 && k1 >= 0) {     // 권고안 적용 대상 대출 구간의 평균: 실제, 기존 예측, 권고안 예측
     const x0 = X(k0) - 6, x1 = X(k1) + 6;
     s += `<rect x="${x0}" y="${m.t}" width="${x1 - x0}" height="${H - m.t - m.b}" fill="none" stroke="var(--ink)" stroke-dasharray="2 3"/>`;
-    const L = [["actual", "var(--ink)", 3, "", "실제"], ["pred_m", "var(--sub)", 2.5, "6 5", "기존 예측"], ["pred_c", "var(--ink)", 2.5, "2 3", "권고안 예측"]];
-    const order = L.map((_, j) => j).sort((p, q) => Y(a[L[p][0]]) - Y(a[L[q][0]]));
-    const ty = {}; let prev = -1e9;               // 글자 겹침 방지: 위에서부터 최소 15px 간격
-    order.forEach(j => { ty[j] = Math.max(Y(a[L[j][0]]), prev + 15); prev = ty[j]; });
-    L.forEach(([k, col, w, dash, lab], j) => {
-      const y = Y(a[k]);
-      s += `<line x1="${x0}" x2="${x1}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="${w}" stroke-dasharray="${dash}"/>`;
-      s += `<text x="${x0 - 8}" y="${ty[j] + 4}" font-size="12" text-anchor="end" fill="${col}" font-weight="700">${lab} ${pc(a[k])}</text>`;
+    [["actual", "var(--ink)", 3, ""], ["pred_m", "var(--sub)", 2.5, "6 5"], ["pred_c", "var(--ink)", 2.5, "2 3"]].forEach(([k, col, w, dash]) => {
+      s += `<line x1="${x0}" x2="${x1}" y1="${Y(a[k])}" y2="${Y(a[k])}" stroke="${col}" stroke-width="${w}" stroke-dasharray="${dash}"/>`;
     });
+    // 수치는 그림 밖 범례에 표시 (글자와 선 겹침 방지)
+    $("#lg").innerHTML = `<span><i></i>실제 ${pc(a.actual)}</span><span><i class="m"></i>기존 예측 ${pc(a.pred_m)}</span>` +
+      `<span><i class="c"></i>권고안 예측 ${pc(a.pred_c)}</span><span>점선 상자는 ${qlabel(a.from)}~${qlabel(a.to)} 실행 대출 평균</span>`;
   } else {
     const last = c[cut - 1];
-    s += `<text x="${X(cut - 1) - 6}" y="${Y(last.actual) - 10}" font-size="13" font-weight="700" text-anchor="end" fill="var(--ink)">실제 ${pc(last.actual)}</text>`;
-    s += `<text x="${X(cut - 1) - 6}" y="${Y(last.pred) + 20}" font-size="13" text-anchor="end" fill="var(--sub)">모형 예측 ${pc(last.pred)}</text>`;
+    $("#lg").innerHTML = `<span><i></i>실제 상각률</span><span><i class="p"></i>모형 예측 상각률</span>` +
+      `<span>결과 확정 최신 ${qlabel(last.q)} 실행 대출 실제 ${pc(last.actual)}, 예측 ${pc(last.pred)}</span>`;
     if (known >= 0 && known < n - 1) s += `<text x="${X(known) + 12}" y="${m.t + 18}" font-size="12" fill="var(--sub)">결과 미확정</text>`;
   }
   s += `<line id="guide" x1="0" x2="0" y1="${m.t}" y2="${H - m.b}" stroke="var(--ink)" stroke-width="1" opacity="0"/>`;
@@ -225,8 +229,8 @@ function render() {
   $("#apply").classList.toggle("on", showAfter && !!a);
   $("#apply").textContent = showAfter && a ? "적용 결과 닫기" : "권고안 적용 결과";
   $("#hint").textContent = a
-    ? "권고안 적용 결과: 이 시점 권고안을 당시 보유 대출에 적용한 예측과 이후 확정된 실제 상각률 비교. 그림에 해당 대출 구간 표시 (판단에는 미사용)"
-    : "권고안 적용 결과: 모형 변경 권고가 있는 분기에서만 선택 가능. 이 분기는 변경 권고 없음";
+    ? "이 시점 권고안을 당시 보유 대출에 적용한 예측과 이후 확정된 실제 상각률 비교. 그림에 해당 대출 구간 표시. 판단에는 미사용"
+    : "모형 변경 권고가 있는 분기에서만 적용 결과 확인 가능. 이 분기는 변경 권고 없음";
   const box = $("#after");
   box.hidden = !(showAfter && a);
   if (a) {

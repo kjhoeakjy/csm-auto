@@ -9,6 +9,7 @@
 import argparse
 import base64
 import json
+import re
 
 import numpy as np
 import pandas as pd
@@ -49,6 +50,13 @@ def load_decisions(rule):
     return out
 
 
+def _tidy_llm(o):
+    """LLM 초안의 표기만 작성 원칙에 맞게 정리 (수치·내용 변경 없음)"""
+    t = report.tidy
+    return {**o, "summary": t(o["summary"]), "evidence": [{"title": t(e["title"]), "text": t(e["text"])} for e in o["evidence"]],
+            "investigate": [t(x) for x in o["investigate"]], "caveats": [t(x) for x in o.get("caveats", [])]}
+
+
 def load_llm(model="claude-opus-5-5"):
     p = RESULTS / f"m09_llm_report_{model}.jsonl"
     if not p.exists():
@@ -57,7 +65,7 @@ def load_llm(model="claude-opus-5-5"):
     for line in p.read_text(encoding="utf-8").splitlines():
         r = json.loads(line)
         out[r["quarter"]] = {"published": r["published"], "problems": r["problems"], "model": r["model"],
-                             "seconds": r["seconds"], "output": r["output"] if r["published"] else None}
+                             "seconds": r["seconds"], "output": _tidy_llm(r["output"]) if r["published"] else None}
     return out
 
 
@@ -76,7 +84,14 @@ def timing_summary():
     same_r = int(((r[4] == r[5]) & (r[6] == r[5])).sum())
     diff = [q for q in w.index if not (w.loc[q, 4] == w.loc[q, 5] == w.loc[q, 6])]
     return (f"13개 분기 중 상태 일치 {same_s}개, 권고 일치 {same_r}개 (재학습 제외, 재보정 후보만 비교)."
-            + (f" 상태가 달라진 분기: {', '.join(diff)}" if diff else ""))
+            + (f" 상태가 달라진 분기는 {', '.join(diff)}" if diff else ""))
+
+
+INJ_KO = {"missing_column": "필수 열 누락", "type_change": "형식 변경 (DTI 문자열)", "delayed_feed": "신규 데이터 미도착",
+          "small_cohort": "결과 코호트 표본 부족", "fico_drop": "신규 대출 FICO 일괄 하락"}
+
+
+tidy = report.tidy       # 화면 표시 문장 정리 (작성 원칙)
 
 
 def kpis(decs, posthoc, default_q):
@@ -115,7 +130,7 @@ def kpis(decs, posthoc, default_q):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--rule", default="r3")
+    ap.add_argument("--rule", default="r4")
     ap.add_argument("--default", default="2018Q1")
     a = ap.parse_args()
     decs = load_decisions(a.rule)
@@ -127,6 +142,7 @@ def main():
         card_chk = report.verify(" ".join(e["text"] + " " + e.get("short", "") for e in card), d)
         if not card_chk["verified"]:           # 대조 실패 시 정량 근거 원문 사용
             card = d.get("evidence", [])
+        card = [{k: tidy(v) for k, v in e.items()} for e in card]
         lag0 = (d.get("lag") or [{}])[0]
         e0 = (d.get("early") or [{}])[0]
         quarters.append({**{k: d.get(k) for k in ["quarter", "asof", "status", "recommendation", "reasons",
@@ -134,6 +150,7 @@ def main():
                                                    "run_status", "candidate_experiment", "problem",
                                                    "problem_label", "ref_auc", "segments",
                                                    "segments_tested"]},
+                         "recommendation": tidy(d.get("recommendation")), "problem_label": tidy(d.get("problem_label")),
                          "q": d["quarter"], "lag_cohort": lag0.get("cohort_q"), "card": card,
                          "card_check": card_chk,
                          "report": txt if chk["verified"] else "", "report_check": chk})
@@ -159,16 +176,25 @@ def main():
     runlog = [last[k] for k in sorted(last)]
 
     rob = pd.read_csv(RESULTS / "m07_robustness.csv").to_dict("records")
+    for r in rob:
+        if r["test"].startswith("주입: "):
+            r["test"] = f"주입 시험 ({INJ_KO.get(r['test'][4:], r['test'][4:])})"
+    for r in runlog:
+        r["recommendation"] = tidy(r.get("recommendation"))
+    pol = load_json(RESULTS / "m11_policy.json")
+    for r in (pol or {}).get("d_log", []):
+        for k in ("problem", "recommendation", "note"):
+            r[k] = tidy(r.get(k))
     r1 = {d["quarter"]: d for d in load_decisions("r1")}
     comp = [{"q": d["quarter"], "r1_status": r1.get(d["quarter"], {}).get("status"),
              "r1_reco": r1.get(d["quarter"], {}).get("recommendation"),
              "reco": d["recommendation"]} for d in decs]
 
     data = clean({
-        "lede": "신규 대출의 24개월 내 상각 위험을 예측하는 모형 1개를 매 분기 자동 점검하고, 문제 발생 시 "
+        "lede": "신규 대출의 24개월 내 상각 위험을 예측하는 모형 1개를 매 분기 자동 점검. 문제 발생 시 "
                 "유지, 재보정, 재학습 중 당시 데이터로 시험을 통과한 조치를 담당자에게 권고하는 시스템",
         "feat_ko": report.FEAT_KO, "kpis": kpis(decs, posthoc, a.default),
-        "policy": load_json(RESULTS / "m11_policy.json"),
+        "policy": pol,
         "injection": pd.read_csv(RESULTS / "m10_injection.csv").to_dict("records")
         if (RESULTS / "m10_injection.csv").exists() else None,
         "timing": timing_summary(), "llm": load_llm(),
@@ -178,6 +204,15 @@ def main():
         "trend": {"cohort": cohort, "asof": asof}, "posthoc": posthoc, "runlog": runlog,
         "robustness": rob, "rules_compare": comp,
     })
+    def tidy_all(o, key=""):                   # 화면에 나가는 모든 문장에 표기 정리 적용
+        if key in ("feat_ko", "meta"):
+            return o
+        if isinstance(o, dict):
+            return {k: tidy_all(v, k) for k, v in o.items()}
+        if isinstance(o, list):
+            return [tidy_all(v, key) for v in o]
+        return tidy(o)
+    data = tidy_all(data)
     tpl = (APP / "template.html").read_text(encoding="utf-8")
     js = json.dumps(data, ensure_ascii=False, default=str).replace("</", "<\\/")
     html = tpl.replace("/*__DATA__*/null", js).replace("/*__FONTS__*/", font_faces())

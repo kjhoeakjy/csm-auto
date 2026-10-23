@@ -112,8 +112,8 @@ def slide1(prs):
         circle(s, x0, Y1, 0.46, fill=WHITE)
         ic(s, x0, Y1)
     bx0, bx1 = tx((2026, 6)), tx((2026, 9))      # BCG 인턴 기간 막대 (석사 막대 아래)
-    rect(s, bx0, 3.3, bx1 - bx0, 0.09, BAR)
-    text(s, bx1 + 0.08, 3.22, 1.2, 0.22, "BCG 인턴", size=8.5, color=G1)
+    rect(s, bx0, 3.37, bx1 - bx0, 0.09, BAR)
+    text(s, bx1 + 0.08, 3.31, 1.2, 0.22, "BCG 인턴", size=8.5, color=G1)
     x0, x1 = 1.75, 9.0                           # 프로젝트: 시간순 점 + 아래 3단 엇갈림 글
     pos = [(x0 + i * (x1 - x0) / (len(PROJ) - 1), Y2 + 0.32 + (i % 3) * 0.62) for i in range(len(PROJ))]
     for (x, ty) in pos:                          # 연결선을 먼저, 글 상자(흰 바탕)를 위에
@@ -167,7 +167,7 @@ def results():
 STEPS = ["3개월마다 예측 상각률과 실제 상각률 비교",
          "차이가 기준 초과 시 모형 수정안 11종 성능 비교",
          "기준 통과안만 담당자 보고, 적용 여부는 담당자 결정"]
-LLM_NOTE = "보고서 초안: Claude Opus 5.5, 보고서 수치는 계산 결과와 항목별 자동 대조"
+LLM_NOTE = "보고서 초안은 Claude Opus 5.5 작성, 수치는 계산 결과와 항목별 자동 대조"
 
 
 def slide2(prs, shot=None):
@@ -184,7 +184,7 @@ def slide2(prs, shot=None):
     lw = 6.0                                    # 왼쪽: 문제와 그림
     text(s, M, 1.92, lw, 0.25, "문제", size=10, color=G1, weight="med")
     text(s, M, 2.12, lw, 0.6, [[("신용평가모형의 예측 상각률과 실제 상각률 차이 확대", {"weight": "bold", "size": 13})],
-                                [("실제 상각률 상승, 예측 상각률 하락 (상각률: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율)", {"size": 10, "color": G1})]],
+                                [("실제 상각률 상승, 예측 상각률 하락 (상각률은 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율)", {"size": 10, "color": G1})]],
          spacing=1.35)
     img = HERE / "chart_default.png"
     ih = lw * Image.open(img).height / Image.open(img).width
@@ -196,8 +196,8 @@ def slide2(prs, shot=None):
     for i, t in enumerate(STEPS):
         text(s, rx, 2.15 + i * 0.36, rw, 0.3, [[(f"{i + 1}  ", {"weight": "bold", "color": G2}), (t, {})]], size=11)
     text(s, rx + 0.2, 2.15 + 2 * 0.36 + 0.27, rw - 0.2, 0.22, LLM_NOTE, size=8.5, color=G1)
-    hline(s, rx, 3.32, rw)
-    text(s, rx, 3.45, rw, 0.25, "성과  2015~2018년 자료로 3년간 운영 재현", size=10, color=G1, weight="med")
+    hline(s, rx, 3.4, rw)
+    text(s, rx, 3.5, rw, 0.25, "성과  2015~2018년 자료로 3년간 운영 재현", size=10, color=G1, weight="med")
     for i, (v, lab, note) in enumerate(results()):
         y0 = 3.78 + i * 0.82
         text(s, rx, y0, 2.6, 0.45, v, size=20, weight="bold")

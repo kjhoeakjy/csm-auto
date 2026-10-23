@@ -118,13 +118,13 @@ def card_evidence(dec: dict) -> list[dict]:
     ev = []
     lead = dec.get("lead") or {}
     if lead.get("skipped"):
-        ev.append({"title": "신규 대출 특성·데이터 품질", "text": f"{lead['skipped']}: 신규 대출 점검 유보"})
+        ev.append({"title": "신규 대출 특성과 데이터 품질", "text": f"{lead['skipped']}: 신규 대출 점검 유보"})
     elif not lead.get("schema_ok"):
-        ev.append({"title": "신규 대출 특성·데이터 품질", "text": "데이터 형식 오류로 점검 불가 (판정 유보)"})
+        ev.append({"title": "신규 대출 특성과 데이터 품질", "text": "데이터 형식 오류로 점검 불가 (판정 유보)"})
     else:
         t = lead["top_recent"][0]
         same = "학습 시점과 비슷함" if lead["score_psi_ref"] < 0.1 else "학습 시점과 달라짐"
-        ev.append({"title": "신규 대출 특성·데이터 품질",
+        ev.append({"title": "신규 대출 특성과 데이터 품질",
                    "short": f"점수 분포 {'안정' if lead['score_psi_ref'] < 0.1 else '변화'} (PSI {lead['score_psi_ref']:.3f}), 데이터 형식 정상",
                    "text": (f"이번 분기 신규 {lead['n']:,}건. 모형 점수 분포는 {same} "
                             f"(PSI {lead['score_psi_ref']:.3f}). 직전 1년 대비 가장 크게 바뀐 입력은 "
@@ -148,14 +148,14 @@ def card_evidence(dec: dict) -> list[dict]:
             k = t[c["chosen"]]
             ev.append({"title": "개선안 별도 검증",
                        "text": (f"{LABEL[c['chosen']]}을 1년 전 데이터로 만들어 이후 확정된 "
-                                f"{c['sel_q'][0]}~{c['sel_q'][-1]} 실행분에 적용: 실제/예측 "
+                                f"{c['sel_q'][0]}~{c['sel_q'][-1]} 실행분에 적용. 실제/예측 "
                                 f"{m['o_e_ratio']:.2f}배에서 {k['o_e_ratio']:.2f}배로, 예측 오차(log loss) "
                                 f"{k['rel_ll_gain'] * 100:.1f}% 감소"),
                        "short": f"{LABEL[c['chosen']]}, 실제/예측 {m['o_e_ratio']:.2f}에서 {k['o_e_ratio']:.2f}로"})
         else:
             ev.append({"title": "개선안 별도 검증",
                        "text": (f"개선안 {len(t) - 1}개를 1년 전 데이터로 만들어 {c['sel_q'][0]}~"
-                                f"{c['sel_q'][-1]} 실행분에 시험했으나 모두 사전 기준 미달: 변경 보류"),
+                                f"{c['sel_q'][-1]} 실행분에 시험, 모두 사전 기준 미달로 변경 보류"),
                        "short": f"후보 {len(t) - 1}개 모두 기준 미달, 변경 보류"})
     return ev
 
@@ -211,4 +211,17 @@ def build(dec: dict) -> str:
     L.append("- 원인은 단정하지 않음. 심사 기준·상품 구성·경기 요인은 담당자 조사 항목")
     L.append("- 모형 변경·적용은 담당자 검토와 승인 후 진행")
     L.append("- 공개 대출 데이터 기반 과거 분기 재현. 상각 시점은 마지막 납부월 기준 근사")
-    return "\n".join(L)
+    return tidy("\n".join(L))
+
+
+def tidy(s: str) -> str:
+    """표시 문장 정리 (작성 원칙): 문장 안 콜론, 가운뎃점, vs 를 쉼표로. 변수 코드명은 한글명으로"""
+    if not isinstance(s, str):
+        return s
+    s = re.sub(r"(?<=[가-힣\d)%])\s?:\s", ", ", s)
+    s = re.sub(r"(?<=[가-힣A-Za-z\d])·(?=[가-힣A-Za-z\d-])", ", ", s)
+    s = s.replace(" vs ", ", ")
+    s = re.sub(r"(?<=(?:았|었|였|했|하|되|있|없|않|이|르|지|높|낮|크|작|많|같|좋))(고|며),\s", r"\1 ", s)  # 연결 어미 뒤 쉼표 삭제
+    s = re.sub(r"예:\s", "예시 ", s)
+    s = re.sub(r"[①②③]\s*", "", s)
+    return re.sub(r"\b(" + "|".join(FEAT_KO) + r")\b", lambda m: FEAT_KO[m.group(1)], s)
