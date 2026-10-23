@@ -65,7 +65,7 @@ def verify_fields(text: str, dec: dict) -> list[str]:
         [g for r in rows for g in (r.get("grade") or []) if isinstance(g, dict) and "o_e_ratio" in g]
     bad = []
     for sent in SENT_RE.split(text):
-        if "기준" in sent or "규칙" in sent:        # 판정 임계값 서술(예: 1.10 이상)은 항목 대조 제외
+        if any(w in sent for w in ("기준", "규칙", "판정함", "이상 또는")):        # 판정 임계값 서술(예: 1.10 이상)은 항목 대조 제외
             continue
         cq = set(Q_RE.findall(sent)) | {f"{y}Q{q}" for y, q in KQ_RE.findall(sent)}
         scope = [r for r in rows if r["cohort_q"] in cq] or rows

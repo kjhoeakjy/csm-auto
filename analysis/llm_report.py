@@ -136,6 +136,8 @@ def validate(out, dec, tool_texts):
         probs.append("항목 불일치: " + ", ".join(bad_f[:8]))
     if SPOKEN.search(text):
         probs.append("구어체 표현: " + SPOKEN.search(text).group(0))
+    if any(x.rstrip().endswith("?") for x in out["investigate"]):
+        probs.append("조사 항목 질문형 (명사형 종결 필요)")
     if CAUSAL.search(text):
         probs.append("원인 단정 표현: " + CAUSAL.search(text).group(0))
     leak = [t["name"] for t in TOOLS if t["name"] in text] + re.findall(r"\b(int_rate|fico|dti|grade_num)\b", text)
