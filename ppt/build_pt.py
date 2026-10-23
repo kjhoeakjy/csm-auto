@@ -151,12 +151,25 @@ def results():
     c = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["is_chosen"])
     s = {r["policy"][0]: r for r in load_json(RES / "m11_policy.json")["summary"]}
     gap = lambda oe: f"{abs(oe - 1) * 100:.0f}%"
+    # 성과 2 = 2장 그림(운영 재현)과 같은 실험의 마지막 분기: 갱신 없음(A) 대비 본 시스템(D) 보유 대출 예측 오차
+    from labels import HORIZON
+    from pipeline import latest_labeled_q
+    pq = pd.read_csv(RES / "m11_policy_quarter.csv")
+    bq = pd.read_csv(RES / "m03_backtest_quarter.csv")
+    bq = bq[bq.model == "lgbm"].set_index("issue_q")
+    last = pq.quarter.iloc[-1]
+    T = pd.Period(last, freq="Q")
+    qs = [str(q) for q in pd.period_range(latest_labeled_q(T, HORIZON) + 1, min(T, pd.Period("2016Q3", freq="Q")), freq="Q")]
+    b = bq.loc[qs]
+    act = (b.actual * b.n).sum() / b.n.sum()
+    oe = {r["policy"][0]: r["book_oe"] for r in pq[pq.quarter == last].to_dict("records")}
+    y, qn = T.year, T.quarter
     return [(f"{early_m}개월 전 사전 예측", "상각률 이상 경고 시점",
              "대출 후 1년 중간 실적 활용 (기존 2년 실적)\n2016~2017년 단일 사례"),
-            (gap(c['o_e_ratio']), "수정안 적용 후 상각률 예측 오차",
-             f"적용 전 {gap(m['o_e_ratio'])}, 상대 오차 (실제÷예측-1)\n"
-             f"절대 차이 {abs(m['actual'] - m['pred']) * 100:.1f}%p에서 {abs(c['actual'] - c['pred']) * 100:.1f}%p로\n"
-             f"2018년 1분기 보유 대출 {c['n'] / 1e4:.0f}만 건 사후 평가"),
+            (gap(oe["D"]), "모형 갱신 후 상각률 예측 오차",
+             f"갱신 없음 {gap(oe['A'])}, 상대 오차 (실제÷예측-1)\n"
+             f"절대 차이 {abs(act - act / oe['A']) * 100:.1f}%p에서 {abs(act - act / oe['D']) * 100:.1f}%p로\n"
+             f"{y}년 {qn}분기 보유 대출 사후 평가"),
             (f"{s['D']['changes']}회", "3년간 모형 갱신 횟수",
              f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']} (갱신 승인 가정)\n"
              f"정기 재학습 {s['B']['changes']}회 대비 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%에서 "
