@@ -105,8 +105,7 @@ def slide1(prs):
         x0, x1 = tx(st), tx(en)
         yt = 1.5 + i * 0.47
         text(s, x0, yt, 6.5, 0.22, [[(t, {"weight": "bold", "size": 10.5}),
-                                     (f"   {st[0]}.{st[1]:02d} ~ {en[0]}.{en[1]:02d}", {"size": 8.5, "color": G2}),
-                                     (f"   {k}", {"size": 8.5, "color": G1})]])
+                                     (f"   {st[0]}.{st[1]:02d} ~ {en[0]}.{en[1]:02d}", {"size": 8.5, "color": G2})]])
         rect(s, x0, yt + 0.27, max(x1 - x0, 0.08), 0.09, BAR)
         seg(s, x0, yt + 0.36, x0, Y1 - 0.23, color=LINE, width=0.75)
         circle(s, x0, Y1, 0.46, fill=WHITE)
