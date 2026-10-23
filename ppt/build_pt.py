@@ -153,14 +153,29 @@ def results():
     ch = [next(r for r in whole if r["asof_q"] == q and r["is_chosen"]) for q in rec]
     err = lambda rs: sum(abs(r["o_e_ratio"] - 1) for r in rs) / len(rs) * 100
     s = {r["policy"][0]: r for r in load_json(RES / "m11_policy.json")["summary"]}
+    # 성과 2 = 2장 그림(운영 재현)과 같은 실험의 마지막 분기: 갱신 없음(A) 대비 본 시스템(D) 보유 대출 예측 오차
+    from config import BACKTEST
+    from labels import HORIZON
+    from pipeline import latest_labeled_q
+    gap = lambda o: f"{abs(o - 1) * 100:.0f}%"
+    pq = pd.read_csv(RES / "m11_policy_quarter.csv")
+    bq = pd.read_csv(BACKTEST)
+    bq = bq[bq.model == "lgbm"].set_index("issue_q")
+    last = pq.quarter.iloc[-1]
+    T = pd.Period(last, freq="Q")
+    qs = [str(q) for q in pd.period_range(latest_labeled_q(T, HORIZON) + 1, min(T, pd.Period("2016Q3", freq="Q")), freq="Q")]
+    b = bq.loc[qs]
+    act = (b.actual * b.n).sum() / b.n.sum()
+    oe = {r["policy"][0]: r["book_oe"] for r in pq[pq.quarter == last].to_dict("records")}
+    y, qn = T.year, T.quarter
     auc_txt = ("변별력(AUC) 우위" if s["D"]["book_mean_auc"] > s["B"]["book_mean_auc"] + 0.0005
                else "변별력(AUC) 정기 재학습 우위")
     return [(f"{early_m}개월 전 사전 예측", "상각률 이상 경고 시점",
              "대출 후 1년 중간 실적 활용 (기존 2년 실적)\n2016~2017년 단일 사례"),
-            (f"{err(ch):.0f}%", "수정안 적용 후 상각률 예측 오차",
-             f"적용 전 {err(mt):.0f}%, 상대 오차 (실제÷예측-1)\n"
-             f"권고 {len(rec)}개 시점 평균, 당시 보유 대출 사후 평가\n"
-             f"상각률 측정 대상 대출 실행 2014~2016년"),
+            (gap(oe["D"]), "모형 갱신 후 상각률 예측 오차",
+             f"갱신 없음 {gap(oe['A'])}, 상대 오차 (실제÷예측-1)\n"
+             f"절대 차이 {abs(act - act / oe['A']) * 100:.1f}%p에서 {abs(act - act / oe['D']) * 100:.1f}%p로\n"
+             f"{y}년 {qn}분기 보유 대출 (그림의 마지막 시점)"),
             (f"{s['D']['changes']}회", "3년간 모형 갱신 횟수",
              (f"예측치 조정 {s['D']['changes'] - s['D']['retrains']}회" + (f", 재학습 {s['D']['retrains']}회" if s["D"]["retrains"] else "") + " (갱신 승인 가정)\n") +
              f"정기 재학습 {s['B']['changes']}회 대비 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%에서 "

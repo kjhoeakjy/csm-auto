@@ -136,13 +136,17 @@ def main():
     err = lambda cond: sum(abs(next(r for r in whole if r["asof_q"] == q and cond(r))["o_e_ratio"] - 1)
                            for q in rec) / len(rec) * 100
     e_m, e_c = err(lambda r: r["candidate"] == "maintain"), err(lambda r: r["is_chosen"])
+    pq = pd.read_csv(RESULTS / "m11_policy_quarter.csv")
+    last_q = pq.quarter.iloc[-1]
+    oe_last = {r["policy"][0]: r["book_oe"] for r in pq[pq.quarter == last_q].to_dict("records")}
     auc_txt = ("변별력(AUC) 우위" if s["D"]["book_mean_auc"] > s["B"]["book_mean_auc"] + 0.0005
                else "변별력(AUC) 정기 재학습 우위")
     summary = [
         {"label": "상각률 이상 경고 시점", "value": kpis(decs, ph, a.default)[0]["value"],
          "note": "대출 후 1년 중간 실적 활용 (기존 2년 실적), 2016~2017년 단일 사례"},
-        {"label": "수정안 적용 후 상각률 예측 오차", "value": f"{e_c:.0f}%",
-         "note": f"적용 전 {e_m:.0f}%, 상대 오차 (실제÷예측-1). 권고 {len(rec)}개 시점 평균, 당시 보유 대출 사후 평가"},
+        {"label": "모형 갱신 후 상각률 예측 오차", "value": f"{abs(oe_last['D'] - 1) * 100:.0f}%",
+         "note": f"갱신 없음 {abs(oe_last['A'] - 1) * 100:.0f}%, 상대 오차 (실제÷예측-1). {ql(last_q)} 보유 대출, 3년 운영 재현의 마지막 시점. "
+                 f"수정안 사후 평가 기준으로는 권고 {len(rec)}개 시점 평균 {e_m:.0f}%에서 {e_c:.0f}%로"},
         {"label": "3년간 모형 갱신 횟수", "value": f"{s['D']['changes']}회",
          "note": f"예측치 조정 {s['D']['changes'] - s['D']['retrains']}회" + (f", 재학습 {s['D']['retrains']}회" if s["D"]["retrains"] else "") + " (갱신 승인 가정 누적 운영). " +
                  f"정기 재학습 {s['B']['changes']}회 대비 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%에서 "
