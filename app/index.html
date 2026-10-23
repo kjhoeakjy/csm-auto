@@ -80,7 +80,7 @@ button.b:disabled { opacity: .35; cursor: default; }
 .lg span { display: inline-flex; align-items: center; gap: 8px; }
 .lg i { display: inline-block; width: 22px; border-top: 3px solid var(--ink); }
 .lg i.p { border-top: 3px dashed var(--mid); }
-.lg i.c { border-top: 3px dotted var(--ink); }
+.lg i.c { border-top: 4px dotted var(--mid); }
 .lg i.m { border-top: 3px dashed var(--sub); }
 .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; line-height: 1.4;
   white-space: nowrap; transform: translate(-50%, -115%); opacity: 0; transition: opacity .1s; }
@@ -189,8 +189,9 @@ function chart(item) {
   if (showAfter && k0 >= 0 && k1 >= 0) {     // 권고안 적용 대상 대출 구간의 평균: 실제, 기존 예측, 권고안 예측
     const x0 = X(k0) - 6, x1 = X(k1) + 6;
     s += `<rect x="${x0}" y="${m.t}" width="${x1 - x0}" height="${H - m.t - m.b}" fill="none" stroke="var(--ink)" stroke-dasharray="2 3"/>`;
-    [["actual", "var(--ink)", 3, ""], ["pred_m", "var(--sub)", 2.5, "6 5"], ["pred_c", "var(--ink)", 2.5, "2 3"]].forEach(([k, col, w, dash]) => {
-      s += `<line x1="${x0}" x2="${x1}" y1="${Y(a[k])}" y2="${Y(a[k])}" stroke="${col}" stroke-width="${w}" stroke-dasharray="${dash}"/>`;
+    // 권고안 예측은 실제와 겹쳐도 보이도록 회색 굵은 점선을 맨 위에 그림
+    [["actual", "var(--ink)", 4, ""], ["pred_m", "var(--sub)", 2.5, "6 5"], ["pred_c", "var(--mid)", 4, "1 6"]].forEach(([k, col, w, dash]) => {
+      s += `<line x1="${x0}" x2="${x1}" y1="${Y(a[k])}" y2="${Y(a[k])}" stroke="${col}" stroke-width="${w}" stroke-dasharray="${dash}" stroke-linecap="round"/>`;
     });
     // 수치는 그림 밖 범례에 표시 (글자와 선 겹침 방지)
     $("#lg").innerHTML = `<span><i></i>실제 ${pc(a.actual)}</span><span><i class="m"></i>기존 예측 ${pc(a.pred_m)}</span>` +
