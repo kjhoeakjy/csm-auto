@@ -96,7 +96,7 @@ XB, XJ, XE = 9.35, 9.95, 11.25                   # 꺾임, 합류(BCG), 종점(�
 
 def slide1(prs):
     s = prs.slides.add_slide(prs.slide_layouts[6])
-    text(s, M, 0.62, W - 2 * M, 0.45, "Experience Timeline", size=20, weight="bold")
+    text(s, M, 0.62, W - 2 * M, 0.45, "01 Experience Timeline", size=20, weight="bold")
     hline(s, M, 1.3, W - 2 * M, color=INK)
     LX = 1.5                                     # 트랙 시작 (왼쪽 여백에 트랙 이름)
     for y, label, up in [(Y1, "학업, 경험", True), (Y2, "프로젝트", False)]:
