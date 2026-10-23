@@ -174,10 +174,10 @@ def results():
     return [(f"{early_m}개월 전 사전 예측", "상각률 이상 경고 시점",
              "대출 1년 차 실적으로 경고\n기존 방식은 2년 차\n실적 확인 후 경고"),
             (gap(oe["D"]), "모형 갱신 후 상각률 예측 오차",
-             f"갱신 안 할 시 예측 오차 {gap(oe['A'])}\n({y}년 {qn}분기 기준)"),
+             f"갱신 안 할 시\n예측 오차 {gap(oe['A'])}\n({y}년 {qn}분기 기준)"),
             (f"{s['D']['changes']}회", "3년간 모형 갱신 횟수",
              f"3년 평균 예측 오차 {s['D']['book_mean_abs_oe_err'] * 100:.1f}%\n"
-             f"3개월마다 재학습 시\n{s['B']['changes']}회 갱신, 예측 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%")]
+             f"3개월마다 재학습 시\n{s['B']['changes']}회 갱신,\n예측 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%")]
 
 
 STEPS = ["3개월마다 예측 상각률과 실제 상각률 비교",
@@ -211,7 +211,7 @@ def slide2(prs, shot=None):
          size=10)
     hline(s, M, 1.78, W - 2 * M, color=INK)
 
-    lw = 6.0                                    # 왼쪽: 문제와 그림
+    lw = 6.9                                    # 왼쪽: 문제와 그림 (그래프 비중 확대)
     text(s, M, 1.92, lw, 0.25, "문제", size=10, color=G1, weight="med")
     text(s, M, 2.12, lw, 0.6, [[("신용평가모형의 예측 상각률과 실제 상각률 차이 확대", {"weight": "bold", "size": 13})],
                                 [("상각률: 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율", {"size": 10, "color": G1})]],
@@ -222,27 +222,27 @@ def slide2(prs, shot=None):
     text(s, M, 2.62 + ih + 0.02, lw, 0.25, "판단 시점별 보유 대출의 실제 상각률과 예측 상각률 (갱신 승인 가정)",
          size=9, color=G1, weight="med", align=PP_ALIGN.CENTER)
 
-    rx = M + lw + 0.55                          # 오른쪽: 하는 일과 결과
+    rx = M + lw + 0.45                          # 오른쪽: 하는 일과 결과
     rw = W - M - rx
     text(s, rx, 1.92, rw, 0.25, "작동 방식", size=10, color=G1, weight="med")
     for i, t in enumerate(STEPS):
         text(s, rx, 2.15 + i * 0.36, rw, 0.3, [[(f"{i + 1}  ", {"weight": "bold", "color": G2}), (t, {})]], size=11)
     hline(s, rx, 3.4, rw)
     text(s, rx, 3.5, rw, 0.25, "성과  2015~2018년 자료로 3년간 운영 재현", size=10, color=G1, weight="med")
-    gap = 0.28                                  # 성과 3개: 가로 카드 (항목명, 수치, 설명)
+    gap = 0.22                                  # 성과 3개: 가로 카드 (항목명, 수치, 설명)
     cw = (rw - 2 * gap) / 3
     y0 = 3.9
     for i, (v, lab, note) in enumerate(results()):
         x = rx + i * (cw + gap)
         if i:
             vline(s, x - gap / 2, y0, 2.1)
-        labs = wrap(lab, 12)
-        text(s, x, y0, cw, 0.22 * len(labs), [[(ln, {})] for ln in labs], size=10, weight="sb", spacing=1.15)
+        labs = wrap(lab, 11.5)
+        text(s, x, y0, cw, 0.22 * len(labs), [[(ln, {})] for ln in labs], size=9.5, weight="sb", spacing=1.15)
         val = v.replace("전 사전", "전\n사전") if len(v) > 6 else v
         vy = y0 + 0.22 * len(labs) + 0.08
         vh = 0.42 * len(val.split("\n"))
         text(s, x, vy, cw, vh, [[(ln, {})] for ln in val.split("\n")], size=22, weight="bold", spacing=1.0)
-        lines = [ln for part in note.split("\n") for ln in wrap(part, 16)]
+        lines = [ln for part in note.split("\n") for ln in wrap(part, 14)]
         text(s, x, vy + vh + 0.12, cw, 1.0, [[(ln, {})] for ln in lines], size=9, color=G1, spacing=1.25)
     qs = 0.8                                    # QR: 제목 줄 오른쪽
     s.shapes.add_picture(str(HERE / "qr.png"), Inches(W - M - qs), Inches(0.42), Inches(qs), Inches(qs))
