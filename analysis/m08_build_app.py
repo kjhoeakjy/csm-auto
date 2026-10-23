@@ -104,7 +104,7 @@ def kpis(decs, posthoc, default_q):
               and d.get("lag") and d["lag"][0]["o_e_ratio"] > 1)
     if e and l:
         gap = pd.Period(l, freq="Q").ordinal - pd.Period(e, freq="Q").ordinal
-        out.append({"label": "이상 감지 시점", "value": f"{gap * 3}개월 미리 예측", "short": "12개월 중간 신호 사용",
+        out.append({"label": "이상 감지 시점", "value": f"{gap * 3}개월 전 사전 예측", "short": "12개월 중간 신호 사용",
                     "note": f"과소 예측을 {e}에 감지. 24개월 확정 결과로는 {l}에 확인"})
     ph = [r for r in posthoc if r["asof_q"] == default_q and r["part"] == "전체"]
     m = next((r for r in ph if r["candidate"] == "maintain"), None)

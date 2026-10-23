@@ -48,6 +48,42 @@ ax.tick_params(length=0)
 ax.set_xlabel("대출 실행 시기", fontsize=9, color="#555555")
 fig.tight_layout()
 fig.savefig(HERE / "chart_default.png", transparent=False, facecolor="white")
+plt.close(fig)
+
+# 2장 그림: 모형 유지 대비 본 시스템 적용 시 예측 오차 (판단 분기별, 운영 방식 비교 m11)
+pq = pd.read_csv(RES / "m11_policy_quarter.csv")
+pq["err"] = (pq["book_oe"] - 1).abs() * 100
+A = pq[pq.policy.str.startswith("A")].reset_index(drop=True)
+Dp = pq[pq.policy.str.startswith("D")].reset_index(drop=True)
+xs = range(len(A))
+fig, ax = plt.subplots(figsize=(6.2, 3.0), dpi=300)
+ax.plot(xs, Dp["err"], color="black", lw=2.8)
+ax.plot(xs, A["err"], color="#8a8a8a", lw=2.4, ls=(0, (4, 3)), zorder=4)   # 변경 전 구간은 두 선이 같음
+chg = [k for k in range(len(Dp)) if Dp.changes_cum[k] > (Dp.changes_cum[k - 1] if k else 0)]
+ax.scatter(chg, Dp["err"][chg], s=46, color="black", zorder=3)
+for j, k in enumerate(chg):                                  # 모형 변경 시점 표시 (번호)
+    ax.annotate(f"변경 {j + 1}", (k, Dp["err"][k]), xytext=(0, -15 if j else 9), textcoords="offset points",
+                ha="center", fontsize=8, color="#333333")
+n = len(A) - 1
+ax.annotate(f"모형 유지\n{A['err'][n]:.0f}%", (n, A["err"][n]), xytext=(8, 0), textcoords="offset points",
+            ha="left", va="center", fontsize=10, color="#555555")
+ax.annotate(f"본 시스템\n{Dp['err'][n]:.0f}%", (n, Dp["err"][n]), xytext=(8, 0), textcoords="offset points",
+            ha="left", va="center", fontsize=10, fontweight="bold")
+ticks = [k for k, q in enumerate(A.quarter) if q.endswith("Q1")]
+ax.set_xticks(ticks, [A.quarter[k][:4] + "년" for k in ticks], fontsize=9, color="#555555")
+ax.set_yticks([0, 10, 20, 30], ["0%", "10%", "20%", "30%"], fontsize=9, color="#555555")
+ax.set_ylim(-1, 38)
+ax.set_xlim(-0.4, n + 2.2)
+ax.hlines([0, 10, 20, 30], -0.4, n + 0.3, color="#e3e3e3", lw=0.8, zorder=0)   # 오른쪽 글자 영역에는 격자선 없음
+ax.set_ylabel("상각률 예측 오차", fontsize=9, color="#555555")
+for s in ("top", "right", "left"):
+    ax.spines[s].set_visible(False)
+ax.spines["bottom"].set_color("#999999")
+ax.tick_params(length=0)
+ax.set_xlabel("판단 시점", fontsize=9, color="#555555")
+fig.tight_layout()
+fig.savefig(HERE / "chart_effect.png", transparent=False, facecolor="white")
+plt.close(fig)
 
 qr = qrcode.QRCode(border=1, box_size=20, error_correction=qrcode.constants.ERROR_CORRECT_M)
 qr.add_data(URL)

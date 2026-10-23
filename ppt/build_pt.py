@@ -151,7 +151,7 @@ def results():
     c = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["is_chosen"])
     s = {r["policy"][0]: r for r in load_json(RES / "m11_policy.json")["summary"]}
     gap = lambda oe: f"{abs(oe - 1) * 100:.0f}%"
-    return [(f"{early_m}개월 미리 예측", "상각률 이상 경고 시점",
+    return [(f"{early_m}개월 전 사전 예측", "상각률 이상 경고 시점",
              "대출 후 1년 중간 실적 활용 (기존 2년 실적)\n2016~2017년 단일 사례"),
             (gap(c['o_e_ratio']), "수정안 적용 후 상각률 예측 오차",
              f"적용 전 {gap(m['o_e_ratio'])}, 상대 오차 (실제÷예측-1)\n"
@@ -184,9 +184,11 @@ def slide2(prs, shot=None):
     lw = 6.0                                    # 왼쪽: 문제와 그림
     text(s, M, 1.92, lw, 0.25, "문제", size=10, color=G1, weight="med")
     text(s, M, 2.12, lw, 0.6, [[("신용평가모형의 예측 상각률과 실제 상각률 차이 확대", {"weight": "bold", "size": 13})],
-                                [("실제 상각률 상승, 예측 상각률 하락 (상각률은 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율)", {"size": 10, "color": G1})]],
+                                [("상각률은 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율. 예측 오차는 |실제÷예측-1|", {"size": 10, "color": G1})]],
          spacing=1.35)
-    img = HERE / "chart_default.png"
+    text(s, M, 2.72, lw, 0.25, "판단 시점별 보유 대출의 상각률 예측 오차, 모형 유지 대비 본 시스템 적용 (변경 승인 가정)",
+         size=9, color=G1, weight="med")
+    img = HERE / "chart_effect.png"
     ih = lw * Image.open(img).height / Image.open(img).width
     s.shapes.add_picture(str(img), Inches(M - 0.05), Inches(2.95), Inches(lw), Inches(ih))
 
