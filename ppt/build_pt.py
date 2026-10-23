@@ -255,12 +255,26 @@ def slide2(prs, shot=None):
                                    [("공개 자료 기반 과거 재현이며 실제 금융회사 운영 사례가 아닙니다.", {})]],
          size=8, color=G2, spacing=1.2)
 
+# ---------------------------------------------------------------- 표지 (제출 분량 제외)
+def cover(prs):
+    s = prs.slides.add_slide(prs.slide_layouts[6])
+    rect(s, 0, 0, W, H, INK)                    # 검은 배경
+    text(s, M + 0.3, 2.35, 6, 0.9, "김연주", size=40, weight="bold", color=WHITE)
+    text(s, M + 0.3, 3.45, 6, 0.6, [[("관심분야", {"size": 11, "color": G2})],
+                                     [("리스크 / Collection", {"size": 16, "color": WHITE, "weight": "med"})]], spacing=1.3)
+    hline(s, M + 0.3, 4.55, 4.2, color=G1)
+    for i, (no, ttl) in enumerate([("01", "Experience Timeline"), ("02", "New Project")]):
+        text(s, M + 0.3, 4.8 + i * 0.38, 0.5, 0.3, no, size=14, color=WHITE, weight="bold")
+        text(s, M + 0.85, 4.8 + i * 0.38, 5, 0.3, ttl, size=14, color=WHITE)
+
+
 def main():
     shot = HERE / "app_card.png"
     prs = Presentation()
     prs.slide_width, prs.slide_height = Inches(W), Inches(H)
     prs.core_properties.title = "리스크 역량PT"
     prs.core_properties.author = "김연주"
+    cover(prs)
     slide1(prs)
     slide2(prs, shot)
     prs.save(OUT)
