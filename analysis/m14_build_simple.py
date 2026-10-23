@@ -61,7 +61,7 @@ def reco_text(d):
         return r + " (적용 후에도 오차 일부 남음, 원인 확인 병행)" if c.get("residual") else r
     if d["status"] == "정상":
         return "현행 모형 유지"
-    return "모형 변경 보류 및 원인 확인"
+    return "모형 갱신 보류 및 원인 확인"
 
 
 def why_text(d):
@@ -131,8 +131,8 @@ def main():
         {"label": "수정안 적용 후 상각률 예측 오차", "value": gap(c0["o_e_ratio"]),
          "note": f"적용 전 {gap(d0['o_e_ratio'])}, 상대 오차 (실제÷예측-1). 절대 차이 {abs(d0['actual'] - d0['pred']) * 100:.1f}%p에서 "
                  f"{abs(c0['actual'] - c0['pred']) * 100:.1f}%p로. {ql(a.default)} 판단의 사후 평가, 보유 대출 {c0['n'] / 1e4:.0f}만 건"},
-        {"label": "3년간 모형 변경 횟수", "value": f"{s['D']['changes']}회",
-         "note": f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']} (변경 승인 가정 누적 운영). "
+        {"label": "3년간 모형 갱신 횟수", "value": f"{s['D']['changes']}회",
+         "note": f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']} (갱신 승인 가정 누적 운영). "
                  f"정기 재학습 {s['B']['changes']}회 대비 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%에서 "
                  f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%로. 변별력(AUC)은 정기 재학습 우위 "
                  f"({s['B']['book_mean_auc']:.3f} 대 {s['D']['book_mean_auc']:.3f})"},

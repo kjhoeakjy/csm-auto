@@ -148,7 +148,7 @@ body.capture .steps { margin-top: 0; }
     <details><summary>분기 보고서</summary><div class="inner" id="report"></div></details>
     <details><summary>실행 기록</summary><div class="inner" id="log"></div></details>
   </section>
-  <footer><p class="cap">Lending Club 실행 대출 226만 건(2007~2018). 정답은 실행 후 24개월 내 상환 중단 후 상각 (상각 시점은 마지막 납부월 기준 근사). 실제 금융회사 운영 아님. 모형 변경은 담당자 승인 후 적용. 판정 규칙 <span id="rv"></span></p></footer>
+  <footer><p class="cap">Lending Club 실행 대출 226만 건(2007~2018). 정답은 실행 후 24개월 내 상환 중단 후 상각 (상각 시점은 마지막 납부월 기준 근사). 실제 금융회사 운영 아님. 모형 갱신은 담당자 승인 후 적용. 판정 규칙 <span id="rv"></span></p></footer>
 </main>
 <div class="tip" id="tip"></div>
 
@@ -201,7 +201,7 @@ function renderCard() {
     <div class="k eyebrow">판단 근거</div>
     <div>${ev ? `<ol class="ev">${ev}</ol>` : '<span class="cap">근거 부족으로 판정 유보</span>'}
       ${segs.length ? `<div class="seg">전체 수준과 다르게 움직인 집단 ${segs.join(", ")}</div>` : ""}</div>
-    <div class="k eyebrow">승인</div><div class="cap">${q.candidates && q.candidates.chosen ? "담당자 검토와 승인 후 적용. 시스템은 제안과 보고까지 수행" : "모형 변경 없음"}. 판단 기준월 ${(q.asof || "").slice(0, 7)}</div>`;
+    <div class="k eyebrow">승인</div><div class="cap">${q.candidates && q.candidates.chosen ? "담당자 검토와 승인 후 적용. 시스템은 제안과 보고까지 수행" : "모형 갱신 없음"}. 판단 기준월 ${(q.asof || "").slice(0, 7)}</div>`;
 }
 function play() {
   clearInterval(timer);
@@ -223,7 +223,7 @@ function renderPol() {
   $("#pol").innerHTML = `
     <div><h3>보유 대출 예상 상각률의 평균 오차 |실제/예측 - 1| (13개 판단 분기 평균, 낮을수록 우수)</h3>
     ${s.map(r => `<div class="pbar ${r.policy.startsWith("D") ? "me" : ""}"><span>${r.policy}</span><i style="width:${(r.book_mean_abs_oe_err / maxE * 100).toFixed(1)}%"></i><span class="num" style="text-align:right">${(r.book_mean_abs_oe_err * 100).toFixed(1)}%</span></div>`).join("")}</div>
-    ${table([["정책", r => r.policy], ["모형 변경", r => r.changes + "회"], ["재학습", r => r.retrains + "회"], ["평균 오차", r => (r.book_mean_abs_oe_err * 100).toFixed(1) + "%"],
+    ${table([["정책", r => r.policy], ["모형 갱신", r => r.changes + "회"], ["재학습", r => r.retrains + "회"], ["평균 오차", r => (r.book_mean_abs_oe_err * 100).toFixed(1) + "%"],
       ["평균 log loss", r => f3(r.book_mean_ll)], ["평균 AUC", r => f3(r.book_mean_auc)], ["신규 대출 오차", r => r.new_mean_abs_oe_err == null ? "–" : (r.new_mean_abs_oe_err * 100).toFixed(1) + "%"]], s, r => r.policy.startsWith("D"))}
     <p class="cap">모든 정책의 결정은 각 분기 시점에 확정된 결과 사용. 평가는 그 뒤 확정된 실제 결과 기준. 보유 대출은 판단 시점에 결과가 미확정이던 대출, 신규 대출은 그 분기에 실행된 대출(정답이 있는 2016Q3 실행분 한정). D는 권고 시 승인 가정</p>
     ${P.d_log ? `<div><h3>D 제안 시스템의 분기별 판단</h3>${table([["분기", r => r.quarter], ["상태", r => r.status], ["문제 유형", r => r.problem], ["적용한 조치", r => r.chosen || "–"]], P.d_log)}</div>` : ""}`;

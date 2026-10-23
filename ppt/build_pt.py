@@ -157,8 +157,8 @@ def results():
              f"적용 전 {gap(m['o_e_ratio'])}, 상대 오차 (실제÷예측-1)\n"
              f"절대 차이 {abs(m['actual'] - m['pred']) * 100:.1f}%p에서 {abs(c['actual'] - c['pred']) * 100:.1f}%p로\n"
              f"2018년 1분기 보유 대출 {c['n'] / 1e4:.0f}만 건 사후 평가"),
-            (f"{s['D']['changes']}회", "3년간 모형 변경 횟수",
-             f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']} (변경 승인 가정)\n"
+            (f"{s['D']['changes']}회", "3년간 모형 갱신 횟수",
+             f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']} (갱신 승인 가정)\n"
              f"정기 재학습 {s['B']['changes']}회 대비 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%에서 "
              f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%로\n"
              f"변별력(AUC)은 정기 재학습 우위 ({s['B']['book_mean_auc']:.3f} 대 {s['D']['book_mean_auc']:.3f})")]
