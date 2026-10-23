@@ -219,7 +219,7 @@ def slide2(prs, shot=None):
     img = HERE / "chart_effect.png"
     ih = lw * Image.open(img).height / Image.open(img).width
     s.shapes.add_picture(str(img), Inches(M - 0.05), Inches(2.62), Inches(lw), Inches(ih))
-    text(s, M, 2.62 + ih + 0.02, lw, 0.25, "판단 시점별 보유 대출의 실제 상각률과 예측 상각률 (갱신 승인 가정)",
+    text(s, M, 2.62 + ih + 0.02, lw, 0.25, "판단 시점별 보유 대출의 예측 상각률과 사후 확인된 실제 상각률 (갱신 승인 가정)",
          size=9, color=G1, weight="med", align=PP_ALIGN.CENTER)
 
     rx = M + lw + 0.45                          # 오른쪽: 하는 일과 결과
