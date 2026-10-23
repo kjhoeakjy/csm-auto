@@ -12,6 +12,7 @@ from pathlib import Path
 from PIL import Image
 from pptx import Presentation
 from pptx.dml.color import RGBColor
+from pptx.enum.text import MSO_ANCHOR
 from pptx.util import Inches, Pt
 
 HERE = Path(__file__).resolve().parent
@@ -189,6 +190,20 @@ STEPS = ["3개월마다 예측 상각률과 실제 상각률 비교",
 LLM_NOTE = "보고서 초안은 Claude Opus 5.5 작성, 수치는 계산 결과와 항목별 자동 대조"
 
 
+def wrap(s, n):
+    """한 줄 최대 n 글자 폭(한글 1, 영문·숫자 0.55)으로 띄어쓰기 단위 줄바꿈"""
+    w = lambda x: sum(1 if ord(c) > 0x2000 else 0.55 for c in x)
+    out, cur = [], ""
+    for tok in re.findall(r"\([^)]*\)|\S+", s):          # 괄호 안은 한 덩어리 (괄호 중간 줄바꿈 금지)
+        cand = (cur + " " + tok).strip()
+        if cur and w(cand) > n:
+            out.append(cur)
+            cur = tok
+        else:
+            cur = cand
+    return out + ([cur] if cur else [])
+
+
 def slide2(prs, shot=None):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     text(s, M, 0.62, W - 2 * M, 0.45, "02 New Project", size=20, weight="bold")
@@ -205,11 +220,11 @@ def slide2(prs, shot=None):
     text(s, M, 2.12, lw, 0.6, [[("신용평가모형의 예측 상각률과 실제 상각률 차이 확대", {"weight": "bold", "size": 13})],
                                 [("상각률은 대출 실행 후 2년 내 상환 중단 후 손실 처리 비율. 예측 오차는 |실제÷예측-1|", {"size": 10, "color": G1})]],
          spacing=1.35)
-    text(s, M, 2.72, lw, 0.25, "판단 시점별 보유 대출의 실제 상각률과 예측 상각률. 숫자는 모형 갱신 시점 (갱신 승인 가정)",
+    text(s, M, 2.68, lw, 0.25, "판단 시점별 보유 대출의 실제 상각률과 예측 상각률. 숫자는 모형 갱신 시점 (갱신 승인 가정)",
          size=9, color=G1, weight="med")
     img = HERE / "chart_effect.png"
     ih = lw * Image.open(img).height / Image.open(img).width
-    s.shapes.add_picture(str(img), Inches(M - 0.05), Inches(2.95), Inches(lw), Inches(ih))
+    s.shapes.add_picture(str(img), Inches(M - 0.05), Inches(2.88), Inches(lw), Inches(ih))
 
     rx = M + lw + 0.55                          # 오른쪽: 하는 일과 결과
     rw = W - M - rx
@@ -219,17 +234,25 @@ def slide2(prs, shot=None):
     text(s, rx + 0.2, 2.15 + 2 * 0.36 + 0.27, rw - 0.2, 0.22, LLM_NOTE, size=8.5, color=G1)
     hline(s, rx, 3.4, rw)
     text(s, rx, 3.5, rw, 0.25, "성과  2015~2018년 자료로 3년간 운영 재현", size=10, color=G1, weight="med")
+    gap = 0.28                                  # 성과 3개: 가로 카드 (항목명, 수치, 설명)
+    cw = (rw - 2 * gap) / 3
+    y0 = 3.9
     for i, (v, lab, note) in enumerate(results()):
-        y0 = 3.78 + i * 0.82
-        text(s, rx, y0, 2.6, 0.45, v, size=20, weight="bold")
-        text(s, rx + 2.65, y0 + 0.02, rw - 2.65, 0.7, [[(lab, {"weight": "sb", "size": 10.5})]] +
-             [[(nl, {"size": 9, "color": G1})] for nl in note.split("\n")], spacing=1.25)
-    qs = 0.95                                   # QR
-    s.shapes.add_picture(str(HERE / "qr.png"), Inches(M), Inches(H - 0.55 - qs), Inches(qs), Inches(qs))
-    text(s, M + qs + 0.15, H - 0.55 - qs + 0.18, 4.5, 0.6,
+        x = rx + i * (cw + gap)
+        if i:
+            vline(s, x - gap / 2, y0, 2.45)
+        text(s, x, y0, cw, 0.42, [[(ln, {})] for ln in wrap(lab, 12)], size=10, weight="sb", spacing=1.15)
+        val = v.replace("전 사전", "전\n사전") if len(v) > 6 else v
+        text(s, x, y0 + 0.42, cw, 0.8, [[(ln, {})] for ln in val.split("\n")], size=22, weight="bold",
+             anchor=MSO_ANCHOR.BOTTOM, spacing=1.0)
+        lines = [ln for part in note.split("\n") for ln in wrap(part, 16)]
+        text(s, x, y0 + 1.35, cw, 1.4, [[(ln, {})] for ln in lines], size=8.5, color=G1, spacing=1.2)
+    qs = 0.85                                   # QR
+    s.shapes.add_picture(str(HERE / "qr.png"), Inches(M), Inches(H - 0.32 - qs), Inches(qs), Inches(qs))
+    text(s, M + qs + 0.15, H - 0.32 - qs + 0.15, 4.5, 0.6,
          [[("결과 화면 (시점별 점검 결과 확인)", {"weight": "bold", "size": 11})],
           [("kjhoeakjy.github.io/csm-auto", {"size": 9.5, "color": G1})]], spacing=1.3)
-    text(s, rx, H - 0.62, rw, 0.4, [[("판정 규칙은 같은 기간 결과를 보고 조정한 탐색 단계 결과. 상각 시점은 마지막 납부월 기준 근사", {})],
+    text(s, rx, H - 0.62, rw, 0.4, [[("판정 규칙과 모형 설정은 같은 기간 결과를 보고 정한 탐색 단계 결과. 상각 시점은 마지막 납부월 기준 근사", {})],
                                   [("시점별 판단은 해당 시점까지 확정된 정보로 수행. 공개 자료 기반 과거 재현, 실제 금융회사 운영 사례 아님", {})]], size=8, color=G2, spacing=1.2)
 
 def main():

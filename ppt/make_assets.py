@@ -71,7 +71,7 @@ A["act"] = act
 A["pred"] = A["act"] / A["book_oe"]
 Dp["pred"] = A["act"] / Dp["book_oe"]
 xs = range(len(A))
-fig, ax = plt.subplots(figsize=(6.2, 3.0), dpi=300)
+fig, ax = plt.subplots(figsize=(6.2, 3.55), dpi=300)
 ax.plot(xs, A["act"], color="black", lw=2.8)
 ax.plot(xs, A["pred"], color="#8a8a8a", lw=2.4, ls=(0, (4, 3)))
 ax.plot(xs, Dp["pred"], color="#444444", lw=2.0, ls=(0, (1, 1.6)), zorder=4)   # 갱신 전 구간은 모형 예측과 같음
@@ -91,10 +91,10 @@ for (y, lab, kw), yl in zip(ends, ly):
                 fontsize=9.5, **kw)
 ticks = [k for k, q in enumerate(A.quarter) if q.endswith("Q1")]
 ax.set_xticks(ticks, [A.quarter[k][:4] + "년" for k in ticks], fontsize=9, color="#555555")
-ax.set_yticks([10, 12, 14, 16], ["10%", "12%", "14%", "16%"], fontsize=9, color="#555555")
-ax.set_ylim(9.3, 16.5)
+ax.set_yticks([10, 11, 12, 13, 14], ["10%", "11%", "12%", "13%", "14%"], fontsize=9, color="#555555")
+ax.set_ylim(9.7, 14.9)
 ax.set_xlim(-0.4, n + 3.4)
-ax.hlines([10, 12, 14, 16], -0.4, n + 0.3, color="#e3e3e3", lw=0.8, zorder=0)   # 오른쪽 글자 영역에는 격자선 없음
+ax.hlines([10, 11, 12, 13, 14], -0.4, n + 0.3, color="#e3e3e3", lw=0.8, zorder=0)   # 오른쪽 글자 영역에는 격자선 없음
 ax.set_ylabel("보유 대출 상각률", fontsize=9, color="#555555")
 for s in ("top", "right", "left"):
     ax.spines[s].set_visible(False)
