@@ -305,7 +305,7 @@ function renderDetail() {
 function renderPost() {
   const rows = D.posthoc.filter(r => r.asof_q === cur && r.part === "전체");
   if (!rows.length) { $("#post").innerHTML = `<p class="cap">수정안 실험을 하지 않은 분기입니다.</p>`; return; }
-  $("#post").innerHTML = `<p class="cap">판단 시점에 2년 결과가 나오지 않았던 대출(${rows[0].cohorts} 실행, ${int(rows[0].n)}건)에 각 수정안을 적용한 뒤 이후 확정된 실제 결과와 비교했습니다. 판단에는 쓰지 않은 사후 평가입니다.</p>${table([
+  $("#post").innerHTML = `<p class="cap">판단 시점에 2년 결과가 나오지 않았던 대출(${rows[0].cohorts} 실행, ${int(rows[0].n)}건)에 각 수정안을 적용한 뒤 이후 확정된 실제 결과와 비교했습니다.</p>${table([
     ["후보", r => r.label + (r.is_chosen ? " ◀ 당시 선택" : "")], ["실제", r => pct(r.actual)], ["예측", r => pct(r.pred)], ["실제/예측", r => f2(r.o_e_ratio)], ["log loss 개선", r => (r.rel_ll_gain * 100).toFixed(1) + "%"], ["AUC", r => f3(r.auc)]], rows, r => r.is_chosen)}`;
 }
 function renderReport() {

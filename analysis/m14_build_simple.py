@@ -117,9 +117,7 @@ def after_text(ph, q):
         return None
     lo, hi = c["cohorts"].split("~")
     return {"from": lo, "to": hi, "n": int(c["n"]), "actual": c["actual"], "pred_m": m["pred"], "pred_c": c["pred"],
-            "text": f"예측 오차가 {change(m['o_e_ratio'], c['o_e_ratio'])}. "
-                    f"실제와 예측의 차이는 {abs(m['actual'] - m['pred']) * 100:.1f}%p에서 "
-                    f"{abs(c['actual'] - c['pred']) * 100:.1f}%p로 바뀌었습니다."}
+            "text": f"예측 오차가 {change(m['o_e_ratio'], c['o_e_ratio'])}."}
 
 
 def main():
