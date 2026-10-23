@@ -23,7 +23,7 @@ from pt_base import (F, G1, G2, H, INK, LINE, M, PX, W, WHITE, BAND, circle, hea
 
 OUT = HERE / "역량PT_김연주.pptx"
 RES = MO / "results"
-RULE = sys.argv[1] if len(sys.argv) > 1 else "r4"
+RULE = sys.argv[1] if len(sys.argv) > 1 else "r5"
 
 
 def notes(part):
@@ -147,25 +147,29 @@ def results():
     decs = load_decisions(RULE)
     ph = pd.read_csv(RES / f"m06_posthoc_{RULE}.csv").to_dict("records")
     early_m = int(re.match(r"\d+", K(decs, ph, "2018Q1")[0]["value"]).group())   # 앞당긴 개월 수
-    m = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["candidate"] == "maintain")
-    c = next(r for r in ph if r["asof_q"] == "2018Q1" and r["part"] == "전체" and r["is_chosen"])
+    whole = [r for r in ph if r["part"] == "전체"]
+    rec = sorted({r["asof_q"] for r in whole if r["is_chosen"]})           # 수정안 권고 시점
+    mt = [next(r for r in whole if r["asof_q"] == q and r["candidate"] == "maintain") for q in rec]
+    ch = [next(r for r in whole if r["asof_q"] == q and r["is_chosen"]) for q in rec]
+    err = lambda rs: sum(abs(r["o_e_ratio"] - 1) for r in rs) / len(rs) * 100
     s = {r["policy"][0]: r for r in load_json(RES / "m11_policy.json")["summary"]}
-    gap = lambda oe: f"{abs(oe - 1) * 100:.0f}%"
+    auc_txt = ("변별력(AUC) 우위" if s["D"]["book_mean_auc"] > s["B"]["book_mean_auc"] + 0.0005
+               else "변별력(AUC) 정기 재학습 우위")
     return [(f"{early_m}개월 전 사전 예측", "상각률 이상 경고 시점",
              "대출 후 1년 중간 실적 활용 (기존 2년 실적)\n2016~2017년 단일 사례"),
-            (gap(c['o_e_ratio']), "수정안 적용 후 상각률 예측 오차",
-             f"적용 전 {gap(m['o_e_ratio'])}, 상대 오차 (실제÷예측-1)\n"
-             f"절대 차이 {abs(m['actual'] - m['pred']) * 100:.1f}%p에서 {abs(c['actual'] - c['pred']) * 100:.1f}%p로\n"
-             f"2018년 1분기 보유 대출 {c['n'] / 1e4:.0f}만 건 사후 평가"),
+            (f"{err(ch):.0f}%", "수정안 적용 후 상각률 예측 오차",
+             f"적용 전 {err(mt):.0f}%, 상대 오차 (실제÷예측-1)\n"
+             f"권고 {len(rec)}개 시점 평균, 당시 보유 대출 사후 평가\n"
+             f"상각률 측정 대상 대출 실행 2014~2016년"),
             (f"{s['D']['changes']}회", "3년간 모형 갱신 횟수",
-             f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']} (갱신 승인 가정)\n"
+             (f"예측치 조정 {s['D']['changes'] - s['D']['retrains']}회" + (f", 재학습 {s['D']['retrains']}회" if s["D"]["retrains"] else "") + " (갱신 승인 가정)\n") +
              f"정기 재학습 {s['B']['changes']}회 대비 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%에서 "
              f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%로\n"
-             f"변별력(AUC)은 정기 재학습 우위 ({s['B']['book_mean_auc']:.3f} 대 {s['D']['book_mean_auc']:.3f})")]
+             f"{auc_txt} ({s['D']['book_mean_auc']:.3f} 대 {s['B']['book_mean_auc']:.3f})")]
 
 
 STEPS = ["3개월마다 예측 상각률과 실제 상각률 비교",
-         "차이가 기준 초과 시 모형 수정안 11종 성능 비교",
+         "차이가 기준 초과 시 모형 수정안 12종 성능 비교",
          "기준 통과안 담당자 보고, 적용 여부는 담당자 결정"]
 LLM_NOTE = "보고서 초안은 Claude Opus 5.5 작성, 수치는 계산 결과와 항목별 자동 대조"
 
@@ -177,7 +181,7 @@ def slide2(prs, shot=None):
     text(s, M, 1.45, W - 2 * M, 0.25,
          [[("데이터", {"weight": "sb", "color": INK}), ("  Lending Club 대출 226만 건 (2007~2018년)      ", {"color": G1}),
            ("모형", {"weight": "sb", "color": INK}),
-           ("  2010~2012년 대출 8.7만 건의 대출 조건, 소득, 신용 이력으로 학습한 LightGBM 모형 (2년 내 상각 확률 예측)", {"color": G1})]],
+           ("  2010~2013년 상반기 대출 14만 건의 대출 조건, 소득, 신용 이력으로 학습한 LightGBM 모형 (2년 내 상각 확률 예측)", {"color": G1})]],
          size=10)
     hline(s, M, 1.78, W - 2 * M, color=INK)
 

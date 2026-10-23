@@ -64,17 +64,17 @@ def lgb_model(n_estimators=2000, **kw):
     return LGBMClassifier(n_estimators=n_estimators, **base)
 
 
-def fit_lgbm(X_fit, y_fit, X_sel, y_sel, grid=LGB_GRID):
+def fit_lgbm(X_fit, y_fit, X_sel, y_sel, grid=LGB_GRID, w_fit=None, w_all=None):
     """구조 후보별로 선택용 구간 조기 종료 -> 최적 구조·반복 수로 적합+선택 구간 재적합"""
     res = []
     for g in grid:
-        m = lgb_model(**g).fit(X_fit, y_fit, eval_set=[(X_sel, y_sel)],
+        m = lgb_model(**g).fit(X_fit, y_fit, sample_weight=w_fit, eval_set=[(X_sel, y_sel)],
                                eval_metric="binary_logloss",
                                callbacks=[early_stopping(100, verbose=False)])
         res.append((m.best_score_["valid_0"]["binary_logloss"], m.best_iteration_, g))
     best = min(res, key=lambda r: r[0])
     n_iter = int(best[1] * 1.1)   # 데이터가 늘어난 만큼 소폭 증가
     final = lgb_model(n_estimators=n_iter, **best[2]).fit(
-        pd.concat([X_fit, X_sel]), np.r_[y_fit, y_sel])
+        pd.concat([X_fit, X_sel]), np.r_[y_fit, y_sel], sample_weight=w_all)
     return final, {"params": best[2], "best_iter": int(best[1]), "n_estimators": n_iter,
                    "sel_logloss": [(r[0], r[1], r[2]) for r in res]}

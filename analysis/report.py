@@ -144,7 +144,10 @@ def card_evidence(dec: dict) -> list[dict]:
     else:
         t = {r["candidate"]: r for r in c["table"]}
         m = t["maintain"]
-        if c["chosen"]:
+        if c["chosen"] == "recal_early_trend":
+            ev.append({"title": "개선안 별도 검증", "text": c["selection_note"],
+                       "short": "1년 중간 실적 추세 기준 수준 차이, 조기 결과 추세 반영 재보정"})
+        elif c["chosen"]:
             k = t[c["chosen"]]
             ev.append({"title": "개선안 별도 검증",
                        "text": (f"{LABEL[c['chosen']]}을 1년 전 데이터로 만들어 이후 확정된 "

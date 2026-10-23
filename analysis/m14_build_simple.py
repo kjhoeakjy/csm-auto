@@ -7,12 +7,14 @@
 실행: .venv/Scripts/python modelops/analysis/m14_build_simple.py --rule r4
 """
 import argparse
+import math
+import re
 import json
 import shutil
 
 import pandas as pd
 
-from config import MO, RESULTS
+from config import BACKTEST, MO, RESULTS
 from m08_build_app import font_faces, kpis, load_decisions, load_json
 
 APP = MO / "app"
@@ -22,7 +24,8 @@ PLAIN = {"maintain": "현행 모형 유지", "recal_intercept": "예측 상각�
          "recal_early": "예측 상각률 일괄 조정", "recal_trend": "예측 상각률 일괄 조정",
          "retrain_logit": "최근 대출 자료로 모형 재학습", "retrain_lgbm": "최근 대출 자료로 모형 재학습",
          "retrain_lgbm_ext": "최근 대출 자료로 모형 재학습",
-         "retrain_lgbm_ext_tw": "최근 대출 자료로 모형 재학습"}
+         "retrain_lgbm_ext_tw": "최근 대출 자료로 모형 재학습",
+         "recal_early_trend": "1년 중간 실적 추세로 예측 상각률 조정"}
 
 
 def ql(q):
@@ -85,7 +88,12 @@ def why_text(d):
         out.append("예측과 실제의 차이가 기준 이내, 수정안 비교 생략")
     else:
         t = {r["candidate"]: r for r in c["table"]}
-        if c["chosen"]:
+        if c["chosen"] == "recal_early_trend":
+            a = float(re.search(r"logit ([+-][\d.]+)", c["selection_note"]).group(1))
+            out.append(f"대출 후 1년 중간 실적 최근 4개 분기의 추세로 현재 보유 대출 수준 추정. 현재 예측 대비 "
+                       f"약 {abs(math.exp(a) - 1) * 100:.0f}% {'높음' if a > 0 else '낮음'} (기준 10%), "
+                       f"'{PLAIN[c['chosen']]}' 권고")
+        elif c["chosen"]:
             k, m = t[c["chosen"]], t["maintain"]
             out.append(f"수정안 {len(t) - 1}종을 1년 전 자료로 만든 뒤 이후 확정된 최근 4개 분기 실적으로 비교 (수정안 선택 단계 검증). "
                        f"'{PLAIN[c['chosen']]}' 안의 오차 {change(m['o_e_ratio'], k['o_e_ratio'])}, 예측 정확도 지표(log loss) {k['rel_ll_gain'] * 100:.1f}% 개선")
@@ -109,7 +117,7 @@ def after_text(ph, q):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--rule", default="r4")
+    ap.add_argument("--rule", default="r5")
     ap.add_argument("--default", default="2018Q1")
     a = ap.parse_args()
     decs = load_decisions(a.rule)
@@ -117,25 +125,29 @@ def main():
     items = [{"q": d["quarter"], "status": STATUS[d["status"]], "reco": reco_text(d), "why": why_text(d),
               "after": after_text(ph, d["quarter"]),
               "known_until": (d.get("lag") or [{}])[0].get("cohort_q")} for d in decs]
-    bt = pd.read_csv(RESULTS / "m03_backtest_quarter.csv")
+    bt = pd.read_csv(BACKTEST)
     bt = bt[(bt.model == "lgbm") & (bt.issue_q >= "2012Q1")]
     cohorts = [{"q": r.issue_q, "actual": r.actual, "pred": r.pred} for r in bt.itertuples()]
 
     pol = load_json(RESULTS / "m11_policy.json")
     s = {r["policy"][0]: r for r in pol["summary"]}
-    d0 = next(r for r in ph if r["asof_q"] == a.default and r["part"] == "전체" and r["candidate"] == "maintain")
-    c0 = next(r for r in ph if r["asof_q"] == a.default and r["part"] == "전체" and r["is_chosen"])
+    whole = [r for r in ph if r["part"] == "전체"]
+    rec = sorted({r["asof_q"] for r in whole if r["is_chosen"]})           # 수정안 권고 시점
+    err = lambda cond: sum(abs(next(r for r in whole if r["asof_q"] == q and cond(r))["o_e_ratio"] - 1)
+                           for q in rec) / len(rec) * 100
+    e_m, e_c = err(lambda r: r["candidate"] == "maintain"), err(lambda r: r["is_chosen"])
+    auc_txt = ("변별력(AUC) 우위" if s["D"]["book_mean_auc"] > s["B"]["book_mean_auc"] + 0.0005
+               else "변별력(AUC) 정기 재학습 우위")
     summary = [
         {"label": "상각률 이상 경고 시점", "value": kpis(decs, ph, a.default)[0]["value"],
          "note": "대출 후 1년 중간 실적 활용 (기존 2년 실적), 2016~2017년 단일 사례"},
-        {"label": "수정안 적용 후 상각률 예측 오차", "value": gap(c0["o_e_ratio"]),
-         "note": f"적용 전 {gap(d0['o_e_ratio'])}, 상대 오차 (실제÷예측-1). 절대 차이 {abs(d0['actual'] - d0['pred']) * 100:.1f}%p에서 "
-                 f"{abs(c0['actual'] - c0['pred']) * 100:.1f}%p로. {ql(a.default)} 판단의 사후 평가, 보유 대출 {c0['n'] / 1e4:.0f}만 건"},
+        {"label": "수정안 적용 후 상각률 예측 오차", "value": f"{e_c:.0f}%",
+         "note": f"적용 전 {e_m:.0f}%, 상대 오차 (실제÷예측-1). 권고 {len(rec)}개 시점 평균, 당시 보유 대출 사후 평가"},
         {"label": "3년간 모형 갱신 횟수", "value": f"{s['D']['changes']}회",
-         "note": f"재학습 {s['D']['retrains']}, 예측치 조정 {s['D']['changes'] - s['D']['retrains']} (갱신 승인 가정 누적 운영). "
+         "note": f"예측치 조정 {s['D']['changes'] - s['D']['retrains']}회" + (f", 재학습 {s['D']['retrains']}회" if s["D"]["retrains"] else "") + " (갱신 승인 가정 누적 운영). " +
                  f"정기 재학습 {s['B']['changes']}회 대비 평균 오차 {s['B']['book_mean_abs_oe_err'] * 100:.1f}%에서 "
-                 f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%로. 변별력(AUC)은 정기 재학습 우위 "
-                 f"({s['B']['book_mean_auc']:.3f} 대 {s['D']['book_mean_auc']:.3f})"},
+                 f"{s['D']['book_mean_abs_oe_err'] * 100:.1f}%로. {auc_txt} "
+                 f"({s['D']['book_mean_auc']:.3f} 대 {s['B']['book_mean_auc']:.3f})"},
     ]
     data = {"items": items, "cohorts": cohorts, "default_q": a.default, "summary": summary}
     tpl = (APP / "simple.html").read_text(encoding="utf-8")

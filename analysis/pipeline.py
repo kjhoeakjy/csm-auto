@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 from candidates import KIND, LABEL, run_candidates
-from config import DATA, MO, RESULTS
+from config import CHAMPION_PATH, DATA, MO, RESULTS, SCORES
 from data import load_loans
 from labels import HORIZON, LAG, REPORT_LAG
 from metrics import evaluate
@@ -62,19 +62,21 @@ class Context:
     ref_auc: float = None
 
     @classmethod
-    def load(cls, model_path=RESULTS / "models" / "champion_v1.joblib"):
+    def load(cls, model_path=CHAMPION_PATH):
         art = joblib.load(model_path)
         df = load_loans()
-        sc = pd.read_parquet(DATA / "scores_v1.parquet", columns=["id", "p_lgbm"])
+        sc = pd.read_parquet(SCORES, columns=["id", "p_lgbm"])
         df = df.merge(sc, on="id", how="left").rename(columns={"p_lgbm": "p"})
         df["q"] = pd.PeriodIndex(df["issue_d"], freq="Q")
         df["label12_known_d"] = df["issue_d"] + pd.DateOffset(months=12 + LAG + REPORT_LAG)
-        ref = df[(df["issue_d"] >= "2010-01-01") & (df["issue_d"] <= "2012-12-31")]
+        rw = art["meta"].get("ref_window", ["2010-01-01", "2012-12-31"])      # 운영 모형 학습 구간
+        ref = df[(df["issue_d"] >= rw[0]) & (df["issue_d"] <= rw[1])]
         emap = EarlyMap().fit(ref["p"], ref["y12"])
         ref = ref.assign(p12=emap(ref["p"]))
         ingest = json.loads((RESULTS / "m01_ingest.json").read_text(encoding="utf-8"))
         # 기준 AUC: 운영 모형의 첫 시간외 코호트(2013Q1~Q2). 운영 재현 첫 분기(2015Q4)에 이미 확정
-        oot = df[(df["issue_d"] >= "2013-01-01") & (df["issue_d"] <= "2013-06-30")]
+        ow = art["meta"].get("oot_ref", ["2013-01-01", "2013-06-30"])
+        oot = df[(df["issue_d"] >= ow[0]) & (df["issue_d"] <= ow[1])]
         return cls(df=df, ref=ref, phi=estimate_phi(ref), phi12=estimate_phi(ref, "p12", y="y12"),
                    emap=emap, meta=art["meta"],
                    data_id=f"{ingest['source_sha1'][:10]}@{ingest['snapshot_last_pymnt_max']}",
@@ -155,11 +157,15 @@ def evidence(lead, early, lag, status, cand) -> list[dict]:
     ev.append({"id": "outcome", "title": "예측과 실제의 차이", "text": txt})
     if cand is None:
         ev.append({"id": "candidate", "title": "개선 후보 검증",
-                   "text": "조치 검토 기준 미달로 개선 후보 실험 생략"})
+                   "text": "후보 실험 조건 미달로 개선 후보 실험 생략"})
     else:
         t = cand["table"].set_index("candidate")
         m = t.loc["maintain"]
-        if cand["chosen"]:
+        if cand["chosen"] == "recal_early_trend":
+            et = cand["deploy"]
+            txt = (f"12개월 조기 결과 최근 {len(et.per_q_)}개 분기의 수준 차이 추세를 보유 대출 중심 시점까지 연장한 결과 "
+                   f"logit {et.a_:+.2f} (기준 0.10 이상): 조기 결과 추세 반영 재보정")
+        elif cand["chosen"]:
             c = t.loc[cand["chosen"]]
             txt = (f"1년 전 시점 데이터로 적합한 {LABEL[cand['chosen']]}을 그 뒤 확정된 "
                    f"{cand['sel_q'][0]}~{cand['sel_q'][-1]} 실행분에 적용한 결과 실제/예측 {m['o_e_ratio']:.2f}에서 "
@@ -181,6 +187,8 @@ def recommend(status, reasons, cand) -> str:
         r = RECO[KIND[cand["chosen"]]]
         return r + " (잔여 오차 있음·원인 조사 병행)" if cand.get("residual") else r
     if status == "주의":
+        if cand is not None and cand["chosen"]:
+            return RECO[KIND[cand["chosen"]]]
         outcome = any(r.startswith(("lag24", "early12")) for r in reasons)
         return RECO["investigate"] if outcome else RECO["keep"]
     return RECO["keep"]
@@ -233,7 +241,8 @@ def decide(ctx: Context, t, with_retrain=True, inject=None, ref_auc=None) -> tup
         p = prev.get((s["group"], s["level"]))
         s["repeated"] = bool(p and p["rel_to_all"] * s["rel_to_all"] > 0)
     cand = None
-    if dec["status"] == "조치 검토":           # 조건부 실행: 문제가 확인된 분기만
+    # 조건부 실행: 조치 검토, 또는 주의 중 12개월 조기 결과 기준 초과 (r5)
+    if dec["status"] == "조치 검토" or (dec["status"] == "주의" and "early12_material" in dec["reasons"]):
         cand = run_candidates(v["lab24"], v["lab12"], v["asof"], ctx.meta, ctx.emap,
                               with_retrain=with_retrain, problem=problem)
     out.update({

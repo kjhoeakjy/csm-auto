@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 import report
-from config import MO, RESULTS
+from config import BACKTEST, MO, RESULTS
 from pipeline import RUNS
 
 APP = MO / "app"
@@ -57,13 +57,15 @@ def _tidy_llm(o):
             "investigate": [t(x) for x in o["investigate"]], "caveats": [t(x) for x in o.get("caveats", [])]}
 
 
-def load_llm(model="claude-opus-5-5"):
+def load_llm(model="claude-opus-5-5", rule=None):
     p = RESULTS / f"m09_llm_report_{model}.jsonl"
     if not p.exists():
         return None
     out = {}
     for line in p.read_text(encoding="utf-8").splitlines():
         r = json.loads(line)
+        if rule and r.get("rule_version") != rule:     # 다른 규칙 버전의 판단에 대한 초안은 표시하지 않음
+            continue
         out[r["quarter"]] = {"published": r["published"], "problems": r["problems"], "model": r["model"],
                              "seconds": r["seconds"], "output": _tidy_llm(r["output"]) if r["published"] else None}
     return out
@@ -130,7 +132,7 @@ def kpis(decs, posthoc, default_q):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--rule", default="r4")
+    ap.add_argument("--rule", default="r5")
     ap.add_argument("--default", default="2018Q1")
     a = ap.parse_args()
     decs = load_decisions(a.rule)
@@ -158,7 +160,7 @@ def main():
                      "lag_oe": lag0.get("o_e_ratio"), "early_q": e0.get("cohort_q"),
                      "early_oe": e0.get("o_e_ratio")})
 
-    bt = pd.read_csv(RESULTS / "m03_backtest_quarter.csv")
+    bt = pd.read_csv(BACKTEST)
     l = bt[bt.model == "lgbm"].set_index("issue_q")
     g = bt[bt.model == "logit"].set_index("issue_q")
     cohort = [{"q": q, "n": int(r["n"]), "actual": r["actual"], "pred": r["pred"],
@@ -197,7 +199,7 @@ def main():
         "policy": pol,
         "injection": pd.read_csv(RESULTS / "m10_injection.csv").to_dict("records")
         if (RESULTS / "m10_injection.csv").exists() else None,
-        "timing": timing_summary(), "llm": load_llm(),
+        "timing": timing_summary(), "llm": load_llm(rule=a.rule),
         "meta": {"rule_version": a.rule, "model_id": decs[0]["model_id"], "data_id": decs[0]["data_id"],
                  "code_hash": decs[0]["code_hash"]},
         "default_q": a.default, "quarters": quarters,

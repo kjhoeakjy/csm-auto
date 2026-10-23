@@ -70,20 +70,32 @@ def evaluate_policy(ctx, p, t):
     return out
 
 
-def set_active(ctx, p):
-    """D 정책의 운영 모형 교체: 점검·후보 엔진이 보는 점수를 교체 (조기 기대 함수는 개발 구간에서 재적합)"""
+def set_active(ctx, p, refit_emap=False):
+    """D 정책의 운영 모형 교체: 점검·후보 엔진이 보는 점수를 교체.
+    조기 기대 함수(24개월 확률 -> 12개월 확률)는 재학습 때만 개발 구간에서 재적합. 수준 재보정 뒤 재적합하면
+    개발 구간 수준으로 다시 맞춰져 보정 효과가 사라지고 같은 이동이 반복 적용되므로 유지"""
     ctx.df["p"] = p
-    ref_mask = (ctx.df["issue_d"] >= "2010-01-01") & (ctx.df["issue_d"] <= "2012-12-31")
-    ctx.ref = ctx.df[ref_mask]
-    ctx.emap = EarlyMap().fit(ctx.ref["p"], ctx.ref["y12"])
+    rw = ctx.meta.get("ref_window", ["2010-01-01", "2012-12-31"])
+    ctx.ref = ctx.df[(ctx.df["issue_d"] >= rw[0]) & (ctx.df["issue_d"] <= rw[1])]
+    if refit_emap:
+        ctx.emap = EarlyMap().fit(ctx.ref["p"], ctx.ref["y12"])
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--only", default="", help="예: D (해당 정책만 다시 계산, 나머지는 기존 결과 사용)")
+    args = ap.parse_args()
     t_start = time.time()
     ctx = Context.load()
+    emap0 = ctx.emap
     X = F.build(ctx.df, extended=True)
     p0 = ctx.df["p"].values.copy()
-    pols = {k: Policy(k, p0) for k in ["A 고정 모형", "B 정기 재학습", "C 단순 임계값", "D 제안 시스템"]}
+    names = ["A 고정 모형", "B 정기 재학습", "C 단순 임계값", "D 제안 시스템"]
+    if args.only:
+        names = [n for n in names if n[0] in args.only]
+    pols = {k: Policy(k, p0) for k in names}
+    pols_emap = {k: emap0 for k in names}
     rows = []
     for t in QUARTERS:
         asof = asof_month(t)
@@ -103,6 +115,7 @@ def main():
                     action = f"유지 (실제/예측 {oe:.2f})"
             elif name.startswith("D"):
                 set_active(ctx, pol.p)
+                ctx.emap = pols_emap[name]
                 out, cand = decide(ctx, t, with_retrain=True, ref_auc=pol.ref_auc)
                 action = f"{out['status']} / {out['recommendation']}"
                 if cand is not None and cand["chosen"]:
@@ -110,6 +123,9 @@ def main():
                     pol.p = apply_chosen(ch, cand["deploy"], ctx, X, pol.p)
                     pol.changes += 1
                     pol.retrains += KIND[ch] == "retrain"
+                    if KIND[ch] == "retrain":           # 재학습이면 조기 기대 함수도 새 모형 기준으로 재적합
+                        set_active(ctx, pol.p, refit_emap=True)
+                        pols_emap[name] = ctx.emap
                     pol.model_label = LABEL[ch]
                     pol.ref_auc = float(cand["table"].set_index("candidate").loc[ch, "auc"])
                     action += f" → 승인 가정, {LABEL[ch]} 적용"
@@ -122,8 +138,12 @@ def main():
                          "retrains_cum": pol.retrains, **ev})
             print(t, name, action, {k: round(v, 4) for k, v in ev.items() if isinstance(v, float)}, flush=True)
         ctx.df["p"] = p0          # 다른 정책에 영향 없도록 원래 점수로 복구
+        ctx.emap = emap0
 
     q = pd.DataFrame(rows)
+    if args.only:                  # 다시 계산하지 않은 정책은 기존 결과 유지
+        old = pd.read_csv(RESULTS / "m11_policy_quarter.csv")
+        q = pd.concat([old[~old["policy"].isin(names)], q]).sort_values(["quarter", "policy"]).reset_index(drop=True)
     q.to_csv(RESULTS / "m11_policy_quarter.csv", index=False, encoding="utf-8-sig")
     summ = []
     for name, g in q.groupby("policy"):

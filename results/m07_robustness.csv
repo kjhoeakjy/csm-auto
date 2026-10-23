@@ -2,6 +2,6 @@
 재실행 중복 방지,두 번째 실행은 재생성 안 함,"1회차 skipped=True, 2회차 skipped=True",True
 주입: missing_column,판정 유보,성공 / 판정 유보 / 판정 유보 / schema_error,True
 주입: type_change,판정 유보,성공 / 판정 유보 / 판정 유보 / schema_error,True
-주입: delayed_feed,"선행 점검만 유보, 결과 점검은 수행","성공 / 주의 / 조사 (변경 보류) / lag24_drift,lead_new_data_missing",True
+주입: delayed_feed,"선행 점검만 유보, 결과 점검은 수행","성공 / 주의 / 재보정 검토 / early12_material,lead_new_data_missing",True
 주입: small_cohort,판정 유보,성공 / 판정 유보 / 판정 유보 / lag_sample_small,True
-주입: fico_drop,주의 이상 (선행 탐지),"성공 / 주의 / 조사 (변경 보류) / lag24_drift,lead_feature_shift",True
+주입: fico_drop,주의 이상 (선행 탐지),"성공 / 주의 / 재보정 검토 / early12_material,lead_feature_shift",True

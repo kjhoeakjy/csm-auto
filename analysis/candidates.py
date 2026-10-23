@@ -1,4 +1,4 @@
-﻿"""개선 후보 엔진: 유지 / 재보정 5종 / 재학습 3종을 같은 기준으로 비교
+"""개선 후보 엔진: 유지 / 재보정 5종 / 재학습 3종을 같은 기준으로 비교
 
 입력은 시점 T 에 정답이 확정된 코호트뿐 (호출부 asof_view 에서 잘라서 넘기고 여기서 다시 확인).
 r2 모의 배포 검증:
@@ -23,11 +23,12 @@ from models import lgb_model, logit_pipeline
 from rules import R
 
 EPS = 1e-6
-COMPLEXITY = {"maintain": 0, "recal_intercept": 1, "recal_early": 2, "recal_trend": 3, "recal_platt": 4,
+COMPLEXITY = {"maintain": 0, "recal_intercept": 1, "recal_early": 2, "recal_trend": 3, "recal_early_trend": 3.5, "recal_platt": 4,
               "recal_beta": 5, "recal_grade": 6, "recal_isotonic": 7, "retrain_logit": 8,
               "retrain_lgbm": 9, "retrain_lgbm_ext": 10, "retrain_lgbm_ext_tw": 11}
 LABEL = {"maintain": "현행 유지", "recal_intercept": "전역 재보정(수준)",
-         "recal_early": "조기 결과 반영 재보정", "recal_platt": "전역 재보정(Platt)",
+         "recal_early": "조기 결과 반영 재보정", "recal_early_trend": "조기 결과 추세 반영 재보정",
+         "recal_platt": "전역 재보정(Platt)",
          "recal_beta": "전역 재보정(beta)", "recal_grade": "등급별 재보정",
          "recal_isotonic": "전역 재보정(isotonic)", "retrain_logit": "재학습(로지스틱)",
          "retrain_lgbm": "재학습(LightGBM)", "retrain_lgbm_ext": "재학습(LightGBM+확장 변수)",
@@ -204,12 +205,35 @@ class EarlyIntercept:
         return _sigmoid(_logit(p) + self.a_)
 
 
+class EarlyTrendIntercept:
+    """조기 결과 추세 반영 재보정 (r5): 12개월 확정 최근 분기별로 조기 기대와 실제가 같아지는 logit 이동량을 구하고,
+    분기 순번 선형 추세를 보유 대출 중심 시점까지 연장 (관측 범위 ±0.3 로 제한)"""
+    def __init__(self, early_map):
+        self.emap = early_map
+
+    def fit(self, p, y12, q, target_ord):
+        qs = sorted(np.unique(q))
+        a = np.array([brentq(lambda s, m=(q == k): self.emap(_sigmoid(_logit(p[m]) + s)).sum() - y12[m].sum(), -5, 5)
+                      for k in qs])
+        if len(qs) >= 3:
+            slope, icpt = np.polyfit(np.array(qs, dtype=float), a, 1)
+            v = icpt + slope * target_ord
+        else:
+            v = a.mean()
+        self.a_ = float(np.clip(v, a.min() - 0.3, a.max() + 0.3))
+        self.per_q_ = dict(zip([int(x) for x in qs], a.round(4).tolist()))
+        return self
+
+    def predict(self, p, g=None):
+        return _sigmoid(_logit(p) + self.a_)
+
+
 def _last_q(d, k):
     qs = sorted(d["q"].unique())
     return qs[-k:]
 
 
-def _fit_all(lab24, lab12, meta, emap, with_retrain):
+def _fit_all(lab24, lab12, meta, emap, with_retrain, asof=None):
     """한 시점(as-of)에서 가용한 정답만으로 모든 후보 적합"""
     fit_r_q = _last_q(lab24, R["recal_fit_quarters"])
     fit_t_q = _last_q(lab24, R["retrain_window_quarters"])
@@ -222,6 +246,12 @@ def _fit_all(lab24, lab12, meta, emap, with_retrain):
     f4 = lab24[lab24["q"].isin(_last_q(lab24, 4))]
     fitted["recal_trend"] = TrendIntercept().fit(f4["p"].values, f4["y"].values,
                                                  np.array([p.ordinal for p in f4["q"]]))
+    if asof is not None and len(lab12):          # r5: 보유 대출 중심 = (최신 24개월 확정 분기 다음 ~ 판단 분기) 중간
+        t_ord = pd.Period(asof, freq="Q").ordinal
+        center = (lab24["q"].max().ordinal + 1 + t_ord) / 2
+        fe4 = lab12[lab12["q"].isin(_last_q(lab12, R["early_trend_quarters"]))]
+        fitted["recal_early_trend"] = EarlyTrendIntercept(emap).fit(
+            fe4["p"].values, fe4["y12"].values, np.array([p.ordinal for p in fe4["q"]]), center)
     if with_retrain:
         ft = lab24[lab24["q"].isin(fit_t_q)]
         for k in ["retrain_logit", "retrain_lgbm", "retrain_lgbm_ext", "retrain_lgbm_ext_tw"]:
@@ -246,7 +276,7 @@ def run_candidates(lab24: pd.DataFrame, lab12: pd.DataFrame, asof: pd.Timestamp,
     p24 = lab24[lab24["label_known_d"] <= pseudo]
     p12 = lab12[lab12["label12_known_d"] <= pseudo]
     assert not set(p24["q"].unique()) & set(sel_q), "선택용 코호트가 적합에 들어감"
-    fitted, win_pseudo = _fit_all(p24, p12, champion_meta, early_map, with_retrain)
+    fitted, win_pseudo = _fit_all(p24, p12, champion_meta, early_map, with_retrain, asof=pseudo)
 
     ys, ps, gs = sel["y"].values, sel["p"].values, sel["grade"].values
     preds = {"maintain": ps}
@@ -293,9 +323,19 @@ def run_candidates(lab24: pd.DataFrame, lab12: pd.DataFrame, asof: pd.Timestamp,
         near = d[d["logloss"] <= d["logloss"].min() * (1 + R["simpler_tolerance"])]
         return near.sort_values("complexity").iloc[0]
 
+    # 배포 후보: 같은 방식으로 T 시점 가용 데이터에서 다시 적합 (모든 후보, 사후 평가용 포함)
+    deploy_all, win_deploy = _fit_all(lab24, lab12, champion_meta, early_map, with_retrain, asof=asof)
     r = simplest_best(passed[passed["kind"] == "recal"])
     t = simplest_best(passed[passed["kind"] == "retrain"])
-    if problem == "ranking":            # 순위 악화: 재보정으로는 회복 불가 -> 재학습 우선
+    et = deploy_all.get("recal_early_trend")
+    if problem != "ranking" and et is not None and "recal_early_trend" in set(table["candidate"]):   # r5: 조기 결과 추세 기준 수준 이동량으로 갱신 여부 결정
+        big_shift = abs(et.a_) >= R["early_trend_min_shift"]
+        pick = table.set_index("candidate").loc["recal_early_trend"].copy() if big_shift else None
+        if pick is not None:
+            pick["candidate"] = "recal_early_trend"
+        note = (f"조기 결과 추세 기준 수준 차이 logit {et.a_:+.2f}"
+                + (": 조기 결과 추세 반영 재보정" if big_shift else ", 기준 0.10 미만: 갱신 보류"))
+    elif problem == "ranking":            # 순위 악화: 재보정으로는 회복 불가 -> 재학습 우선
         pick = t if t is not None else r
         note = "순위 악화: 재학습 우선" if t is not None else "순위 악화이나 재학습 미통과: 재보정"
     else:                               # 확률 수준 오차: 재보정 우선, 재학습은 추가 이득이 클 때만
@@ -310,9 +350,8 @@ def run_candidates(lab24: pd.DataFrame, lab12: pd.DataFrame, asof: pd.Timestamp,
                     else "재보정 미통과, 재학습만 통과" if t is not None else note)
     if pick is not None:
         chosen = pick["candidate"]
-        residual = bool(abs(pick["o_e_ratio"] - 1) > R["residual_oe_dev"])
-    # 배포 후보: 같은 방식으로 T 시점 가용 데이터에서 다시 적합 (모든 후보, 사후 평가용 포함)
-    deploy_all, win_deploy = _fit_all(lab24, lab12, champion_meta, early_map, with_retrain)
+        residual = (False if chosen == "recal_early_trend"
+                    else bool(abs(pick["o_e_ratio"] - 1) > R["residual_oe_dev"]))
     return {"table": table, "chosen": chosen, "residual": residual, "selection_note": note,
             "problem": problem,
             "deploy": deploy_all.get(chosen) if chosen else None, "deploy_all": deploy_all,

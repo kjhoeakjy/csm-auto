@@ -2,6 +2,7 @@
 실행: .venv/Scripts/python modelops/ppt/make_assets.py
 """
 import os
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -21,7 +22,9 @@ for f in fd.glob("*.ttf"):
 plt.rcParams["font.family"] = "Pretendard" if any(fd.glob("*.ttf")) else "Malgun Gothic"
 plt.rcParams["axes.unicode_minus"] = False
 
-bt = pd.read_csv(RES / "m03_backtest_quarter.csv")
+sys.path.insert(0, str(HERE.parent / "analysis"))
+from config import BACKTEST                                   # noqa: E402
+bt = pd.read_csv(BACKTEST)
 d = bt[(bt.model == "lgbm") & (bt.issue_q >= "2012Q1")].reset_index(drop=True)
 x = range(len(d))
 fig, ax = plt.subplots(figsize=(6.2, 3.0), dpi=300)
@@ -51,7 +54,6 @@ fig.savefig(HERE / "chart_default.png", transparent=False, facecolor="white")
 plt.close(fig)
 
 # 2장 그림: 판단 시점별 보유 대출의 실제 상각률, 모형 예측(유지), 모형 갱신 시 예측 (운영 방식 비교 m11)
-import sys                                                    # noqa: E402
 sys.path.insert(0, str(HERE.parent / "analysis"))
 from labels import HORIZON                                    # noqa: E402
 from pipeline import latest_labeled_q                         # noqa: E402
@@ -76,12 +78,16 @@ ax.plot(xs, Dp["pred"], color="#444444", lw=2.0, ls=(0, (1, 1.6)), zorder=4)   #
 chg = [k for k in range(len(Dp)) if Dp.changes_cum[k] > (Dp.changes_cum[k - 1] if k else 0)]
 ax.scatter(chg, Dp["pred"][chg], s=34, color="#444444", zorder=5)
 for j, k in enumerate(chg):                                  # 모형 갱신 시점 표시 (번호)
-    ax.annotate(f"{j + 1}", (k, Dp["pred"][k]), xytext=(0, -13 if j == 0 else 7), textcoords="offset points",
+    ax.annotate(f"{j + 1}", (k, Dp["pred"][k]), xytext=(9, -17), textcoords="offset points",
                 ha="center", fontsize=8, color="#333333")
 n = len(A) - 1
-for y, lab, kw in [(A["act"][n], "실제", {"fontweight": "bold"}), (Dp["pred"][n], "모형 갱신 시", {"color": "#444444"}),
-                   (A["pred"][n], "모형 예측", {"color": "#555555"})]:
-    ax.annotate(f"{lab} {y:.1f}%", (n, y), xytext=(8, 0), textcoords="offset points", ha="left", va="center",
+ends = sorted([(A["act"][n], "실제", {"fontweight": "bold"}), (Dp["pred"][n], "모형 갱신 시", {"color": "#444444"}),
+               (A["pred"][n], "모형 예측", {"color": "#555555"})], key=lambda r: -r[0])
+ly = []
+for y, _, _ in ends:                                         # 끝 글자 겹침 방지: 위에서부터 최소 0.45%p 간격
+    ly.append(min(y, ly[-1] - 0.45) if ly else y)
+for (y, lab, kw), yl in zip(ends, ly):
+    ax.annotate(f"{lab} {y:.1f}%", (n, y), xytext=(n + 0.25, yl), textcoords="data", ha="left", va="center",
                 fontsize=9.5, **kw)
 ticks = [k for k, q in enumerate(A.quarter) if q.endswith("Q1")]
 ax.set_xticks(ticks, [A.quarter[k][:4] + "년" for k in ticks], fontsize=9, color="#555555")

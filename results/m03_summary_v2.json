@@ -1,0 +1,183 @@
+{
+  "meta": {
+    "model_id": "champion_v2",
+    "trained_on": "2010Q1~2013Q2 실행 (적합 ~2012Q4, 선택 2013Q1~Q2), 확장 입력, 최근 가중 반감기 4분기",
+    "extended": true,
+    "ref_window": [
+      "2010-01-01",
+      "2013-06-30"
+    ],
+    "oot_ref": [
+      "2013-07-01",
+      "2013-12-31"
+    ],
+    "train_n": 139998,
+    "train_rate": 0.10820154573636766,
+    "label": "STOP24",
+    "features": [
+      "loan_amnt",
+      "term_m",
+      "int_rate",
+      "installment",
+      "grade_num",
+      "emp_years",
+      "log_annual_inc",
+      "dti",
+      "delinq_2yrs",
+      "fico",
+      "inq_last_6mths",
+      "mths_since_last_delinq",
+      "mths_since_last_record",
+      "open_acc",
+      "pub_rec",
+      "log_revol_bal",
+      "revol_util",
+      "total_acc",
+      "credit_hist_m",
+      "collections_12_mths_ex_med",
+      "acc_now_delinq",
+      "chargeoff_within_12_mths",
+      "delinq_amnt",
+      "pub_rec_bankruptcies",
+      "tax_liens",
+      "loan_to_income",
+      "tot_coll_amt",
+      "tot_cur_bal",
+      "total_rev_hi_lim",
+      "acc_open_past_24mths",
+      "avg_cur_bal",
+      "bc_open_to_buy",
+      "bc_util",
+      "mo_sin_old_il_acct",
+      "mo_sin_old_rev_tl_op",
+      "mo_sin_rcnt_rev_tl_op",
+      "mo_sin_rcnt_tl",
+      "mort_acc",
+      "mths_since_recent_bc",
+      "mths_since_recent_inq",
+      "num_accts_ever_120_pd",
+      "num_actv_bc_tl",
+      "num_actv_rev_tl",
+      "num_bc_sats",
+      "num_bc_tl",
+      "num_il_tl",
+      "num_op_rev_tl",
+      "num_rev_accts",
+      "num_rev_tl_bal_gt_0",
+      "num_sats",
+      "num_tl_120dpd_2m",
+      "num_tl_30dpd",
+      "num_tl_90g_dpd_24m",
+      "num_tl_op_past_12m",
+      "pct_tl_nvr_dlq",
+      "percent_bc_gt_75",
+      "tot_hi_cred_lim",
+      "total_bal_ex_mort",
+      "total_bc_limit",
+      "total_il_high_credit_limit",
+      "home_ownership_MORTGAGE",
+      "home_ownership_RENT",
+      "home_ownership_OWN",
+      "verification_status_Not Verified",
+      "verification_status_Verified",
+      "verification_status_Source Verified",
+      "purpose_debt_consolidation",
+      "purpose_credit_card",
+      "purpose_home_improvement",
+      "purpose_other",
+      "purpose_major_purchase",
+      "purpose_small_business",
+      "purpose_car",
+      "purpose_medical"
+    ],
+    "seed": 42,
+    "code_hash": "9165bd87512a",
+    "logit": {
+      "C": 0.01,
+      "sel_logloss": {
+        "0.01": 0.3226124979464661,
+        "0.1": 0.3227943596866946,
+        "1.0": 0.32284525661595626
+      }
+    },
+    "lgbm": {
+      "params": {
+        "num_leaves": 31,
+        "min_child_samples": 800,
+        "reg_lambda": 20.0
+      },
+      "best_iter": 273,
+      "n_estimators": 300,
+      "sel_logloss": [
+        [
+          0.32153537252088554,
+          353,
+          "{'num_leaves': 15, 'min_child_samples': 400}"
+        ],
+        [
+          0.32154184053850715,
+          201,
+          "{'num_leaves': 31, 'min_child_samples': 200}"
+        ],
+        [
+          0.32190626917403065,
+          188,
+          "{'num_leaves': 63, 'min_child_samples': 400}"
+        ],
+        [
+          0.3212072918235065,
+          273,
+          "{'num_leaves': 31, 'min_child_samples': 800, 'reg_lambda': 20.0}"
+        ],
+        [
+          0.32138238429507937,
+          227,
+          "{'num_leaves': 127, 'min_child_samples': 1000, 'colsample_bytree': 0.5}"
+        ]
+      ]
+    }
+  },
+  "oot_overall": {
+    "logit": {
+      "n": 1069025,
+      "events": 139165,
+      "actual": 0.13017936905123828,
+      "pred": 0.10310037621487558,
+      "gap_pp": 2.7078992836362694,
+      "o_e_ratio": 1.2626468867574867,
+      "calib_z": 94.64535087138748,
+      "calib_p": 0.0,
+      "actual_lo": 0.129542804430221,
+      "actual_hi": 0.1308185916041664,
+      "auc": 0.6932545746941858,
+      "auc_lo": 0.6916391434486024,
+      "auc_hi": 0.6948700059397692,
+      "pr_auc": 0.24492898556600318,
+      "brier": 0.10783826285004448,
+      "logloss": 0.3636485403497029,
+      "calib_a": 0.18743419827305682,
+      "calib_b": 0.9537231641404137
+    },
+    "lgbm": {
+      "n": 1069025,
+      "events": 139165,
+      "actual": 0.13017936905123828,
+      "pred": 0.1063087824095829,
+      "gap_pp": 2.3870586641655382,
+      "o_e_ratio": 1.2245401188933533,
+      "calib_z": 82.34414517016901,
+      "calib_p": 0.0,
+      "actual_lo": 0.129542804430221,
+      "actual_hi": 0.1308185916041664,
+      "auc": 0.7009304033939936,
+      "auc_lo": 0.6993229228388756,
+      "auc_hi": 0.7025378839491115,
+      "pr_auc": 0.2520446065219747,
+      "brier": 0.1071055212244769,
+      "logloss": 0.3602283988694082,
+      "calib_a": 0.22095196014247653,
+      "calib_b": 0.9882054163188093
+    }
+  },
+  "seconds": 116.6
+}

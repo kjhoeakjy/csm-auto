@@ -1,4 +1,4 @@
-﻿"""m04. 선행 점검·후행 검증 이력 (3단계)
+"""m04. 선행 점검·후행 검증 이력 (3단계)
 
 - 선행 점검: 2013Q1~2018Q4 각 분기 신규 실행분 vs 학습 코호트 / 직전 4분기
 - 후행 검증: 운영 재현 13분기 각 시점 T 에 확정된 최신 코호트
@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from config import DATA, RESULTS
+from config import DATA, RESULTS, SCORES
 from data import load_loans
 from labels import LAG, REPORT_LAG
 from monitor import EarlyMap, early_check, estimate_phi, lag_check, lead_check
@@ -34,7 +34,7 @@ plt.rcParams["axes.unicode_minus"] = False
 
 def load_scored():
     df = load_loans()
-    sc = pd.read_parquet(DATA / "scores_v1.parquet", columns=["id", "p_lgbm"])
+    sc = pd.read_parquet(SCORES, columns=["id", "p_lgbm"])
     df = df.merge(sc, on="id", how="left").rename(columns={"p_lgbm": "p"})
     df["q"] = pd.PeriodIndex(df["issue_d"], freq="Q")
     return df

@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import brentq
 
-from config import DATA, RESULTS, SEED
+from config import DATA, RESULTS, SCORES, SEED
 from rules import R
 
 PHI = json.loads((RESULTS / "m04_summary.json").read_text(encoding="utf-8"))["phi_dev"]
@@ -68,7 +68,7 @@ def simulate(ps, k, rng):
 
 
 def main():
-    sc = pd.read_parquet(DATA / "scores_v1.parquet", columns=["issue_q", "p_lgbm"])
+    sc = pd.read_parquet(SCORES, columns=["issue_q", "p_lgbm"])
     ps = [sc.loc[sc.issue_q == q, "p_lgbm"].values for q in COHORTS]
     rng = np.random.default_rng(SEED)
     rows = []

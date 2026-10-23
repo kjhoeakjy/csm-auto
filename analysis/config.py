@@ -22,6 +22,12 @@ for p in (DATA, RESULTS, REPORTS):
     p.mkdir(parents=True, exist_ok=True)
 
 BASE_PARQUET = DATA / "loans_base.parquet"
+
+# 운영 모형 버전: v1 = 2010~2012 학습(기본 입력), v2 = 2010~2013Q2 학습(첫 판단 시점 가용 자료 전체, 확장 입력, 최근 가중)
+CHAMPION = os.environ.get("CSM_CHAMPION", "v2")
+CHAMPION_PATH = MO / "results" / "models" / f"champion_{CHAMPION}.joblib"
+SCORES = DATA / f"scores_{CHAMPION}.parquet"
+BACKTEST = MO / "results" / ("m03_backtest_quarter.csv" if CHAMPION == "v1" else f"m03_backtest_quarter_{CHAMPION}.csv")
 SEED = 42
 
 # 원천 스냅샷 시점: 파일에 기록된 마지막 납부월의 최댓값으로 확인 (m01 에서 기록)
