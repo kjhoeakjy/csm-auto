@@ -51,6 +51,7 @@
 | `results/` | 결과 표, 그림, 요약 |
 | `docs/` | 단계별 검증 문서 ([목차](docs/README.md)) |
 | `ppt/` | 발표 자료 생성 코드(`build_pt.py`, 그리기 도구 `pt_base.py`, 그림 `make_assets.py`, PDF 변환 `export.ps1`)와 결과물 |
+| `research/cloud/` | 클라우드 보조 실험 (운영 모형 변형 7종, 수준 보정 9방식 비교) |
 | `tests/` | 누수 방지, 실적 확정 시점, 점검 함수, 수정안 엔진, 보고서 대조 테스트 |
 
 ## 5. 주요 코드
