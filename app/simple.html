@@ -248,7 +248,7 @@ R.oninput = () => { stop(); i = +R.value; render(); };
 $("#apply").onclick = () => { showAfter = !showAfter; render(); };
 $("#play").onclick = () => {
   if (timer) return stop();
-  if (i >= D.items.length - 1) i = 0;
+  i = 0;                                        // 전체 기간 재생은 항상 첫 분기부터
   $("#play").textContent = "일시 정지"; $("#play").classList.add("on"); render();
   timer = setInterval(() => { if (i >= D.items.length - 1) return stop(); i += 1; render(); }, 1400);
 };
