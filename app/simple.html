@@ -43,7 +43,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px;
   background: var(--ink); margin-top: -10px; border: 4px solid var(--bg); box-shadow: 0 0 0 1px var(--ink); }
 input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg); }
 .strip { display: grid; gap: 2px; }
-.strip button { padding: 6px 0 4px; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 3px;
+.strip button { padding: 6px 0 4px; white-space: nowrap; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 3px;
   font: 500 10px var(--font); color: var(--sub); cursor: pointer; }
 .strip button.cur { color: var(--ink); font-weight: 800; }
 .strip button:focus-visible { outline: 1px solid var(--ink); }
@@ -99,28 +99,28 @@ footer a { color: var(--sub); }
 </style>
 <div class="wrap">
   <h1>신용평가모형<br>자동 점검</h1>
-  <p class="lede">신용평가모형은 시간이 지나면 예측이 실제와 어긋남. 이 시스템은 3개월마다 모형의 예측 상각률과 실제 상각률을 비교하고 차이가 크면 모형 수정안을 검증해 담당자에게 권고함. Lending Club 공개 대출 자료로 2015~2018년 13개 분기 운영 재현.</p>
+  <p class="lede">신용평가모형은 시간이 지나면 예측이 실제와 어긋납니다. 이 시스템은 3개월마다 모형이 예측한 상각률과 실제 상각률을 비교하고 차이가 크면 모형 수정안을 검증해 담당자에게 권고합니다. Lending Club 공개 대출 자료로 2015~2018년 13개 분기의 운영을 재현했습니다.</p>
 
   <section class="steps" aria-label="화면 사용법">
-    <div><b>1. 점검 시점 선택</b>막대 이동 또는 분기 표시 클릭</div>
-    <div><b>2. 판단 결과 확인</b>상태, 권고, 근거 3개</div>
-    <div><b>3. 권고안 효과 확인</b>'권고안 적용 결과' 버튼으로 이후 실제 결과와 비교</div>
+    <div><b>1. 점검 시점 선택</b>막대를 움직이거나 분기를 눌러 주세요.</div>
+    <div><b>2. 판단 결과 확인</b>그 시점의 상태, 권고, 근거 3개를 보여 드립니다.</div>
+    <div><b>3. 권고안 효과 확인</b>'권고안 적용 결과' 버튼을 누르면 이후 실제 결과와 비교합니다.</div>
   </section>
 
   <details class="about">
     <summary>데이터, 모형, 작동 방식</summary>
     <div class="about-grid">
-      <div class="k">데이터</div><div>Lending Club 공개 대출 226만 건 (2007~2018년 실행). 대출 실행 시점에 알 수 있는 정보 사용, 이후 상환 정보 제외</div>
-      <div class="k">모형</div><div>LightGBM (의사결정나무 여러 개를 차례로 결합하는 기계학습 모형). 입력은 대출 금액, 기간, 금리, 등급, 소득, 부채 비율, 신용 이력, 신용조회 정보(보유 계좌, 한도 사용률 등). 출력은 대출 후 2년 내 상각 확률. 2010~2013년 상반기 대출 14만 건으로 학습(최근 대출 가중), 이후 기간 AUC 0.70 (0.5 무작위, 1 완전 구분)</div>
-      <div class="k">상각률</div><div>상각은 회수 가능성이 낮은 대출을 손실로 확정해 장부에서 제외하는 처리. 상각률은 대출 실행 후 2년 내 상환이 멈춰 상각된 대출 비율. 결과 확정은 대출 후 30개월</div>
+      <div class="k">데이터</div><div>Lending Club 공개 대출 226만 건(2007~2018년 실행)을 사용했습니다. 대출을 실행할 때 알 수 있는 정보를 입력으로 쓰고 이후 상환 정보는 쓰지 않습니다.</div>
+      <div class="k">모형</div><div>LightGBM(의사결정나무 여러 개를 차례로 결합하는 기계학습 모형)입니다. 대출 금액, 기간, 금리, 등급, 소득, 부채 비율, 신용 이력, 신용조회 정보(보유 계좌, 한도 사용률 등)를 입력받아 대출 후 2년 안에 상각될 확률을 계산합니다. 2010~2013년 상반기 대출 14만 건으로 학습했고 최근 대출에 가중치를 더 두었습니다. 이후 기간의 AUC는 0.70입니다(0.5는 무작위, 1은 완전 구분).</div>
+      <div class="k">상각률</div><div>상각은 돌려받기 어렵다고 판단한 대출을 손실로 확정해 장부에서 지우는 처리입니다. 상각률은 대출 실행 후 2년 안에 상환이 멈춰 상각된 대출의 비율입니다. 결과는 대출 후 30개월에 확정됩니다.</div>
       <div class="k">작동 방식</div><div><ol>
-        <li>3개월마다 자동 실행, 그 시점까지 확정된 자료 사용</li>
-        <li>신규 대출 구성, 대출 후 1년 중간 실적, 2년 확정 실적의 예측 대비 차이 점검</li>
-        <li>상태 판정 (정상, 주의, 조치 필요, 판단 보류)</li>
-        <li>조치 필요 또는 1년 중간 실적 기준 초과 시 수정안 12종(예측치 조정 8, 재학습 4) 비교. 예측 수준 오차는 1년 중간 실적 추세로 보유 대출 수준을 추정해 10% 이상 차이 시 조정 권고</li>
-        <li>기준 통과안 담당자 보고, 적용 여부는 담당자 결정</li></ol></div>
-      <div class="k">판정 기준</div><div>조치 필요는 결과가 확정된 최근 대출의 실제 상각률이 예측과 10% 이상 차이 나고 우연으로 보기 어려운 수준(보정 z 3 이상)이며 직전 분기 대출도 같은 방향인 경우. 대출 후 1년 중간 실적이 2개 분기 연속 같은 조건이어도 조치 필요. 주의는 차이 5% 이상(보정 z 2 이상), 중간 실적 1개 분기 기준 초과, 또는 신규 대출 구성 급변</div>
-      <div class="k">보고서</div><div>규칙 기반 문장과 Claude Opus 5.5 초안. 보고서 수치는 계산 결과와 항목별 자동 대조 후 발행</div>
+        <li>3개월마다 자동으로 실행하며 그 시점까지 확정된 자료를 사용합니다.</li>
+        <li>신규 대출의 고객 구성, 대출 1년 차 상각률, 2년 차 상각률이 예측과 얼마나 다른지 점검합니다.</li>
+        <li>상태를 정상, 주의, 조치 필요, 판단 보류 중 하나로 판정합니다.</li>
+        <li>조치가 필요하거나 1년 차 상각률이 기준을 넘으면 수정안 12종(예측 상각률 조정 8종, 재학습 4종)을 비교합니다. 예측 수준이 어긋난 경우 최근 1년 차 상각률 추세로 결과가 아직 나오지 않은 대출의 상각률을 추정하고 예측과 10% 이상 차이 나면 조정을 권고합니다.</li>
+        <li>기준을 통과한 안을 담당자에게 보고하고 적용 여부는 담당자가 결정합니다.</li></ol></div>
+      <div class="k">판정 기준</div><div>조치 필요는 결과가 확정된 최근 대출의 실제 상각률이 예측과 10% 이상 다르고 그 차이가 우연으로 보기 어려운 수준(보정 z 3 이상)이며 직전 분기 대출도 같은 방향인 경우입니다. 1년 차 상각률이 2개 분기 연속 같은 조건을 넘어도 조치 필요입니다. 주의는 차이가 5% 이상(보정 z 2 이상)이거나 1년 차 상각률이 1개 분기 기준을 넘거나 신규 대출 구성이 크게 바뀐 경우입니다.</div>
+      <div class="k">보고서</div><div>규칙으로 만든 문장과 Claude Opus 5.5가 작성한 초안을 제공합니다. 보고서의 숫자는 계산 결과와 항목별로 자동 대조한 뒤 발행합니다.</div>
     </div>
   </details>
 
@@ -141,14 +141,14 @@ footer a { color: var(--sub); }
 
   <section class="chart" id="chw">
     <h2>대출 실행 시기별 예측 상각률과 실제 상각률</h2>
-    <p>회색 구간은 선택 시점에 결과가 확정되지 않은 대출. 그림 위에 마우스를 올리면 분기별 수치 표시</p>
+    <p>회색 구간은 선택한 시점에 아직 결과가 나오지 않은 대출입니다. 그림 위에 마우스를 올리면 분기별 수치를 보여 드립니다.</p>
     <div class="lg" id="lg"></div>
     <div id="ch"></div>
     <div class="tip" id="tip"></div>
   </section>
 
   <section class="sum" id="sum"></section>
-  <footer>시점별 판단은 해당 시점까지 확정된 정보로 수행. 권고안 적용 결과는 이후 확정된 실제 결과와 비교한 사후 평가. 공개 자료 기반 과거 재현, 실제 금융회사 운영 사례 아님.<br><a href="detail.html">분석 상세 화면</a></footer>
+  <footer>시점별 판단은 그 시점까지 확정된 정보로 수행했습니다. 권고안 적용 결과는 이후 확정된 실제 결과와 비교한 것으로 판단에는 쓰지 않았습니다. 공개 자료로 과거를 재현한 것이며 실제 금융회사의 운영 사례가 아닙니다.<br><a href="detail.html">분석 상세 화면</a></footer>
 </div>
 <script>
 const D = /*__DATA__*/null;
@@ -158,14 +158,14 @@ let i = D.items.findIndex(x => x.q === D.default_q), showAfter = false, timer = 
 const qlabel = (q) => `${q.slice(0, 4)}년 ${q.slice(5)}분기`;
 const pc = (v) => (v * 100).toFixed(1) + "%";
 const dotClass = (s) => s === "조치 필요" ? "act" : s === "주의" ? "warn" : "";
-const MEAN = { "조치 필요": "예측과 실제의 차이가 기준 초과, 모형 수정 검토 대상",
-  "주의": "차이 발생 초기 단계, 다음 분기 재확인 대상", "정상": "예측과 실제의 차이가 기준 범위 이내",
-  "판단 보류": "자료 부족 또는 오류로 판단 보류" };
+const MEAN = { "조치 필요": "예측과 실제의 차이가 기준을 넘어 모형 수정을 검토해야 합니다.",
+  "주의": "차이가 나타나기 시작했습니다. 다음 분기에 다시 확인합니다.", "정상": "예측과 실제의 차이가 기준 안에 있습니다.",
+  "판단 보류": "자료가 부족하거나 오류가 있어 판단을 보류합니다." };
 
 $("#strip").style.gridTemplateColumns = `repeat(${D.items.length}, minmax(0, 1fr))`;
 $("#strip").innerHTML = D.items.map((x, k) =>
   `<button data-k="${k}" aria-label="${qlabel(x.q)} ${x.status}"><i class="dot ${dotClass(x.status)}"></i>` +
-  `${x.q.endsWith("Q1") || k === 0 ? x.q.slice(2, 4) + "." + x.q.slice(5) : x.q.slice(5)}</button>`).join("");
+  `${x.q.slice(2, 4)}년 ${x.q.slice(5)}분기</button>`).join("");
 $("#strip").onclick = (e) => { const b = e.target.closest("button"); if (b) { stop(); i = +b.dataset.k; render(); } };
 
 function chart(item) {
@@ -192,11 +192,11 @@ function chart(item) {
     });
     // 수치는 그림 밖 범례에 표시 (글자와 선 겹침 방지)
     $("#lg").innerHTML = `<span><i></i>실제 ${pc(a.actual)}</span><span><i class="m"></i>기존 예측 ${pc(a.pred_m)}</span>` +
-      `<span><i class="c"></i>권고안 예측 ${pc(a.pred_c)}</span><span>점선 상자는 ${qlabel(a.from)}~${qlabel(a.to)} 실행 대출 평균</span>`;
+      `<span><i class="c"></i>권고안 예측 ${pc(a.pred_c)}</span><span>점선 상자는 ${qlabel(a.from)}~${qlabel(a.to)} 실행 대출의 평균입니다</span>`;
   } else {
     const last = c[cut - 1];
     $("#lg").innerHTML = `<span><i></i>실제 상각률</span><span><i class="p"></i>모형 예측 상각률</span>` +
-      `<span>결과 확정 최신 ${qlabel(last.q)} 실행 대출 실제 ${pc(last.actual)}, 예측 ${pc(last.pred)}</span>`;
+      `<span>결과가 확정된 가장 최근 대출(${qlabel(last.q)} 실행)은 실제 ${pc(last.actual)}, 예측 ${pc(last.pred)}입니다</span>`;
     if (known >= 0 && known < n - 1) s += `<text x="${X(known) + 12}" y="${m.t + 18}" font-size="12" fill="var(--sub)">결과 미확정</text>`;
   }
   s += `<line id="guide" x1="0" x2="0" y1="${m.t}" y2="${H - m.b}" stroke="var(--ink)" stroke-width="1" opacity="0"/>`;
@@ -230,13 +230,13 @@ function render() {
   $("#apply").classList.toggle("on", showAfter && !!a);
   $("#apply").textContent = showAfter && a ? "적용 결과 닫기" : "권고안 적용 결과";
   $("#hint").textContent = a
-    ? "이 시점 권고안을 당시 보유 대출에 적용한 예측과 이후 확정된 실제 상각률 비교. 그림에 해당 대출 구간 표시. 판단에는 미사용"
-    : "적용 결과는 모형 갱신 권고가 있는 분기에서 확인 가능. 이 분기는 갱신 권고 없음";
+    ? "이 시점의 권고안을 결과가 아직 나오지 않았던 대출에 적용해 이후 실제 상각률과 비교합니다. 그림에 해당 대출 구간을 표시합니다. 이 결과는 판단에 쓰지 않았습니다."
+    : "적용 결과는 모형 갱신을 권고한 분기에서 확인할 수 있습니다. 이 분기는 갱신 권고가 없습니다.";
   const box = $("#after");
   box.hidden = !(showAfter && a);
   if (a) {
     const w = (v) => (v / Math.max(a.actual, a.pred_m, a.pred_c) * 100).toFixed(1) + "%";
-    box.innerHTML = `<b>사후 평가, ${qlabel(a.from)}~${qlabel(a.to)} 실행 대출 ${a.n.toLocaleString()}건</b>${a.text}
+    box.innerHTML = `<b>이후 실제 결과와 비교 (${qlabel(a.from)}~${qlabel(a.to)} 실행 대출 ${a.n.toLocaleString()}건)</b>${a.text}
       <div class="bars num"><span>실제</span><i class="ink" style="width:${w(a.actual)}"></i><span>${pc(a.actual)}</span>
       <span>기존 예측</span><i style="width:${w(a.pred_m)}"></i><span>${pc(a.pred_m)}</span>
       <span>권고안 예측</span><i class="half" style="width:${w(a.pred_c)}"></i><span>${pc(a.pred_c)}</span></div>`;
