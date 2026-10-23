@@ -274,6 +274,7 @@ def main():
     prs.slide_width, prs.slide_height = Inches(W), Inches(H)
     prs.core_properties.title = "리스크 역량PT"
     prs.core_properties.author = "김연주"
+    cover(prs)
     slide1(prs)
     slide2(prs, shot)
     prs.save(OUT)
