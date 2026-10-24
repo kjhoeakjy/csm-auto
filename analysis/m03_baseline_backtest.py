@@ -4,7 +4,8 @@
   적합 2010Q1~2012Q2 / 선택(튜닝) 2012Q3~Q4 / 최종 = 둘을 합쳐 재적합
 - 2013Q1~2016Q3 실행 코호트(정답 확정)에서 분기별 예측 대비 실제, 판별력, 보정 지표
 - 운영 재현 13분기 각 시점에서 '그때 볼 수 있었던' 후행 검증 코호트의 결과 정리
-- 산출: results/m03_*.csv|json|png, data/scores_v1.parquet, results/models/champion_v1.joblib
+- 산출: results/m03_*.csv|json|png, data/scores_<버전>.parquet, results/models/champion_<버전>.joblib
+  (버전은 환경변수 CSM_CHAMPION, 기본 v2. v1 결과 파일은 보존)
 
 실행: .venv/Scripts/python modelops/analysis/m03_baseline_backtest.py
 """

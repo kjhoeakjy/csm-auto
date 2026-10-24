@@ -1,6 +1,6 @@
-"""역량PT 2장 (표지 제외) → modelops/ppt/역량PT_김연주.pptx
+"""역량PT 표지 + 2장 → modelops/ppt/역량PT_김연주.pptx
 - 1장: 중앙 타임라인 하나에 학업·활동(위)과 프로젝트(아래), BCG X 는 선 위의 가장 큰 이정표
-- 2장: 신용평가모형 운영 자동화. 화면 캡처(대표 분기) + 결과 숫자 3개 (results/ 에서 읽음)
+- 2장: 신용평가모형 자동 점검 시스템. 운영 재현 그림(chart_effect.png) + 결과 숫자 3개 (results/ 에서 읽음)
 - 그리기 도구·글꼴 규칙: ppt/pt_base.py
 실행: .venv/Scripts/python modelops/ppt/build_pt.py  → export.ps1 로 PDF·미리보기
 """
@@ -200,7 +200,7 @@ def wrap(s, n):
     return out + ([cur] if cur else [])
 
 
-def slide2(prs, shot=None):
+def slide2(prs):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     text(s, M, 0.62, W - 2 * M, 0.45, "02 New Project", size=20, weight="bold")
     text(s, M, 1.12, W - 2 * M, 0.3, "신용평가모형 자동 점검 시스템", size=13, weight="med")
@@ -269,14 +269,13 @@ def cover(prs):
 
 
 def main():
-    shot = HERE / "app_card.png"
     prs = Presentation()
     prs.slide_width, prs.slide_height = Inches(W), Inches(H)
     prs.core_properties.title = "리스크 역량PT"
     prs.core_properties.author = "김연주"
     cover(prs)
     slide1(prs)
-    slide2(prs, shot)
+    slide2(prs)
     prs.save(OUT)
     print("saved", OUT)
 
