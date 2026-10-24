@@ -19,7 +19,7 @@
 
 ## 2. 작동 방식
 1. **분기별 점검** 신규 대출 구성, 12개월 중간 신호, 24개월 확정 실적의 예측 대비 차이
-2. **상태 판정** 정상 / 주의 / 조치 필요 / 판단 보류 (사전 고정 기준, `analysis/rules.py`)
+2. **상태 판정** 정상 / 주의 / 조치 필요 / 판단 보류 (사전 고정 기준, `analysis/rules.py`. 코드와 `runs/` 기록의 명칭은 조치 검토, 판정 유보이며 화면과 문서에서 조치 필요, 판단 보류로 표기)
 3. **원인 유형 진단** 자료 오류 / 고객 구성 변화 / 확률 수준 오차 / 순위 판별력 저하
 4. **수정안 검증 (조치 필요 시)** 현행 유지, 예측 확률 보정 7종, 재학습 4종을 1년 전 자료로 수립 후 이후 실적으로 평가
 5. **보고** 상태, 권고, 근거 3개. 규칙 기반 문장과 Claude Opus 5.5 초안. 보고서 숫자는 계산 결과와 자동 대조(숫자 존재 여부와 실제, 예측 등 항목별 값), 불일치 시 발행 보류
@@ -50,8 +50,8 @@
 | `runs/<규칙>/<분기>/` | 분기별 판단 근거(`decision.json`), 수정안 비교표 |
 | `results/` | 결과 표, 그림, 요약 |
 | `docs/` | 단계별 검증 문서 ([목차](docs/README.md)) |
-| `ppt/` | 발표 자료 생성 코드(`build_pt.py`, 그리기 도구 `pt_base.py`, 그림 `make_assets.py`, PDF 변환 `export.ps1`)와 결과물 |
-| `research/cloud/` | 클라우드 보조 실험 (운영 모형 변형 7종, 수준 보정 9방식 비교) |
+| `ppt/` | 발표 자료 생성 코드(`build_pt.py`, 그리기 도구 `pt_base.py`, 글꼴 `fonts.py`, 그림 `make_assets.py`, PDF 변환 `export.ps1`)와 결과물(`역량PT_김연주.pdf`, `.pptx`, 쪽별 미리보기 `preview_*.png`) |
+| `research/cloud/` | 보조 실험 (운영 모형 변형 7종, 수준 보정 9방식 비교). 운영 코드와 분리, 결과 미채택 ([README](research/cloud/README.md)) |
 | `tests/` | 누수 방지, 실적 확정 시점, 점검 함수, 수정안 엔진, 보고서 대조 테스트 |
 
 ## 5. 주요 코드
@@ -68,6 +68,8 @@
 | `analysis/m13_model_search.py` | 입력 변수, 튜닝 탐색 (개선 없음, 기존 모형 유지) |
 | `analysis/llm_report.py` | LLM 보고서 초안 (조회 도구 5종, 수치, 판정, 표현 자동 검사) |
 | `analysis/m14_build_simple.py`, `m08_build_app.py` | 결과 화면, 상세 화면 생성 |
+| `analysis/report.py` | 규칙 기반 보고서 문장 생성, 보고서 수치 대조(`verify`) |
+| `analysis/config.py`, `data.py`, `labels.py`, `features.py`, `features_v2.py`, `metrics.py`, `models.py`, `inject.py` | 공통 모듈 (경로와 환경변수, 적재, 상각 정의와 확정 시점, 입력 변수, 평가 지표, 모형 학습, 오류 주입) |
 
 ## 6. 재실행
 ```powershell

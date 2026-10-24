@@ -1,4 +1,4 @@
-﻿"""m01. 원천 CSV -> 대출 단위 기준 테이블(Parquet)
+"""m01. 원천 CSV -> 대출 단위 기준 테이블(Parquet)
 
 - 원천: Lending Club 실행 대출 2007~2018Q4 (151열). 자유 텍스트(url, desc, title, emp_title) 제외
 - 'Does not meet the credit policy' 표기 대출은 policy_flag=0 으로 남기고 분석에서 제외

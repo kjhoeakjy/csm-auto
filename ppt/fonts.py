@@ -1,4 +1,4 @@
-﻿"""
+"""
 설치된 Pretendard 가변 글꼴 → 정적 글꼴 4개 (Regular·Medium·SemiBold·Bold)
 PowerPoint 는 가변 글꼴을 PDF 에 글꼴로 넣지 못해(윤곽선으로 변환) 정적 인스턴스를 만들어 씀.
 실행: python fonts.py <출력 폴더>   (export.ps1 이 호출, 설치하지 않고 세션에만 불러옴)

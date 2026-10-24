@@ -1,4 +1,4 @@
-﻿"""분석용 대출 테이블 적재 (정책 미달 제외, 기본 정답·정답 확정월 부착)"""
+"""분석용 대출 테이블 적재 (정책 미달 제외, 기본 정답·정답 확정월 부착)"""
 import pandas as pd
 
 from config import BASE_PARQUET
